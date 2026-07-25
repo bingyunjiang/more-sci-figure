@@ -1,0 +1,68 @@
+{
+  "schema": "more-sci-figure.project.v1",
+  "project_id": "replace-me",
+  "source": {
+    "path": "figure.png",
+    "sha256": "",
+    "page": null
+  },
+  "chart": {
+    "type": "line",
+    "plot_box": [0, 0, 0, 0],
+    "x_axis": {
+      "scale": "linear",
+      "anchors": [
+        {"pixel": 0, "value": 0},
+        {"pixel": 0, "value": 1}
+      ]
+    },
+    "y_axis": {
+      "scale": "linear",
+      "anchors": [
+        {"pixel": 0, "value": 0},
+        {"pixel": 0, "value": 1}
+      ]
+    },
+    "series": [
+      {
+        "id": "series-a",
+        "color": "#d62728",
+        "color_space": "lab",
+        "tolerance": 12,
+        "min_area": 4,
+        "max_area": 500,
+        "min_fill_ratio": 0.25,
+        "max_aspect_ratio": 4.0,
+        "min_rectangularity": 0.8,
+        "baseline_tolerance": 3.0
+      }
+    ]
+  },
+  "quality_gates": {
+    "calibration": {
+      "max_normalized_rmse": null,
+      "require_three_anchors": false
+    },
+    "line": {
+      "min_coverage": 0.5,
+      "max_gap_fraction": null
+    },
+    "scatter": {
+      "min_accepted_components": 1,
+      "max_rejected_ratio": null
+    },
+    "bar": {
+      "min_accepted_components": 1,
+      "max_rejected_ratio": null
+    }
+  },
+  "render": {
+    "plot_type": "line",
+    "x": "x",
+    "y": "y",
+    "group": "series",
+    "x_label": "横轴",
+    "y_label": "纵轴",
+    "title": ""
+  }
+}

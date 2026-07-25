@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:more-sci-figure:review-decisions:v1",
+  "title": "More Sci Figure 人工复核决定",
+  "description": "与 candidates.csv 哈希绑定、覆盖全部候选值的人工接受或拒绝记录。",
+  "type": "object",
+  "required": ["schema", "candidate_sha256", "reviewed_by", "decisions"],
+  "properties": {
+    "schema": {"const": "more-sci-figure.review-decisions.v1"},
+    "candidate_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "被复核 candidates.csv 的 SHA-256。"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "复核人或可追溯复核记录。"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "description": "建议使用 ISO 8601 时间。"
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "decision"],
+        "properties": {
+          "candidate_id": {"type": "string", "minLength": 1},
+          "decision": {"enum": ["accepted", "rejected"]},
+          "reason": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}

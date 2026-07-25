@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:more-sci-figure:project:v1",
+  "title": "More Sci Figure 项目规格",
+  "description": "科研图表来源、标定、检测、质量门和重绘映射的机器可验证契约。",
+  "type": "object",
+  "required": ["schema", "project_id", "source", "chart", "render"],
+  "properties": {
+    "schema": {
+      "const": "more-sci-figure.project.v1",
+      "description": "项目规格版本。"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "项目稳定标识。"
+    },
+    "source": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "description": "来源文件路径。"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$", "description": "来源文件 SHA-256。"},
+        "page": {"type": ["integer", "null"], "minimum": 1, "description": "PDF 页码，从 1 开始。"},
+        "measurement_raster": {"type": ["string", "null"], "description": "实际测量的原始栅格或声明 PDF 页面栅格。"},
+        "measurement_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-fA-F]{64}$", "description": "测量栅格 SHA-256。"}
+      },
+      "additionalProperties": true
+    },
+    "chart": {
+      "type": "object",
+      "required": ["type", "plot_box", "x_axis", "y_axis", "series"],
+      "properties": {
+        "type": {"enum": ["line", "scatter", "bar", "histogram"], "description": "图表类型。"},
+        "plot_box": {
+          "type": "array",
+          "prefixItems": [
+            {"type": "number"},
+            {"type": "number"},
+            {"type": "number"},
+            {"type": "number"}
+          ],
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "绘图区 [left, top, right, bottom]。"
+        },
+        "x_axis": {"$ref": "#/$defs/axis"},
+        "y_axis": {"$ref": "#/$defs/axis"},
+        "baseline_pixel": {"type": "number", "description": "柱图显式基线像素。"},
+        "series": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/series"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "quality_gates": {
+      "type": "object",
+      "description": "项目声明的自动风险筛查阈值；不能替代人工复核。",
+      "additionalProperties": true
+    },
+    "render": {
+      "type": "object",
+      "required": ["plot_type", "x", "y"],
+      "properties": {
+        "plot_type": {"enum": ["line", "scatter", "bar", "histogram"]},
+        "x": {"type": "string"},
+        "y": {"type": "string"},
+        "group": {"type": ["string", "null"]},
+        "x_label": {"type": "string"},
+        "y_label": {"type": "string"},
+        "title": {"type": "string"},
+        "x_scale": {"enum": ["linear", "log10"]},
+        "y_scale": {"enum": ["linear", "log10"]}
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "axis": {
+      "type": "object",
+      "required": ["scale", "anchors"],
+      "properties": {
+        "scale": {"enum": ["linear", "log10"]},
+        "anchors": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["pixel", "value"],
+            "properties": {
+              "pixel": {"type": "number"},
+              "value": {"type": "number"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "series": {
+      "type": "object",
+      "required": ["id", "color"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+        "color_space": {"enum": ["rgb", "lab"]},
+        "tolerance": {"type": "number", "exclusiveMinimum": 0},
+        "min_area": {"type": "integer", "minimum": 1},
+        "max_area": {"type": "integer", "minimum": 1},
+        "min_fill_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_aspect_ratio": {"type": "number", "minimum": 1},
+        "min_rectangularity": {"type": "number", "minimum": 0, "maximum": 1},
+        "baseline_tolerance": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

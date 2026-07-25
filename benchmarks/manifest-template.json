@@ -1,0 +1,20 @@
+{
+  "schema": "more-sci-figure.benchmark-case.v1",
+  "case_id": "replace-me",
+  "source": {
+    "path": "source/figure.png",
+    "sha256": "",
+    "license_level": "internal-only",
+    "provenance_note": ""
+  },
+  "annotation": {
+    "ground_truth": "ground-truth.csv",
+    "reviewed_by": [],
+    "held_out": true,
+    "known_ambiguities": []
+  },
+  "metrics": {
+    "chart_type": "line",
+    "required": []
+  }
+}
