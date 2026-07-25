@@ -1,29 +1,29 @@
 {
   "artifacts": {
     "candidate_preview_pdf": {
-      "bytes": 27825,
+      "bytes": 27826,
       "path": "preview/candidate-preview.pdf",
-      "sha256": "e3215192b7476925edc885a3a3072d327ba39d22e4562b27d029aa4fc48cc92b"
+      "sha256": "1f187ca3e7527344e2a33c40985981fb6bae86425a8ee20a3bed16a59b63888c"
     },
     "candidate_preview_png": {
-      "bytes": 160401,
+      "bytes": 160389,
       "path": "preview/candidate-preview.png",
-      "sha256": "ee080701ecb9d452f85b962359827b075772c8c9ec68926713dbdf98614ad089"
+      "sha256": "3b47c0654c961d8dd4974d95184d2723266de3d88278867620f4b373e3c27021"
     },
     "candidate_preview_report": {
       "bytes": 812,
       "path": "preview/candidate-preview-report.json",
-      "sha256": "fb3c940cef30d61ee0eecbd7d1e5d6ba45927c5955f122ca10e92d413ffb8b68"
+      "sha256": "189d7e926ad1c92449820fc168a9235aaa751e8a07bc6914c46ad487a78c7ce3"
     },
     "candidate_preview_svg": {
-      "bytes": 68977,
+      "bytes": 68976,
       "path": "preview/candidate-preview.svg",
-      "sha256": "7e9ff5bb8c0aa8d704574a780486f99eded51b2e2d83020ef3156cd871badfd4"
+      "sha256": "f2cb19516cee484271b1fade31096822b2794d0a5483ca4d674d9d0026b57fa1"
     },
     "candidates": {
-      "bytes": 101571,
+      "bytes": 101574,
       "path": "fig9/candidates.csv",
-      "sha256": "4bd6b23877ecb644cd57bf76845fc3b418a5d4c890c3bd38f7b40c071ac446d7"
+      "sha256": "535bded562baca136764121d1a03e160b0da9c7d0c3573d053ab25e0edebf7d5"
     },
     "crop_report": {
       "bytes": 1490,
@@ -36,9 +36,9 @@
       "sha256": "e16c39f00bada4130e2f593202e3b5a30e1c15af61d5e0f3e9f45330cd1079db"
     },
     "extraction_report": {
-      "bytes": 14643,
+      "bytes": 14644,
       "path": "fig9/extraction-report.json",
-      "sha256": "e41b5440f4832f29af4fbb0aad20c88fe94b98ecbe15d5774b429355978ff90e"
+      "sha256": "f764dede5f9037504c24dd8ae3f7222eb6d2ec15d56275152a463ec101da06c2"
     },
     "figure_crop": {
       "bytes": 96452,
@@ -51,9 +51,9 @@
       "sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341"
     },
     "overlay": {
-      "bytes": 235222,
+      "bytes": 235276,
       "path": "fig9/overlay.png",
-      "sha256": "43f8a68ce91561fc3790d90912466fd6dd4d0a5f22ce7e799550f8c68628a143"
+      "sha256": "7629ec5d9b064d43efca45d5fd8f70a9930341480e22064eac84a30b08ce08a8"
     },
     "page_raster": {
       "bytes": 583676,
@@ -76,14 +76,14 @@
       "sha256": "691f855c6fa7818fffd1b4db0784386561d5ddbd7768ce5c4c1f41681244f27b"
     },
     "review_html": {
-      "bytes": 127722,
+      "bytes": 127724,
       "path": "/Users/Bing/.codex/skills/more-sci-figure/example/fig9/review.html",
-      "sha256": "18d2e4cd29e8b834e9f2c33d7eb2d5a06b68ed1fd3e45f2fc18b4adce68dac38"
+      "sha256": "4fed7bef48627c825220e28451a56a31a89468d260ecb71adab2966d540ee06b"
     },
     "review_template": {
       "bytes": 37821,
       "path": "/Users/Bing/.codex/skills/more-sci-figure/example/fig9/review-template.json",
-      "sha256": "8bab0798da35d1ff97c165ce535996b02a0d7a0a7cf9fc4d017e85bf6d1201e1"
+      "sha256": "38ac3484b9954b4202467bd8373d6aafa089f5ea752972d6a3e4ef480421a9e3"
     },
     "source_report": {
       "bytes": 1722,

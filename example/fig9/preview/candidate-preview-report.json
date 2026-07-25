@@ -7,18 +7,18 @@
   "artifacts": {
     "png": {
       "path": "preview/candidate-preview.png",
-      "sha256": "ee080701ecb9d452f85b962359827b075772c8c9ec68926713dbdf98614ad089",
-      "bytes": 160401
+      "sha256": "3b47c0654c961d8dd4974d95184d2723266de3d88278867620f4b373e3c27021",
+      "bytes": 160389
     },
     "svg": {
       "path": "preview/candidate-preview.svg",
-      "sha256": "7e9ff5bb8c0aa8d704574a780486f99eded51b2e2d83020ef3156cd871badfd4",
-      "bytes": 68977
+      "sha256": "f2cb19516cee484271b1fade31096822b2794d0a5483ca4d674d9d0026b57fa1",
+      "bytes": 68976
     },
     "pdf": {
       "path": "preview/candidate-preview.pdf",
-      "sha256": "e3215192b7476925edc885a3a3072d327ba39d22e4562b27d029aa4fc48cc92b",
-      "bytes": 27825
+      "sha256": "1f187ca3e7527344e2a33c40985981fb6bae86425a8ee20a3bed16a59b63888c",
+      "bytes": 27826
     }
   },
   "warning": "这些文件仅用于人工复核候选轨迹；不是正式 render/ 交付物，不得视为已接受数据。"

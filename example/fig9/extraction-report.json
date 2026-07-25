@@ -114,13 +114,13 @@
   "reference_crosscheck": {
     "uct_test_a11": {
       "matched_points": 19,
-      "mean_absolute_error": 0.010928534740042154,
+      "mean_absolute_error": 0.010819072199435098,
       "comparisons": [
         {
           "z_position_mm": 0.041,
-          "candidate_y": 0.7643311855583428,
+          "candidate_y": 0.7656681923043291,
           "reference_y": 0.772,
-          "absolute_error": 0.007668814441657235
+          "absolute_error": 0.006331807695670877
         },
         {
           "z_position_mm": 0.124,
@@ -172,9 +172,9 @@
         },
         {
           "z_position_mm": 0.784,
-          "candidate_y": 0.2538917212017672,
+          "candidate_y": 0.27676939218864505,
           "reference_y": 0.305,
-          "absolute_error": 0.05110827879823282
+          "absolute_error": 0.028230607811354946
         },
         {
           "z_position_mm": 0.866,
@@ -184,9 +184,9 @@
         },
         {
           "z_position_mm": 0.949,
-          "candidate_y": 0.6906472582239825,
+          "candidate_y": 0.6689580376779813,
           "reference_y": 0.694,
-          "absolute_error": 0.0033527417760174094
+          "absolute_error": 0.025041962322018607
         },
         {
           "z_position_mm": 1.031,
@@ -226,9 +226,9 @@
         },
         {
           "z_position_mm": 1.526,
-          "candidate_y": 0.7613600594561507,
+          "candidate_y": 0.7618057283714796,
           "reference_y": 0.726,
-          "absolute_error": 0.03536005945615073
+          "absolute_error": 0.03580572837147966
         }
       ]
     },

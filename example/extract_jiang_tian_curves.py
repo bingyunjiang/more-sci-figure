@@ -537,6 +537,16 @@ def extract_fig9(image: np.ndarray, project: dict[str, Any]) -> tuple[list[dict[
         FIG9["plot_box"],
         FIG9["legend_box"],
     )
+    relaxed_red_support = (
+        (rgb[:, :, 0] > 100)
+        & (rgb[:, :, 0] - rgb[:, :, 1] > 25)
+        & (rgb[:, :, 0] - rgb[:, :, 2] > 20)
+    )
+    relaxed_red_support = restrict_mask(
+        relaxed_red_support,
+        FIG9["plot_box"],
+        FIG9["legend_box"],
+    )
     target_masks = nearest_target_masks(
         image,
         {
@@ -593,6 +603,13 @@ def extract_fig9(image: np.ndarray, project: dict[str, Any]) -> tuple[list[dict[
         maximum_gap_pixels=28,
         corridor_half_height=12.0,
         y_range=(245, 430),
+    )
+    tracks["uct_test_a11"] = fill_short_track_gaps_from_pixels(
+        tracks["uct_test_a11"],
+        relaxed_red_support,
+        maximum_gap_pixels=28,
+        corridor_half_height=12.0,
+        y_range=(35, 380),
     )
     black_solid = ordered_branch_track(
         generic["black"], x_range, "max", y_range=(365, 432)
