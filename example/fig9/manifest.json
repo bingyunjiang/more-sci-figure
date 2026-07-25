@@ -1,0 +1,108 @@
+{
+  "artifacts": {
+    "candidate_preview_pdf": {
+      "bytes": 27825,
+      "path": "preview/candidate-preview.pdf",
+      "sha256": "e3215192b7476925edc885a3a3072d327ba39d22e4562b27d029aa4fc48cc92b"
+    },
+    "candidate_preview_png": {
+      "bytes": 160401,
+      "path": "preview/candidate-preview.png",
+      "sha256": "ee080701ecb9d452f85b962359827b075772c8c9ec68926713dbdf98614ad089"
+    },
+    "candidate_preview_report": {
+      "bytes": 812,
+      "path": "preview/candidate-preview-report.json",
+      "sha256": "fb3c940cef30d61ee0eecbd7d1e5d6ba45927c5955f122ca10e92d413ffb8b68"
+    },
+    "candidate_preview_svg": {
+      "bytes": 68977,
+      "path": "preview/candidate-preview.svg",
+      "sha256": "7e9ff5bb8c0aa8d704574a780486f99eded51b2e2d83020ef3156cd871badfd4"
+    },
+    "candidates": {
+      "bytes": 101571,
+      "path": "fig9/candidates.csv",
+      "sha256": "4bd6b23877ecb644cd57bf76845fc3b418a5d4c890c3bd38f7b40c071ac446d7"
+    },
+    "crop_report": {
+      "bytes": 1490,
+      "path": "crop-report.json",
+      "sha256": "ce110d7dd16ef7bb867dd27435199527d4f9840631587bca592c2003c2810365"
+    },
+    "diagnostic_overlay": {
+      "bytes": 95912,
+      "path": "diagnostic-overlay.png",
+      "sha256": "e16c39f00bada4130e2f593202e3b5a30e1c15af61d5e0f3e9f45330cd1079db"
+    },
+    "extraction_report": {
+      "bytes": 14643,
+      "path": "fig9/extraction-report.json",
+      "sha256": "e41b5440f4832f29af4fbb0aad20c88fe94b98ecbe15d5774b429355978ff90e"
+    },
+    "figure_crop": {
+      "bytes": 96452,
+      "path": "figure.png",
+      "sha256": "27fb28ca3a9490810c55103d29e73fc8a3956013f73641f6ac0801bec5c9e171"
+    },
+    "measurement_raster": {
+      "bytes": 57443,
+      "path": "figure-original.jpeg",
+      "sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341"
+    },
+    "overlay": {
+      "bytes": 235222,
+      "path": "fig9/overlay.png",
+      "sha256": "43f8a68ce91561fc3790d90912466fd6dd4d0a5f22ce7e799550f8c68628a143"
+    },
+    "page_raster": {
+      "bytes": 583676,
+      "path": "source-page.png",
+      "sha256": "406b0bb5ca8d00c2701644a64d83e232e4df3b2c7be10713db2610018adba934"
+    },
+    "plot_crop": {
+      "bytes": 67902,
+      "path": "plot.png",
+      "sha256": "f606ff5b8e500e89620297f4c823a170528861de8e436c35ee55f40550e4d673"
+    },
+    "project_spec": {
+      "bytes": 4021,
+      "path": "fig9/project.json",
+      "sha256": "8a9b738f6db26b0bcf0fdbd4925a330e576f31bbdd379fba170918318e623ea2"
+    },
+    "reference_table3": {
+      "bytes": 600,
+      "path": "fig9/reference-table3.csv",
+      "sha256": "691f855c6fa7818fffd1b4db0784386561d5ddbd7768ce5c4c1f41681244f27b"
+    },
+    "review_html": {
+      "bytes": 127722,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/example/fig9/review.html",
+      "sha256": "18d2e4cd29e8b834e9f2c33d7eb2d5a06b68ed1fd3e45f2fc18b4adce68dac38"
+    },
+    "review_template": {
+      "bytes": 37821,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/example/fig9/review-template.json",
+      "sha256": "8bab0798da35d1ff97c165ce535996b02a0d7a0a7cf9fc4d017e85bf6d1201e1"
+    },
+    "source_report": {
+      "bytes": 1722,
+      "path": "source-report.json",
+      "sha256": "509a36f295ea288ff60e2e63190f26108fcf75e05097c8e3a61a6b60fd106906"
+    },
+    "validation_report": {
+      "bytes": 2106,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/example/fig9/validation-report.json",
+      "sha256": "4818764cd9ff9c8f62b1e544593d43bf5e74ddcf28d82fb4f15bbd965ddd903d"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "partial",
+  "note": "已生成图像候选与未复核预览；正式数据和正式重绘仍受人工复核门控。",
+  "project_id": "jiang-tian-2021-fig9",
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "tool_version": "0.2.0"
+}

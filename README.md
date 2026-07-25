@@ -7,27 +7,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-16844b.svg)]
 
 > **作者：** Dr. Jiang Bingyun　|　**微信：** Bingyunjiang　|　**邮箱：** bingyunjiang@qq.com
+>  **GitHub：** [bingyunjiang/more-sci-figure](https://github.com/bingyunjiang/more-sci-figure)
 
 
 # More Sci Figure
 
 本地优先、证据可追溯的科研图表数据提取、人工复核、论文级重绘与交付验证工具。
-
-[![Version](https://img.shields.io/badge/version-0.2.0-0d7490.svg)](CHANGELOG.md)
-(LICENSE)
-[![Local first](https://img.shields.io/badge/privacy-local--first-6f42c1.svg)](#证据边界与拒绝条件)
-[![Audit trail](https://img.shields.io/badge/evidence-auditable-ed8b23.svg)](#输入与交付物)
-
+版本：v0.2.0
 **关键词：** 科研图表数字化 · 曲线/散点/柱图提取 · 人工复核 · 论文级重绘 · PNG/SVG/PDF · 哈希证据链 · 本地优先
-
-**作者：** [Dr.Jiang](https://github.com/bingyunjiang) · **GitHub：** [bingyunjiang/more-sci-figure](https://github.com/bingyunjiang/more-sci-figure)
 
 > 核心原则：算法检测到的只是候选值。只有经过哈希绑定的人工复核，候选值才能进入正式 `data.csv`。
 
 | 关键词 | 链接 |
 | --- | --- |
-| 功能总览 | [功能亮点](#功能亮点) |
-| 流程图 | [功能与完整工作流](#功能与完整工作流) |
+| 功能总览 | [功能总览](#功能总览) |
+| 详细操作图 | [标准工作流与人工门控](#标准工作流与人工门控) |
 | 快速使用 | [快速开始](#快速开始) |
 | 完整流程 | [标准工作流与人工门控](#标准工作流与人工门控) |
 | 命令行 | [CLI 命令](#cli-命令) |
@@ -40,11 +34,11 @@
 | 许可证 | [MIT License](#许可证) |
 | 变更记录 | [CHANGELOG.md](CHANGELOG.md) |
 
-## 功能与完整工作流
+## 功能总览
 
-[![More Sci Figure 从图源到可审计科研图表的完整流程图](assets/more-sci-figure-workflow.svg)](https://github.com/bingyunjiang/more-sci-figure)
+[![More Sci Figure 功能总览图](assets/more-sci-figure-overview.svg)](https://github.com/bingyunjiang/more-sci-figure)
 
-流程图包含两条入口：
+总览图用于快速理解该 skill 的输入、核心能力与交付结果，包含两条入口：
 
 - **图片 / PDF 证据提取：** 必须依次经过来源锁定、项目规格确认、候选提取、自动质量门、哈希绑定的人工复核、重绘与交付验证。
 - **外部结构化数据直接重绘：** CSV、TSV、JSON、XLSX 或 XLSM 规范化为 `data.csv` 后进入重绘；此时提取与人工复核状态明确记录为 `not_applicable`。
@@ -153,7 +147,9 @@ python3 scripts/more_sci_figure.py validate \
 
 ## 标准工作流与人工门控
 
-完整流程按以下顺序执行：
+[![More Sci Figure 详细操作流程图](assets/more-sci-figure-workflow.svg)](https://github.com/bingyunjiang/more-sci-figure)
+
+详细操作图保留 1–7 步命令、质量门、拒绝分支、直接数据旁路以及四类独立状态。完整流程按以下顺序执行：
 
 1. `inspect` 保留并锁定来源，生成 `source-report.json` 和待补全的 `project.json`。
 2. 人工确认图表类型、绘图区、坐标尺度、系列颜色以及每个数值轴至少两个有效锚点。

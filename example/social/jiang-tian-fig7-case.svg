@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="2400" height="1350" viewBox="0 0 2400 1350">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071629"/>
+      <stop offset="0.52" stop-color="#0a2944"/>
+      <stop offset="1" stop-color="#071c32"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#20c7d9"/>
+      <stop offset="1" stop-color="#ff9f43"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#8bd7e3" stroke-width="1" opacity="0.055"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#020b14" flood-opacity="0.42"/>
+    </filter>
+    <clipPath id="leftImage">
+      <rect x="105" y="420" width="990" height="680" rx="18"/>
+    </clipPath>
+    <clipPath id="rightImage">
+      <rect x="1305" y="420" width="990" height="680" rx="18"/>
+    </clipPath>
+  </defs>
+
+  <rect width="2400" height="1350" fill="url(#background)"/>
+  <rect width="2400" height="1350" fill="url(#grid)"/>
+  <circle cx="2200" cy="120" r="330" fill="#1a6378" opacity="0.13"/>
+  <circle cx="170" cy="1310" r="310" fill="#d97706" opacity="0.08"/>
+  <rect x="70" y="54" width="2260" height="6" rx="3" fill="url(#accent)"/>
+
+  <text x="78" y="122" fill="#65ddea" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="31" font-weight="700" letter-spacing="4">MORE SCI FIGURE · CASE STUDY</text>
+  <text x="78" y="202" fill="#ffffff" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="62" font-weight="800">论文原图 → 数据提取与候选重绘</text>
+  <text x="78" y="258" fill="#bbd5e5" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="31">Fig. 7 · 非对齐纤维复合材料应力–应变曲线 · Jiang &amp; Tian (2021)</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="310" width="1090" height="860" rx="32" fill="#ffffff"/>
+    <rect x="1240" y="310" width="1090" height="860" rx="32" fill="#ffffff"/>
+  </g>
+
+  <rect x="70" y="310" width="1090" height="12" rx="6" fill="#8093a5"/>
+  <rect x="1240" y="310" width="1090" height="12" rx="6" fill="#20c7d9"/>
+
+  <circle cx="117" cy="370" r="23" fill="#eaf0f5"/>
+  <text x="117" y="380" text-anchor="middle" fill="#4d6172"
+        font-family="Arial, sans-serif" font-size="28" font-weight="700">1</text>
+  <text x="157" y="381" fill="#14283a" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="37" font-weight="800">论文原图</text>
+  <text x="1095" y="379" text-anchor="end" fill="#6b7d8c"
+        font-family="PingFang SC, Noto Sans CJK SC, sans-serif" font-size="25">PDF 内嵌原始图像</text>
+
+  <circle cx="1287" cy="370" r="23" fill="#dff8fb"/>
+  <text x="1287" y="380" text-anchor="middle" fill="#087d8a"
+        font-family="Arial, sans-serif" font-size="28" font-weight="700">2</text>
+  <text x="1327" y="381" fill="#14283a" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="37" font-weight="800">数据提取并重绘</text>
+  <rect x="1985" y="341" width="305" height="52" rx="26" fill="#fff1dc"/>
+  <text x="2137" y="376" text-anchor="middle" fill="#b86100"
+        font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="23" font-weight="700">候选预览 · 待人工复核</text>
+
+  <rect x="105" y="420" width="990" height="680" rx="18" fill="#f5f7f9" stroke="#d5e0e7" stroke-width="2"/>
+  <image x="105" y="420" width="990" height="680" preserveAspectRatio="xMidYMid meet"
+         clip-path="url(#leftImage)"
+         href="../fig7/figure-original.jpeg" xlink:href="../fig7/figure-original.jpeg"/>
+
+  <rect x="1305" y="420" width="990" height="680" rx="18" fill="#f5f7f9" stroke="#c7e8ec" stroke-width="2"/>
+  <image x="1305" y="420" width="990" height="680" preserveAspectRatio="xMidYMid meet"
+         clip-path="url(#rightImage)"
+         href="../fig7/preview/candidate-preview.png" xlink:href="../fig7/preview/candidate-preview.png"/>
+
+  <circle cx="1200" cy="755" r="51" fill="#0a2944" stroke="#65ddea" stroke-width="3"/>
+  <path d="M1177 755h39m-13-14 14 14-14 14" fill="none" stroke="#ffffff"
+        stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g font-family="PingFang SC, Noto Sans CJK SC, sans-serif" font-size="24">
+    <rect x="105" y="1115" width="148" height="38" rx="19" fill="#eef3f6"/>
+    <text x="179" y="1141" text-anchor="middle" fill="#52697a">来源锁定</text>
+    <rect x="1305" y="1115" width="148" height="38" rx="19" fill="#e6f9fb"/>
+    <text x="1379" y="1141" text-anchor="middle" fill="#087d8a">221 个候选点</text>
+    <rect x="1465" y="1115" width="125" height="38" rx="19" fill="#e6f9fb"/>
+    <text x="1527" y="1141" text-anchor="middle" fill="#087d8a">6 个系列</text>
+    <rect x="1602" y="1115" width="170" height="38" rx="19" fill="#e6f9fb"/>
+    <text x="1687" y="1141" text-anchor="middle" fill="#087d8a">PNG / SVG / PDF</text>
+  </g>
+
+  <line x1="78" y1="1232" x2="2322" y2="1232" stroke="#7aa4bc" stroke-width="1" opacity="0.4"/>
+  <text x="78" y="1290" fill="#d7e7f0" font-family="PingFang SC, Noto Sans CJK SC, sans-serif"
+        font-size="27">作者：Dr.Jiang</text>
+  <text x="2322" y="1290" text-anchor="end" fill="#8edce5"
+        font-family="Arial, PingFang SC, sans-serif" font-size="25">github.com/bingyunjiang/more-sci-figure</text>
+</svg>

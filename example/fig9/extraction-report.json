@@ -1,0 +1,477 @@
+{
+  "schema": "more-sci-figure.extraction-report.v1",
+  "status": "partial",
+  "numeric_output_authorized": false,
+  "source": {
+    "path": "../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+    "page": 8,
+    "measurement_raster": "figure-original.jpeg",
+    "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
+    "embedded_image_xref": 219,
+    "width": 843,
+    "height": 546
+  },
+  "chart_type": "line",
+  "plot_box": [
+    125,
+    17,
+    821,
+    438
+  ],
+  "calibration": {
+    "x_axis": {
+      "scale": "linear",
+      "slope": 0.002872969978652686,
+      "intercept": -0.3584359715729452,
+      "rmse_transformed_units": 0.0007592545786195613,
+      "normalized_rmse": 0.00037962728930978067,
+      "rmse_evaluable": true,
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        0.00068527575864058,
+        2.8102791363948665e-05,
+        -0.0006290701759128492,
+        -0.0012862431431892585,
+        0.0009295538681866056,
+        0.0002723809009101963
+      ],
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "scale": "linear",
+      "slope": -0.0023769008817535534,
+      "intercept": 1.0415372508928509,
+      "rmse_transformed_units": 0.0006696172512050771,
+      "normalized_rmse": 0.0006696172512050771,
+      "rmse_evaluable": true,
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        0.0004546646847944924,
+        0.00011433875209293509,
+        -0.0002259871806085112,
+        -0.000566313113310013,
+        -0.0009066390460116258,
+        0.0011299359030405576
+      ],
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "rows": 339,
+  "diagnostics": {
+    "series": {
+      "simulation_a11": {
+        "candidate_rows": 56,
+        "method": "target-color continuity track"
+      },
+      "simulation_a22": {
+        "candidate_rows": 50,
+        "method": "target-color continuity track"
+      },
+      "uct_test_a22": {
+        "candidate_rows": 50,
+        "method": "target-color continuity track"
+      },
+      "uct_test_a11": {
+        "candidate_rows": 52,
+        "method": "target-color continuity track"
+      },
+      "simulation_a33": {
+        "candidate_rows": 56,
+        "method": "target-color continuity track"
+      },
+      "uct_test_a33": {
+        "candidate_rows": 75,
+        "visible_dash_components": 25,
+        "method": "residual visible dash components"
+      }
+    },
+    "limitations": [
+      "图例区域被排除，不从被覆盖的像素推断数值",
+      "颜色目标来自原始嵌入 JPEG，JPEG 压缩造成的局部缺口保留为分段",
+      "µCT a22 使用 Table 3 仅辅助在真实蓝色像素分支中选轨，不创建无像素证据的点",
+      "µCT 图像候选另与论文 Table 3 的官方表格值交叉核对"
+    ]
+  },
+  "quality_gates": {
+    "status": "partial",
+    "checks": [
+      {
+        "name": "candidate_rows",
+        "status": "pass",
+        "observed": 339,
+        "threshold": ">0"
+      },
+      {
+        "name": "series_coverage",
+        "status": "partial",
+        "observed": "仅恢复可分离的可见轨迹段",
+        "threshold": "人工逐系列复核"
+      }
+    ]
+  },
+  "review_status": "not_run",
+  "reference_crosscheck": {
+    "uct_test_a11": {
+      "matched_points": 19,
+      "mean_absolute_error": 0.010928534740042154,
+      "comparisons": [
+        {
+          "z_position_mm": 0.041,
+          "candidate_y": 0.7643311855583428,
+          "reference_y": 0.772,
+          "absolute_error": 0.007668814441657235
+        },
+        {
+          "z_position_mm": 0.124,
+          "candidate_y": 0.7289747849422585,
+          "reference_y": 0.728,
+          "absolute_error": 0.0009747849422585553
+        },
+        {
+          "z_position_mm": 0.206,
+          "candidate_y": 0.8181085680080169,
+          "reference_y": 0.816,
+          "absolute_error": 0.0021085680080169533
+        },
+        {
+          "z_position_mm": 0.289,
+          "candidate_y": 0.8169201175671401,
+          "reference_y": 0.807,
+          "absolute_error": 0.009920117567140063
+        },
+        {
+          "z_position_mm": 0.371,
+          "candidate_y": 0.8228623697715239,
+          "reference_y": 0.82,
+          "absolute_error": 0.002862369771523987
+        },
+        {
+          "z_position_mm": 0.454,
+          "candidate_y": 0.8145432166853865,
+          "reference_y": 0.816,
+          "absolute_error": 0.001456783314613408
+        },
+        {
+          "z_position_mm": 0.536,
+          "candidate_y": 0.8038471627174956,
+          "reference_y": 0.8,
+          "absolute_error": 0.0038471627174955225
+        },
+        {
+          "z_position_mm": 0.619,
+          "candidate_y": 0.7705705503729459,
+          "reference_y": 0.768,
+          "absolute_error": 0.0025705503729458457
+        },
+        {
+          "z_position_mm": 0.701,
+          "candidate_y": 0.700451974361216,
+          "reference_y": 0.705,
+          "absolute_error": 0.004548025638783981
+        },
+        {
+          "z_position_mm": 0.784,
+          "candidate_y": 0.2538917212017672,
+          "reference_y": 0.305,
+          "absolute_error": 0.05110827879823282
+        },
+        {
+          "z_position_mm": 0.866,
+          "candidate_y": 0.38075880576536303,
+          "reference_y": 0.322,
+          "absolute_error": 0.05875880576536302
+        },
+        {
+          "z_position_mm": 0.949,
+          "candidate_y": 0.6906472582239825,
+          "reference_y": 0.694,
+          "absolute_error": 0.0033527417760174094
+        },
+        {
+          "z_position_mm": 1.031,
+          "candidate_y": 0.7741359016955761,
+          "reference_y": 0.779,
+          "absolute_error": 0.004864098304423914
+        },
+        {
+          "z_position_mm": 1.114,
+          "candidate_y": 0.7955280096313582,
+          "reference_y": 0.8,
+          "absolute_error": 0.004471990368641876
+        },
+        {
+          "z_position_mm": 1.196,
+          "candidate_y": 0.8181085680080169,
+          "reference_y": 0.816,
+          "absolute_error": 0.0021085680080169533
+        },
+        {
+          "z_position_mm": 1.279,
+          "candidate_y": 0.8204854688897705,
+          "reference_y": 0.821,
+          "absolute_error": 0.000514531110229477
+        },
+        {
+          "z_position_mm": 1.361,
+          "candidate_y": 0.8276161715350311,
+          "reference_y": 0.827,
+          "absolute_error": 0.0006161715350311292
+        },
+        {
+          "z_position_mm": 1.444,
+          "candidate_y": 0.801470261835742,
+          "reference_y": 0.812,
+          "absolute_error": 0.010529738164258062
+        },
+        {
+          "z_position_mm": 1.526,
+          "candidate_y": 0.7613600594561507,
+          "reference_y": 0.726,
+          "absolute_error": 0.03536005945615073
+        }
+      ]
+    },
+    "uct_test_a22": {
+      "matched_points": 18,
+      "mean_absolute_error": 0.009038632299277597,
+      "comparisons": [
+        {
+          "z_position_mm": 0.041,
+          "candidate_y": 0.1953605369885859,
+          "reference_y": 0.164,
+          "absolute_error": 0.0313605369885859
+        },
+        {
+          "z_position_mm": 0.124,
+          "candidate_y": 0.20011433875209295,
+          "reference_y": 0.202,
+          "absolute_error": 0.0018856612479070667
+        },
+        {
+          "z_position_mm": 0.206,
+          "candidate_y": 0.12999576274036317,
+          "reference_y": 0.125,
+          "absolute_error": 0.004995762740363174
+        },
+        {
+          "z_position_mm": 0.289,
+          "candidate_y": 0.1288073122994864,
+          "reference_y": 0.13,
+          "absolute_error": 0.0011926877005136172
+        },
+        {
+          "z_position_mm": 0.371,
+          "candidate_y": 0.12167660965422578,
+          "reference_y": 0.117,
+          "absolute_error": 0.004676609654225769
+        },
+        {
+          "z_position_mm": 0.454,
+          "candidate_y": 0.11454590700896505,
+          "reference_y": 0.118,
+          "absolute_error": 0.0034540929910349405
+        },
+        {
+          "z_position_mm": 0.536,
+          "candidate_y": 0.13356111406299354,
+          "reference_y": 0.131,
+          "absolute_error": 0.0025611140629935303
+        },
+        {
+          "z_position_mm": 0.619,
+          "candidate_y": 0.15970702376228263,
+          "reference_y": 0.157,
+          "absolute_error": 0.0027070237622826288
+        },
+        {
+          "z_position_mm": 0.701,
+          "candidate_y": 0.2310140502148892,
+          "reference_y": 0.215,
+          "absolute_error": 0.01601405021488919
+        },
+        {
+          "z_position_mm": 0.784,
+          "candidate_y": 0.6184488939407184,
+          "reference_y": 0.611,
+          "absolute_error": 0.0074488939407184596
+        },
+        {
+          "z_position_mm": 0.866,
+          "candidate_y": 0.5732877771874009,
+          "reference_y": 0.599,
+          "absolute_error": 0.025712222812599106
+        },
+        {
+          "z_position_mm": 0.949,
+          "candidate_y": 0.2119988431608607,
+          "reference_y": 0.226,
+          "absolute_error": 0.0140011568391393
+        },
+        {
+          "z_position_mm": 1.031,
+          "candidate_y": 0.15970702376228263,
+          "reference_y": 0.146,
+          "absolute_error": 0.013707023762282639
+        },
+        {
+          "z_position_mm": 1.114,
+          "candidate_y": 0.1264304114177328,
+          "reference_y": 0.128,
+          "absolute_error": 0.0015695885822671896
+        },
+        {
+          "z_position_mm": 1.196,
+          "candidate_y": 0.10503830348195087,
+          "reference_y": 0.115,
+          "absolute_error": 0.009961696518049137
+        },
+        {
+          "z_position_mm": 1.279,
+          "candidate_y": 0.10503830348195087,
+          "reference_y": 0.111,
+          "absolute_error": 0.005961696518049134
+        },
+        {
+          "z_position_mm": 1.361,
+          "candidate_y": 0.11098055568633469,
+          "reference_y": 0.106,
+          "absolute_error": 0.004980555686334695
+        },
+        {
+          "z_position_mm": 1.444,
+          "candidate_y": 0.10949499263523876,
+          "reference_y": 0.12,
+          "absolute_error": 0.010505007364761232
+        }
+      ]
+    },
+    "uct_test_a33": {
+      "matched_points": 19,
+      "mean_absolute_error": 0.0010963588948294004,
+      "comparisons": [
+        {
+          "z_position_mm": 0.041,
+          "candidate_y": 0.062254087610386866,
+          "reference_y": 0.064,
+          "absolute_error": 0.0017459123896131357
+        },
+        {
+          "z_position_mm": 0.124,
+          "candidate_y": 0.06938479025564759,
+          "reference_y": 0.07,
+          "absolute_error": 0.0006152097443524185
+        },
+        {
+          "z_position_mm": 0.206,
+          "candidate_y": 0.05750028584687983,
+          "reference_y": 0.059,
+          "absolute_error": 0.0014997141531201685
+        },
+        {
+          "z_position_mm": 0.289,
+          "candidate_y": 0.06106563716951008,
+          "reference_y": 0.063,
+          "absolute_error": 0.0019343628304899219
+        },
+        {
+          "z_position_mm": 0.371,
+          "candidate_y": 0.06284831283082526,
+          "reference_y": 0.063,
+          "absolute_error": 0.00015168716917474123
+        },
+        {
+          "z_position_mm": 0.454,
+          "candidate_y": 0.06463098849214044,
+          "reference_y": 0.066,
+          "absolute_error": 0.0013690115078595633
+        },
+        {
+          "z_position_mm": 0.536,
+          "candidate_y": 0.06700788937389401,
+          "reference_y": 0.069,
+          "absolute_error": 0.0019921106261059918
+        },
+        {
+          "z_position_mm": 0.619,
+          "candidate_y": 0.07235591635783944,
+          "reference_y": 0.075,
+          "absolute_error": 0.0026440836421605524
+        },
+        {
+          "z_position_mm": 0.701,
+          "candidate_y": 0.07889239378266177,
+          "reference_y": 0.08,
+          "absolute_error": 0.0011076062173382278
+        },
+        {
+          "z_position_mm": 0.784,
+          "candidate_y": 0.08602309642792239,
+          "reference_y": 0.084,
+          "absolute_error": 0.00202309642792238
+        },
+        {
+          "z_position_mm": 0.866,
+          "candidate_y": 0.07889239378266177,
+          "reference_y": 0.079,
+          "absolute_error": 0.00010760621733822695
+        },
+        {
+          "z_position_mm": 0.949,
+          "candidate_y": 0.08008084422353856,
+          "reference_y": 0.08,
+          "absolute_error": 8.084422353855925e-05
+        },
+        {
+          "z_position_mm": 1.031,
+          "candidate_y": 0.07532704246003141,
+          "reference_y": 0.075,
+          "absolute_error": 0.00032704246003141535
+        },
+        {
+          "z_position_mm": 1.114,
+          "candidate_y": 0.07176169113740105,
+          "reference_y": 0.072,
+          "absolute_error": 0.00023830886259894324
+        },
+        {
+          "z_position_mm": 1.196,
+          "candidate_y": 0.0681963398147708,
+          "reference_y": 0.07,
+          "absolute_error": 0.0018036601852292056
+        },
+        {
+          "z_position_mm": 1.279,
+          "candidate_y": 0.06700788937389401,
+          "reference_y": 0.069,
+          "absolute_error": 0.0019921106261059918
+        },
+        {
+          "z_position_mm": 1.361,
+          "candidate_y": 0.06700788937389401,
+          "reference_y": 0.067,
+          "absolute_error": 7.88937389401001e-06
+        },
+        {
+          "z_position_mm": 1.444,
+          "candidate_y": 0.0681963398147708,
+          "reference_y": 0.068,
+          "absolute_error": 0.0001963398147707962
+        },
+        {
+          "z_position_mm": 1.526,
+          "candidate_y": 0.08899422253011435,
+          "reference_y": 0.088,
+          "absolute_error": 0.0009942225301143581
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "图例区域被排除，不从被覆盖的像素推断数值",
+    "颜色目标来自原始嵌入 JPEG，JPEG 压缩造成的局部缺口保留为分段",
+    "µCT a22 使用 Table 3 仅辅助在真实蓝色像素分支中选轨，不创建无像素证据的点",
+    "µCT 图像候选另与论文 Table 3 的官方表格值交叉核对"
+  ],
+  "required_next": "打开 review.html，在原尺寸 overlay.png 上逐项复核；只有绑定 candidates.csv 哈希的接受项才能生成正式 data.csv。"
+}

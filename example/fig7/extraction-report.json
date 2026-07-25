@@ -1,0 +1,119 @@
+{
+  "schema": "more-sci-figure.extraction-report.v1",
+  "status": "partial",
+  "numeric_output_authorized": false,
+  "source": {
+    "path": "../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+    "page": 6,
+    "measurement_raster": "figure-original.jpeg",
+    "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+    "embedded_image_xref": 186,
+    "width": 843,
+    "height": 643
+  },
+  "chart_type": "line",
+  "plot_box": [
+    128,
+    14,
+    818,
+    547
+  ],
+  "calibration": {
+    "x_axis": {
+      "scale": "linear",
+      "slope": 0.00017398822987409692,
+      "intercept": -0.02225293567297938,
+      "rmse_transformed_units": 7.278459490747573e-05,
+      "normalized_rmse": 0.000606538290895631,
+      "rmse_evaluable": true,
+      "anchor_count": 4,
+      "anchor_residuals_transformed_units": [
+        1.7557750905027036e-05,
+        3.485062194732297e-05,
+        -0.00012184473688449382,
+        6.94363640319079e-05
+      ],
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "scale": "linear",
+      "slope": -0.2815311745049424,
+      "intercept": 153.96949444863637,
+      "rmse_transformed_units": 0.06295232431461398,
+      "normalized_rmse": 0.0004196821620974265,
+      "rmse_evaluable": true,
+      "anchor_count": 4,
+      "anchor_residuals_transformed_units": [
+        -0.028058005567146438,
+        0.08449105631261489,
+        -0.08449105631257225,
+        0.02805800556717486
+      ],
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "rows": 221,
+  "diagnostics": {
+    "series": {
+      "test_0deg": {
+        "candidate_rows": 29,
+        "method": "ordered continuous branch"
+      },
+      "mfh_0deg": {
+        "candidate_rows": 32,
+        "visible_dash_components": 15,
+        "method": "residual visible dash components"
+      },
+      "test_45deg": {
+        "candidate_rows": 54,
+        "method": "ordered continuous branch"
+      },
+      "mfh_45deg": {
+        "candidate_rows": 17,
+        "visible_dash_components": 7,
+        "method": "residual visible dash components"
+      },
+      "test_90deg": {
+        "candidate_rows": 48,
+        "method": "ordered continuous branch"
+      },
+      "mfh_90deg": {
+        "candidate_rows": 42,
+        "visible_dash_components": 8,
+        "method": "residual visible dash components"
+      }
+    },
+    "limitations": [
+      "同色曲线完全重合处不为虚线系列生成独立候选",
+      "虚线候选只覆盖可见线段，预览保留段间空缺",
+      "图例矩形被排除，不从被图例遮挡的像素推断数值"
+    ],
+    "axis_artifacts_removed": 1
+  },
+  "quality_gates": {
+    "status": "partial",
+    "checks": [
+      {
+        "name": "candidate_rows",
+        "status": "pass",
+        "observed": 221,
+        "threshold": ">0"
+      },
+      {
+        "name": "series_coverage",
+        "status": "partial",
+        "observed": "仅恢复可分离的可见轨迹段",
+        "threshold": "人工逐系列复核"
+      }
+    ]
+  },
+  "review_status": "not_run",
+  "reference_crosscheck": null,
+  "limitations": [
+    "同色曲线完全重合处不为虚线系列生成独立候选",
+    "虚线候选只覆盖可见线段，预览保留段间空缺",
+    "图例矩形被排除，不从被图例遮挡的像素推断数值"
+  ],
+  "required_next": "打开 review.html，在原尺寸 overlay.png 上逐项复核；只有绑定 candidates.csv 哈希的接受项才能生成正式 data.csv。"
+}

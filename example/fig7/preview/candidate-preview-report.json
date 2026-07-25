@@ -1,0 +1,25 @@
+{
+  "schema": "more-sci-figure.candidate-preview.v1",
+  "status": "pass",
+  "formal_render": false,
+  "review_status": "not_run",
+  "rows": 221,
+  "artifacts": {
+    "png": {
+      "path": "preview/candidate-preview.png",
+      "sha256": "d7e00f082154619fb28a94413e957bca27aae3f6404e18e22c03b010e981c82a",
+      "bytes": 128644
+    },
+    "svg": {
+      "path": "preview/candidate-preview.svg",
+      "sha256": "63bd086bf8c2fb4a8046301e07b2e93c17a5f918b3fa025669b5a7510d4b98ba",
+      "bytes": 62431
+    },
+    "pdf": {
+      "path": "preview/candidate-preview.pdf",
+      "sha256": "d2eb9409c19252bf8e5874c9f4bf4a39fa92428c2c3d73364fbe8112bd49cbca",
+      "bytes": 26602
+    }
+  },
+  "warning": "这些文件仅用于人工复核候选轨迹；不是正式 render/ 交付物，不得视为已接受数据。"
+}

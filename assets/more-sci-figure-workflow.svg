@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1415" viewBox="0 0 1800 1415" role="img" aria-labelledby="title desc">
-  <title id="title">More Sci Figure 从图源到可审计科研图表的完整工作流</title>
-  <desc id="desc">展示图片或 PDF 证据提取、外部结构化数据直接重绘、人工复核门、论文级重绘、交付验证和四类独立状态。</desc>
+  <title id="title">More Sci Figure 详细操作流程</title>
+  <desc id="desc">详细展示图片或 PDF 证据提取、外部结构化数据直接重绘、人工复核门、论文级重绘、交付验证和四类独立状态。</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f8fbff"/>
@@ -47,8 +47,8 @@
   </defs>
 
   <rect width="1800" height="1415" rx="24" fill="url(#bg)"/>
-  <text x="900" y="60" class="title" text-anchor="middle">More Sci Figure：从图源到可审计科研图表</text>
-  <text x="900" y="96" class="subtitle" text-anchor="middle">本地优先 · 候选值与正式值分离 · 四类状态独立验证</text>
+  <text x="900" y="60" class="title" text-anchor="middle">More Sci Figure 详细操作流程</text>
+  <text x="900" y="96" class="subtitle" text-anchor="middle">图片 / PDF 提取 · 人工门控 · 直接数据重绘 · 交付验证</text>
 
   <!-- Lane A -->
   <rect x="34" y="128" width="1732" height="690" rx="22" fill="#ffffff" stroke="#b7d9e8" stroke-width="2"/>

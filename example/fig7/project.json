@@ -1,0 +1,149 @@
+{
+  "chart": {
+    "plot_box": [
+      128,
+      14,
+      818,
+      547
+    ],
+    "series": [
+      {
+        "color": "#ff0000",
+        "color_space": "lab",
+        "detection_style": "solid line with square markers",
+        "id": "test_0deg",
+        "shared_color_group": "red",
+        "tolerance": 10
+      },
+      {
+        "color": "#0070c0",
+        "color_space": "lab",
+        "detection_style": "solid line with triangle markers",
+        "id": "test_45deg",
+        "shared_color_group": "blue",
+        "tolerance": 10
+      },
+      {
+        "color": "#000000",
+        "color_space": "rgb",
+        "detection_style": "solid line with diamond markers",
+        "id": "test_90deg",
+        "shared_color_group": "black",
+        "tolerance": 35
+      },
+      {
+        "color": "#ff0000",
+        "color_space": "lab",
+        "detection_style": "dashed line",
+        "id": "mfh_0deg",
+        "shared_color_group": "red",
+        "tolerance": 10
+      },
+      {
+        "color": "#0070c0",
+        "color_space": "lab",
+        "detection_style": "dashed line",
+        "id": "mfh_45deg",
+        "shared_color_group": "blue",
+        "tolerance": 10
+      },
+      {
+        "color": "#000000",
+        "color_space": "rgb",
+        "detection_style": "dashed line",
+        "id": "mfh_90deg",
+        "shared_color_group": "black",
+        "tolerance": 35
+      }
+    ],
+    "type": "line",
+    "x_axis": {
+      "anchors": [
+        {
+          "pixel": 128,
+          "value": 0
+        },
+        {
+          "pixel": 358,
+          "value": 0.04
+        },
+        {
+          "pixel": 587,
+          "value": 0.08
+        },
+        {
+          "pixel": 818,
+          "value": 0.12
+        }
+      ],
+      "scale": "linear"
+    },
+    "y_axis": {
+      "anchors": [
+        {
+          "pixel": 547,
+          "value": 0
+        },
+        {
+          "pixel": 369,
+          "value": 50
+        },
+        {
+          "pixel": 192,
+          "value": 100
+        },
+        {
+          "pixel": 14,
+          "value": 150
+        }
+      ],
+      "scale": "linear"
+    }
+  },
+  "extraction_policy": {
+    "numeric_extraction_authorized": false,
+    "blocked_reason": [
+      "试验曲线与 MFH 曲线复用红、蓝、黑三种颜色，当前颜色提取器不能按线型和标记拆分同色系列",
+      "图例位于绘图区内部并使用与数据相同的颜色",
+      "同色系列局部重叠，逐列颜色中位数会混合两个物理系列"
+    ],
+    "required_next": "需要支持线型与标记分离的提取器，并由人工逐系列核对可见轨迹"
+  },
+  "project_id": "jiang-tian-2021-fig7",
+  "quality_gates": {
+    "bar": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    },
+    "calibration": {
+      "max_normalized_rmse": null,
+      "require_three_anchors": true
+    },
+    "line": {
+      "max_gap_fraction": null,
+      "min_coverage": 0.6
+    },
+    "scatter": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    }
+  },
+  "render": {
+    "group": "series",
+    "plot_type": "line",
+    "title": "Fig. 7 Stress versus strain",
+    "x": "x",
+    "x_label": "True strain",
+    "y": "y",
+    "y_label": "True stress (MPa)"
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "embedded_image_xref": 186,
+    "measurement_raster": "figure-original.jpeg",
+    "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+    "page": 6,
+    "path": "../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387"
+  }
+}
