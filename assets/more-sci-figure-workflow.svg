@@ -168,8 +168,8 @@
 
   <!-- data / stop -->
   <rect x="1210" y="677" width="300" height="78" rx="16" fill="#f1fbf5" stroke="#16844b" stroke-width="2.5"/>
-  <text x="1360" y="709" class="step-title" text-anchor="middle" fill="#126b3d">正式 data.csv</text>
-  <text x="1360" y="738" class="body" text-anchor="middle">仅包含人工接受项</text>
+  <text x="1360" y="709" class="step-title" text-anchor="middle" fill="#126b3d">observations.csv → data.csv</text>
+  <text x="1360" y="738" class="body" text-anchor="middle">复核观测 → 已确认曲线拓扑</text>
   <rect x="1210" y="768" width="300" height="48" rx="14" fill="#fff4f3" stroke="#d83a3a" stroke-width="2"/>
   <text x="1360" y="799" class="body" text-anchor="middle" fill="#a61b1b">否：不生成 data.csv</text>
 

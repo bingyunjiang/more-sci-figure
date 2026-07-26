@@ -30,6 +30,8 @@
         "color_space": "lab",
         "tolerance": 12,
         "extraction_mode": "color_column_median",
+        "curve_topology": "continuous",
+        "curve_data_mode": "observations",
         "shared_color_group": "",
         "exclude_boxes_px": [],
         "min_area": 4,
@@ -73,8 +75,7 @@
     "display_geometry": {
       "mode": "none",
       "smoothing_window": 7,
-      "samples_per_interval": 4,
-      "max_bridge_gap_px": 0
+      "samples_per_interval": 4
     },
     "series_styles": {}
   }

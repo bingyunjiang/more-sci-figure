@@ -1,0 +1,213 @@
+{
+  "assessment": {
+    "acceptance_profile": "publication"
+  },
+  "chart": {
+    "plot_box": [
+      72,
+      67,
+      582,
+      578
+    ],
+    "polar": {
+      "angle_axis": {
+        "anchors": [
+          {
+            "pixel": [
+              72,
+              323
+            ],
+            "value": 0
+          },
+          {
+            "pixel": [
+              327,
+              67
+            ],
+            "value": 90
+          },
+          {
+            "pixel": [
+              582,
+              323
+            ],
+            "value": 180
+          },
+          {
+            "pixel": [
+              327,
+              578
+            ],
+            "value": 270
+          }
+        ],
+        "direction": "clockwise",
+        "unit": "degree",
+        "zero_bearing_deg": 180
+      },
+      "angle_end_deg": 360,
+      "angle_start_deg": 0,
+      "angle_step_deg": 1,
+      "center_px": [
+        327,
+        323
+      ],
+      "inner_radius_px": 30,
+      "outer_radius_px": 255,
+      "radius_axis": {
+        "anchors": [
+          {
+            "pixel": 31,
+            "value": 40
+          },
+          {
+            "pixel": 63,
+            "value": 45
+          },
+          {
+            "pixel": 95,
+            "value": 50
+          },
+          {
+            "pixel": 126,
+            "value": 55
+          },
+          {
+            "pixel": 158,
+            "value": 60
+          },
+          {
+            "pixel": 190,
+            "value": 65
+          },
+          {
+            "pixel": 221,
+            "value": 70
+          }
+        ],
+        "scale": "linear"
+      }
+    },
+    "series": [
+      {
+        "angular_half_width_deg": 0.75,
+        "color": "#ee2e29",
+        "color_space": "lab",
+        "extraction_mode": "polar_radial",
+        "curve_data_mode": "observations",
+        "curve_topology": "continuous",
+        "id": "sound-pressure-level-directivity",
+        "tolerance": 4
+      }
+    ],
+    "type": "polar_line"
+  },
+  "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
+  "quality_gates": {
+    "bar": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    },
+    "calibration": {
+      "max_normalized_rmse": 0.002,
+      "require_three_anchors": true
+    },
+    "polar_line": {
+      "max_gap_fraction": 0.03,
+      "min_coverage": 0.95
+    },
+    "scatter": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    }
+  },
+  "render": {
+    "grid": "both",
+    "group": "series",
+    "legend": {
+      "bbox_to_anchor": [
+        0.5,
+        1.14
+      ],
+      "frameon": false,
+      "loc": "upper center"
+    },
+    "plot_type": "polar_line",
+    "radial_label_position_deg": 180,
+    "series_styles": {
+      "sound-pressure-level-directivity": {
+        "color": "#ee2e29",
+        "label": "sound pressure level directivity",
+        "line_style": "-",
+        "linewidth": 2
+      }
+    },
+    "title": "",
+    "x": "x",
+    "x_label": "angle / degree",
+    "x_ticks": [
+      0,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100,
+      110,
+      120,
+      130,
+      140,
+      150,
+      160,
+      170,
+      180,
+      190,
+      200,
+      210,
+      220,
+      230,
+      240,
+      250,
+      260,
+      270,
+      280,
+      290,
+      300,
+      310,
+      320,
+      330,
+      340,
+      350
+    ],
+    "y": "y",
+    "y_label": "SPL / dBA",
+    "y_limits": [
+      35,
+      75
+    ],
+    "y_ticks": [
+      40,
+      45,
+      50,
+      55,
+      60,
+      65,
+      70,
+      75
+    ]
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "measurement_raster": "../figure10b/source-image.png",
+    "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
+    "page": 9,
+    "path": "../../Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "pdf_image_index": 2,
+    "pdf_xref": 44,
+    "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6"
+  }
+}

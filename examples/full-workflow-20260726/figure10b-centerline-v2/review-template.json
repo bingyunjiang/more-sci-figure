@@ -1,0 +1,1816 @@
+{
+  "anomaly_review": {
+    "candidate_count": 0,
+    "candidate_ids": [],
+    "separated_from_normal_batch": true
+  },
+  "candidate_sha256": "40eb9f3039b051c41b71ff9ed13d47706a0eae6d5014336c02a3ced75d1e1b84",
+  "decisions": [
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000001",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000002",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000004",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000005",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000006",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000007",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000008",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000009",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000010",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000011",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000012",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000013",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000014",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000015",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000016",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000017",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000018",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000019",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000020",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000021",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000022",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000023",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000024",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000025",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000026",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000027",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000028",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000029",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000030",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000031",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000032",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000033",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000034",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000035",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000036",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000037",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000038",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000039",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000040",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000041",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000042",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000043",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000044",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000045",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000046",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000047",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000048",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000049",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000050",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000051",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000052",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000053",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000054",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000055",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000056",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000057",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000058",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000059",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000060",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000061",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000062",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000063",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000064",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000065",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000066",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000067",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000068",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000069",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000070",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000071",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000072",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000073",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000074",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000075",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000076",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000077",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000078",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000079",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000080",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000081",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000082",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000083",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000084",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000085",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000086",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000087",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000088",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000089",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000090",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000091",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000092",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000093",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000094",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000095",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000096",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000097",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000098",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000099",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000100",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000101",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000102",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000103",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000104",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000105",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000106",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000107",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000108",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000109",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000110",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000111",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000112",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000113",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000114",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000115",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000116",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000117",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000118",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000119",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000120",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000121",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000122",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000123",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000124",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000125",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000126",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000127",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000128",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000129",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000130",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000131",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000132",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000133",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000134",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000135",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000136",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000137",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000138",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000139",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000140",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000141",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000142",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000143",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000144",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000145",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000146",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000147",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000148",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000149",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000150",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000151",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000152",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000153",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000154",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000155",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000156",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000157",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000158",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000159",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000160",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000161",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000162",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000163",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000164",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000165",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000166",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000167",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000168",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000169",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000170",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000171",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000172",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000173",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000174",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000175",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000176",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000177",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000178",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000179",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000180",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000181",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000182",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000183",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000184",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000185",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000186",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000187",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000188",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000189",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000190",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000191",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000192",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000193",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000194",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000195",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000196",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000197",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000198",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000199",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000200",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000201",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000202",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000203",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000204",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000205",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000206",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000207",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000208",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000209",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000210",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000211",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000212",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000213",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000214",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000215",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000216",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000217",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000218",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000219",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000220",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000221",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000222",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000223",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000224",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000225",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000226",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000227",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000228",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000229",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000230",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000231",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000232",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000233",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000234",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000235",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000236",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000237",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000238",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000239",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000240",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000241",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000242",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000243",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000244",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000245",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000246",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000247",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000248",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000249",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000250",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000251",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000252",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000253",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000254",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000255",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000256",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000257",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000258",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000259",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000260",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000261",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000262",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000263",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000264",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000265",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000266",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000267",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000268",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000269",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000270",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000271",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000272",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000273",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000274",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000275",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000276",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000277",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000278",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000279",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000280",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000281",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000282",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000283",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000284",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000285",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000286",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000287",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000288",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000289",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000290",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000291",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000292",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000293",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000294",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000295",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000296",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000297",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000298",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000299",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000300",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000301",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000302",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000303",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000304",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000305",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000306",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000307",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000308",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000309",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000310",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000311",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000312",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000313",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000314",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000315",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000316",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000317",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000318",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000319",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000320",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000321",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000322",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000323",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000324",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000325",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000326",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000327",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000328",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000329",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000330",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000331",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000332",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000333",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000334",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000335",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000336",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000337",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000338",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000339",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000340",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000341",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000342",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000343",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000344",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000345",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000346",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000347",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000348",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000349",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000350",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000351",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000352",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000353",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000354",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000355",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000356",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000357",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000358",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000359",
+      "decision": "accepted",
+      "reason": ""
+    },
+    {
+      "candidate_id": "polar_line-sound-pressure-level-directivity-000360",
+      "decision": "accepted",
+      "reason": ""
+    }
+  ],
+  "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
+  "review_method": "manual_point_review",
+  "reviewed_at": "",
+  "reviewed_by": "",
+  "schema": "more-sci-figure.review-decisions.v1",
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6"
+}

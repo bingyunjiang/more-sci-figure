@@ -1,0 +1,684 @@
+{
+  "assessment": {
+    "acceptance_profile": "publication"
+  },
+  "chart": {
+    "plot_box": [
+      127,
+      14,
+      817,
+      546
+    ],
+    "series": [
+      {
+        "color": "#d95319",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            215,
+            398,
+            492,
+            438
+          ]
+        ],
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 12,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            540
+          ],
+          [
+            145,
+            492
+          ],
+          [
+            158,
+            443
+          ],
+          [
+            166,
+            413
+          ],
+          [
+            192,
+            319
+          ],
+          [
+            213,
+            259
+          ],
+          [
+            242,
+            211
+          ],
+          [
+            271,
+            176
+          ],
+          [
+            283,
+            162
+          ],
+          [
+            300,
+            140
+          ],
+          [
+            329,
+            119
+          ],
+          [
+            357,
+            109
+          ],
+          [
+            385,
+            104
+          ],
+          [
+            405,
+            107
+          ]
+        ],
+        "curve_data_mode": "observations",
+        "curve_topology": "continuous",
+        "id": "test-0deg",
+        "marker_min_distance_px": 10,
+        "marker_min_span_px": 5,
+        "marker_min_width_px": 1,
+        "marker_shape": "square",
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "tolerance": 30
+      },
+      {
+        "color": "#ff0000",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            520,
+            445,
+            812,
+            485
+          ]
+        ],
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 18,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            129,
+            535
+          ],
+          [
+            145,
+            484
+          ],
+          [
+            158,
+            440
+          ],
+          [
+            185,
+            320
+          ],
+          [
+            213,
+            233
+          ],
+          [
+            242,
+            180
+          ],
+          [
+            271,
+            138
+          ],
+          [
+            300,
+            111
+          ],
+          [
+            329,
+            92
+          ],
+          [
+            357,
+            78
+          ],
+          [
+            385,
+            65
+          ],
+          [
+            418,
+            55
+          ]
+        ],
+        "curve_data_max_residual_px": 8,
+        "curve_data_mode": "guide_constrained",
+        "curve_data_residual_smoothing_window": 21,
+        "curve_topology": "continuous",
+        "id": "mfh-0deg",
+        "line_semantics": "dashed",
+        "tolerance": 40
+      },
+      {
+        "color": "#0072bd",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            516,
+            398,
+            812,
+            438
+          ]
+        ],
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 12,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            545
+          ],
+          [
+            145,
+            500
+          ],
+          [
+            158,
+            461
+          ],
+          [
+            185,
+            405
+          ],
+          [
+            219,
+            390
+          ],
+          [
+            242,
+            368
+          ],
+          [
+            267,
+            340
+          ],
+          [
+            302,
+            308
+          ],
+          [
+            337,
+            290
+          ],
+          [
+            389,
+            268
+          ],
+          [
+            414,
+            262
+          ],
+          [
+            435,
+            258
+          ],
+          [
+            472,
+            252
+          ],
+          [
+            530,
+            245
+          ],
+          [
+            587,
+            239
+          ],
+          [
+            644,
+            234
+          ],
+          [
+            666,
+            244
+          ]
+        ],
+        "curve_data_mode": "observations",
+        "curve_topology": "continuous",
+        "id": "test-45deg",
+        "marker_min_distance_px": 12,
+        "marker_min_span_px": 5,
+        "marker_min_width_px": 1,
+        "marker_shape": "triangle",
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "tolerance": 20
+      },
+      {
+        "color": "#0072bd",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            215,
+            493,
+            493,
+            533
+          ]
+        ],
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 12,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            542
+          ],
+          [
+            145,
+            529
+          ],
+          [
+            158,
+            489
+          ],
+          [
+            185,
+            440
+          ],
+          [
+            213,
+            398
+          ],
+          [
+            242,
+            363
+          ],
+          [
+            271,
+            336
+          ],
+          [
+            300,
+            312
+          ],
+          [
+            329,
+            298
+          ],
+          [
+            357,
+            283
+          ],
+          [
+            414,
+            266
+          ],
+          [
+            472,
+            255
+          ],
+          [
+            530,
+            250
+          ],
+          [
+            587,
+            248
+          ]
+        ],
+        "curve_data_max_residual_px": 8,
+        "curve_data_mode": "guide_constrained",
+        "curve_data_residual_smoothing_window": 21,
+        "curve_topology": "continuous",
+        "id": "mfh-45deg",
+        "line_semantics": "dashed",
+        "tolerance": 20
+      },
+      {
+        "color": "#111111",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            215,
+            445,
+            493,
+            485
+          ]
+        ],
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 12,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            544
+          ],
+          [
+            145,
+            508
+          ],
+          [
+            158,
+            478
+          ],
+          [
+            185,
+            423
+          ],
+          [
+            213,
+            396
+          ],
+          [
+            242,
+            375
+          ],
+          [
+            271,
+            345
+          ],
+          [
+            300,
+            321
+          ],
+          [
+            329,
+            306
+          ],
+          [
+            357,
+            296
+          ],
+          [
+            414,
+            283
+          ],
+          [
+            472,
+            276
+          ],
+          [
+            530,
+            273
+          ],
+          [
+            587,
+            287
+          ],
+          [
+            610,
+            300
+          ]
+        ],
+        "curve_data_mode": "observations",
+        "curve_topology": "continuous",
+        "id": "test-90deg",
+        "marker_min_distance_px": 10,
+        "marker_min_span_px": 4,
+        "marker_min_width_px": 1,
+        "marker_shape": "diamond",
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "tolerance": 20
+      },
+      {
+        "color": "#111111",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            520,
+            493,
+            812,
+            533
+          ]
+        ],
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 12,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            542
+          ],
+          [
+            145,
+            519
+          ],
+          [
+            158,
+            498
+          ],
+          [
+            185,
+            452
+          ],
+          [
+            213,
+            413
+          ],
+          [
+            242,
+            375
+          ],
+          [
+            271,
+            353
+          ],
+          [
+            300,
+            334
+          ],
+          [
+            329,
+            322
+          ],
+          [
+            357,
+            303
+          ],
+          [
+            414,
+            290
+          ],
+          [
+            472,
+            275
+          ],
+          [
+            530,
+            265
+          ],
+          [
+            587,
+            263
+          ]
+        ],
+        "curve_data_max_residual_px": 8,
+        "curve_data_mode": "guide_constrained",
+        "curve_data_residual_smoothing_window": 21,
+        "curve_topology": "continuous",
+        "id": "mfh-90deg",
+        "line_semantics": "dashed",
+        "tolerance": 14
+      }
+    ],
+    "type": "line",
+    "x_axis": {
+      "anchors": [
+        {
+          "pixel": 127,
+          "value": 0
+        },
+        {
+          "pixel": 242,
+          "value": 0.02
+        },
+        {
+          "pixel": 357,
+          "value": 0.04
+        },
+        {
+          "pixel": 472,
+          "value": 0.06
+        },
+        {
+          "pixel": 587,
+          "value": 0.08
+        },
+        {
+          "pixel": 702,
+          "value": 0.1
+        },
+        {
+          "pixel": 817,
+          "value": 0.12
+        }
+      ],
+      "scale": "linear"
+    },
+    "y_axis": {
+      "anchors": [
+        {
+          "pixel": 546,
+          "value": 0
+        },
+        {
+          "pixel": 458,
+          "value": 25
+        },
+        {
+          "pixel": 369,
+          "value": 50
+        },
+        {
+          "pixel": 281,
+          "value": 75
+        },
+        {
+          "pixel": 192,
+          "value": 100
+        },
+        {
+          "pixel": 103,
+          "value": 125
+        },
+        {
+          "pixel": 14,
+          "value": 150
+        }
+      ],
+      "scale": "linear"
+    }
+  },
+  "project_id": "jiang-tian-2021-figure7-marker-v2",
+  "quality_gates": {
+    "calibration": {
+      "max_normalized_rmse": 0.003,
+      "require_three_anchors": true
+    },
+    "line": {
+      "max_gap_fraction_dashed": 0.12,
+      "max_gap_fraction_solid": 0.08,
+      "min_coverage_dashed": 0.18,
+      "min_coverage_solid": 0.7
+    }
+  },
+  "render": {
+    "grid": "none",
+    "group": "series",
+    "legend": {
+      "frameon": false,
+      "loc": "lower right",
+      "ncol": 2
+    },
+    "plot_type": "line",
+    "series_styles": {
+        "mfh-0deg": {
+          "color": "#ed3b18",
+          "label": "MFH of 0° specimen",
+        "line_style": "--",
+        "linewidth": 1.7
+      },
+        "mfh-45deg": {
+          "color": "#0879bd",
+          "label": "MFH of 45° specimen",
+        "line_style": "-.",
+        "linewidth": 1.7
+      },
+        "mfh-90deg": {
+          "color": "#111111",
+          "label": "MFH of 90° specimen",
+        "line_style": "--",
+        "linewidth": 1.7
+      },
+      "test-0deg": {
+        "color": "#ed3b18",
+        "label": "Test of 0° specimen",
+        "line_style": "-",
+        "linewidth": 1.5,
+        "marker": "s"
+      },
+      "test-45deg": {
+        "color": "#0879bd",
+        "label": "Test of 45° specimen",
+        "line_style": "-",
+        "linewidth": 1.5,
+        "marker": "^"
+      },
+      "test-90deg": {
+        "color": "#111111",
+        "label": "Test of 90° specimen",
+        "line_style": "-",
+        "linewidth": 1.5,
+        "marker": "D"
+      }
+    },
+    "title": "",
+    "x": "x",
+    "x_label": "True strain",
+    "x_limits": [
+      0,
+      0.12
+    ],
+    "x_ticks": [
+      0,
+      0.02,
+      0.04,
+      0.06,
+      0.08,
+      0.1,
+      0.12
+    ],
+    "y": "y",
+    "y_label": "True stress (MPa)",
+    "y_limits": [
+      0,
+      150
+    ],
+    "y_ticks": [
+      0,
+      25,
+      50,
+      75,
+      100,
+      125,
+      150
+    ]
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "measurement_raster": "../figure7-marker-v2/source-image.jpeg",
+    "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+    "page": 6,
+    "path": "../../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "pdf_image_index": 0,
+    "pdf_xref": 186,
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387"
+  }
+}

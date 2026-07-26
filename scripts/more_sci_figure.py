@@ -458,6 +458,19 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     or float(tolerance) <= 0
                 ):
                     errors.append(f"系列 {entry.get('id', '')} 的 tolerance 必须为正数")
+                localization_half_width = entry.get(
+                    "center_localization_half_width_px", 0.5
+                )
+                if (
+                    not isinstance(localization_half_width, (int, float))
+                    or not math.isfinite(float(localization_half_width))
+                    or float(localization_half_width) <= 0
+                    or float(localization_half_width) > 10
+                ):
+                    errors.append(
+                        f"系列 {entry.get('id', '')} 的 "
+                        "center_localization_half_width_px 必须位于 0 到 10 像素之间"
+                    )
                 extraction_mode = str(entry.get("extraction_mode", "color_column_median"))
                 if extraction_mode not in {
                     "color_column_median",
@@ -473,6 +486,56 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     errors.append(
                         f"极坐标系列 {entry.get('id', '')} 的 extraction_mode 必须为 polar_radial"
                     )
+                curve_topology = str(entry.get("curve_topology", "continuous"))
+                if chart_type in {"line", "polar_line"} and curve_topology not in {
+                    "continuous",
+                    "segmented",
+                }:
+                    errors.append(
+                        f"系列 {entry.get('id', '')} 的 curve_topology "
+                        "只支持 continuous 或 segmented"
+                    )
+                curve_data_mode = str(entry.get("curve_data_mode", "observations"))
+                if chart_type in {"line", "polar_line"} and curve_data_mode not in {
+                    "observations",
+                    "guide_constrained",
+                }:
+                    errors.append(
+                        f"系列 {entry.get('id', '')} 的 curve_data_mode "
+                        "只支持 observations 或 guide_constrained"
+                    )
+                if curve_data_mode == "guide_constrained":
+                    if chart_type != "line":
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 guide_constrained 正式数据"
+                            "目前只支持笛卡尔曲线"
+                        )
+                    if curve_topology != "continuous":
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 guide_constrained 正式数据"
+                            "要求 curve_topology=continuous"
+                        )
+                    if extraction_mode not in {"guided_path", "guided_group_path"}:
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 guide_constrained 正式数据"
+                            "要求 guided_path 或 guided_group_path 提取"
+                        )
+                    for key, default in (
+                        ("curve_data_max_residual_px", 5.0),
+                        ("curve_data_residual_smoothing_window", 21),
+                    ):
+                        value = entry.get(key, default)
+                        invalid = (
+                            not isinstance(value, (int, float))
+                            or not math.isfinite(float(value))
+                            or float(value) <= 0
+                        )
+                        if key.endswith("window"):
+                            invalid = invalid or not isinstance(value, int)
+                        if invalid:
+                            errors.append(
+                                f"系列 {entry.get('id', '')} 的 {key} 必须为正数"
+                            )
                 angular_half_width = entry.get("angular_half_width_deg")
                 if angular_half_width is not None and (
                     not isinstance(angular_half_width, (int, float))
@@ -547,6 +610,7 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                         ("marker_min_span_px", 6.0),
                         ("marker_min_width_px", 2.0),
                         ("marker_window_radius_px", 7.0),
+                        ("marker_min_distance_px", 8.0),
                     ):
                         value = entry.get(key, default)
                         if (
@@ -738,13 +802,11 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 value = display.get(key)
                 if value is not None and (not isinstance(value, int) or value < 1):
                     errors.append(f"render.display_geometry.{key} 必须为正整数")
-            bridge = display.get("max_bridge_gap_px")
-            if bridge is not None and (
-                not isinstance(bridge, (int, float))
-                or not math.isfinite(float(bridge))
-                or float(bridge) < 0
-            ):
-                errors.append("render.display_geometry.max_bridge_gap_px 必须为非负数")
+            if "max_bridge_gap_px" in display:
+                errors.append(
+                    "render.display_geometry.max_bridge_gap_px 已弃用；"
+                    "请在 chart.series 中声明 curve_topology，由 review-apply 构建连续 data.csv"
+                )
             outlier_residual = display.get("max_outlier_pixel_residual")
             if outlier_residual is not None and (
                 not isinstance(outlier_residual, (int, float))
@@ -754,6 +816,29 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 errors.append(
                     "render.display_geometry.max_outlier_pixel_residual 必须为非负数"
                 )
+        styles = render.get("series_styles", {})
+        if styles and not isinstance(styles, dict):
+            errors.append("render.series_styles 必须是对象")
+        elif isinstance(styles, dict):
+            for series_id, style in styles.items():
+                if not isinstance(style, dict):
+                    errors.append(f"render.series_styles.{series_id} 必须是对象")
+                    continue
+                if "max_bridge_gap_px" in style:
+                    errors.append(
+                        f"render.series_styles.{series_id}.max_bridge_gap_px 已弃用；"
+                        "正式曲线连续性必须在 data.csv 生成前确定"
+                    )
+                geometry_source = style.get("geometry_source")
+                if geometry_source == "guide_constrained":
+                    errors.append(
+                        f"render.series_styles.{series_id}.geometry_source=guide_constrained "
+                        "已迁移到 chart.series.curve_data_mode=guide_constrained"
+                    )
+                elif geometry_source is not None and geometry_source != "observations":
+                    errors.append(
+                        f"render.series_styles.{series_id}.geometry_source 只支持 observations"
+                    )
         canvas = render.get("canvas_px")
         if canvas is not None and (
             not isinstance(canvas, list)
@@ -850,6 +935,57 @@ class AxisMap:
                 else "仅有两个锚点，拟合残差必然接近零，不能独立证明标定准确。"
             ),
         }
+
+
+def declared_axis_spans(project: dict[str, Any]) -> dict[str, float]:
+    """Return confirmed full-axis value spans for uncertainty normalization."""
+    chart = project.get("chart", {}) if isinstance(project, dict) else {}
+    if not isinstance(chart, dict):
+        return {}
+
+    def anchor_span(axis: Any) -> float | None:
+        if not isinstance(axis, dict):
+            return None
+        values: list[float] = []
+        for anchor in axis.get("anchors", []):
+            try:
+                value = float(anchor["value"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if math.isfinite(value):
+                values.append(value)
+        if len(values) < 2:
+            return None
+        span = max(values) - min(values)
+        return span if span > 0 else None
+
+    spans: dict[str, float] = {}
+    if str(chart.get("type", "line")) == "polar_line":
+        polar = chart.get("polar", {})
+        if isinstance(polar, dict):
+            try:
+                angle_span = abs(
+                    float(polar.get("angle_end_deg", 360.0))
+                    - float(polar.get("angle_start_deg", 0.0))
+                )
+            except (TypeError, ValueError):
+                angle_span = 0.0
+            radius_span = anchor_span(polar.get("radius_axis"))
+            if math.isfinite(angle_span) and angle_span > 0:
+                spans["x"] = angle_span
+            if radius_span is not None:
+                spans["y"] = radius_span
+                spans["value"] = radius_span
+        return spans
+
+    x_span = anchor_span(chart.get("x_axis"))
+    y_span = anchor_span(chart.get("y_axis"))
+    if x_span is not None:
+        spans["x"] = x_span
+    if y_span is not None:
+        spans["y"] = y_span
+        spans["value"] = y_span
+    return spans
 
 
 def anchor_jackknife_stability(
@@ -1259,15 +1395,21 @@ def extract_guided_group(
                     "series": series_id,
                     "x": x_map.value(pixel_x),
                     "y": y_map.value(pixel_y),
-                    "x_uncertainty": x_map.uncertainty(pixel_x, max(0.5, search_half_width)),
+                    "x_uncertainty": x_map.uncertainty(
+                        pixel_x,
+                        float(entry.get("center_localization_half_width_px", 0.5)),
+                    ),
                     "y_uncertainty": y_map.uncertainty(
                         pixel_y,
-                        max(0.5, (float(cluster["maximum"]) - float(cluster["minimum"])) / 2.0),
+                        float(entry.get("center_localization_half_width_px", 0.5)),
                     ),
                     "pixel_x": pixel_x,
                     "pixel_y": pixel_y,
                     "pixel_half_height": max(
                         0.5, (float(cluster["maximum"]) - float(cluster["minimum"])) / 2.0
+                    ),
+                    "center_localization_half_width_px": float(
+                        entry.get("center_localization_half_width_px", 0.5)
                     ),
                     "support_pixels": int(cluster["support"]),
                     "support_x_min": max(left, pixel_x - search_half_width),
@@ -1369,6 +1511,9 @@ def extract_marker_centers(
     minimum_span = float(entry.get("marker_min_span_px", 6.0))
     minimum_width = int(math.ceil(float(entry.get("marker_min_width_px", 2.0))))
     radius = int(math.ceil(float(entry.get("marker_window_radius_px", 7.0))))
+    localization_half_width = float(
+        entry.get("center_localization_half_width_px", 0.5)
+    )
     qualifying: list[int] = []
     column_spans: dict[int, float] = {}
     for pixel_x in range(start_x, end_x + 1):
@@ -1419,12 +1564,17 @@ def extract_marker_centers(
                 "series": entry["id"],
                 "x": x_map.value(pixel_x),
                 "y": y_map.value(pixel_y),
-                "x_uncertainty": x_map.uncertainty(pixel_x, half_width),
-                "y_uncertainty": y_map.uncertainty(pixel_y, half_height),
+                "x_uncertainty": x_map.uncertainty(
+                    pixel_x, localization_half_width
+                ),
+                "y_uncertainty": y_map.uncertainty(
+                    pixel_y, localization_half_width
+                ),
                 "pixel_x": pixel_x,
                 "pixel_y": pixel_y,
                 "pixel_half_width": half_width,
                 "pixel_half_height": half_height,
+                "center_localization_half_width_px": localization_half_width,
                 "support_pixels": int(local_x.size),
                 "marker_shape": str(entry.get("marker_shape", "unspecified")),
                 "evidence_status": "visible_marker_support",
@@ -1433,6 +1583,24 @@ def extract_marker_centers(
             }
         )
         previous_x = pixel_x
+    minimum_distance = float(entry.get("marker_min_distance_px", 8.0))
+    merged_rows: list[dict[str, Any]] = []
+    merged_detections = 0
+    for row in sorted(rows, key=lambda item: float(item["pixel_x"])):
+        if (
+            merged_rows
+            and float(row["pixel_x"]) - float(merged_rows[-1]["pixel_x"])
+            < minimum_distance
+        ):
+            merged_detections += 1
+            if int(row["support_pixels"]) > int(merged_rows[-1]["support_pixels"]):
+                merged_rows[-1] = row
+            continue
+        merged_rows.append(row)
+    rows = merged_rows
+    for index, row in enumerate(rows):
+        row["segment_break"] = index == 0
+
     minimum_markers = int(entry.get("min_marker_count", 1))
     diagnostic = {
         "id": entry["id"],
@@ -1440,6 +1608,8 @@ def extract_marker_centers(
         "marker_shape": str(entry.get("marker_shape", "unspecified")),
         "accepted_markers": len(rows),
         "rejected_runs": rejected_runs,
+        "merged_detections": merged_detections,
+        "marker_min_distance_px": minimum_distance,
         "minimum_declared_marker_count": minimum_markers,
         "coverage": min(1.0, len(rows) / max(1, minimum_markers)),
         "coverage_basis": "minimum_declared_marker_count_not_completeness",
@@ -1516,6 +1686,9 @@ def extract_line(
             current_gap = 0
             maximum_gap = 0
             residuals: list[float] = []
+            localization_half_width = float(
+                entry.get("center_localization_half_width_px", 0.5)
+            )
             for pixel_x in range(start_x, end_x + 1):
                 expected_y = guide_y_at(entry, pixel_x)
                 if expected_y is None:
@@ -1551,11 +1724,16 @@ def extract_line(
                         "series": entry["id"],
                         "x": x_map.value(pixel_x),
                         "y": y_map.value(pixel_y),
-                        "x_uncertainty": x_map.uncertainty(pixel_x),
-                        "y_uncertainty": y_map.uncertainty(pixel_y, pixel_half_height),
+                        "x_uncertainty": x_map.uncertainty(
+                            pixel_x, localization_half_width
+                        ),
+                        "y_uncertainty": y_map.uncertainty(
+                            pixel_y, localization_half_width
+                        ),
                         "pixel_x": pixel_x,
                         "pixel_y": pixel_y,
                         "pixel_half_height": pixel_half_height,
+                        "center_localization_half_width_px": localization_half_width,
                         "support_pixels": int(candidate_ys.size),
                         "guide_residual_px": residual,
                         "evidence_status": evidence_status,
@@ -1570,6 +1748,7 @@ def extract_line(
                 {
                     "id": entry["id"],
                     "extraction_mode": extraction_mode,
+                    "line_semantics": str(entry.get("line_semantics", "solid")),
                     "supported_columns": supported,
                     "coverage": supported / width,
                     "maximum_gap_columns": maximum_gap,
@@ -1584,6 +1763,9 @@ def extract_line(
         previous_x: int | None = None
         current_gap = 0
         maximum_gap = 0
+        localization_half_width = float(
+            entry.get("center_localization_half_width_px", 0.5)
+        )
         for local_x in range(mask.shape[1]):
             local_ys = np.flatnonzero(mask[:, local_x])
             if local_ys.size == 0:
@@ -1600,11 +1782,16 @@ def extract_line(
                     "series": entry["id"],
                     "x": x_map.value(pixel_x),
                     "y": y_map.value(pixel_y),
-                    "x_uncertainty": x_map.uncertainty(pixel_x),
-                    "y_uncertainty": y_map.uncertainty(pixel_y, pixel_half_height),
+                    "x_uncertainty": x_map.uncertainty(
+                        pixel_x, localization_half_width
+                    ),
+                    "y_uncertainty": y_map.uncertainty(
+                        pixel_y, localization_half_width
+                    ),
                     "pixel_x": pixel_x,
                     "pixel_y": pixel_y,
                     "pixel_half_height": pixel_half_height,
+                    "center_localization_half_width_px": localization_half_width,
                     "segment_break": previous_x is None,
                     "status": "visible",
                 }
@@ -1616,6 +1803,7 @@ def extract_line(
                 {
                     "id": entry["id"],
                     "extraction_mode": extraction_mode,
+                    "line_semantics": str(entry.get("line_semantics", "solid")),
                     "supported_columns": supported,
                     "coverage": coverage,
                     "maximum_gap_columns": maximum_gap,
@@ -1664,6 +1852,9 @@ def extract_polar_line(
         mask, applied_exclusions = apply_series_exclusions(series_mask(crop, entry), entry, box)
         mask &= annulus
         half_width = float(entry.get("angular_half_width_deg", max(0.75, angle_step * 0.75)))
+        localization_half_width = float(
+            entry.get("center_localization_half_width_px", 0.5)
+        )
         supported = 0
         maximum_gap = 0
         current_gap = 0
@@ -1700,12 +1891,15 @@ def extract_polar_line(
                     "series": str(entry["id"]),
                     "x": float(sample_angle),
                     "y": radius_map.value(radius),
-                    "x_uncertainty": max(angle_step / 2.0, half_width),
-                    "y_uncertainty": radius_map.uncertainty(radius, radial_half_width),
+                    "x_uncertainty": angle_step / 2.0,
+                    "y_uncertainty": radius_map.uncertainty(
+                        radius, localization_half_width
+                    ),
                     "pixel_x": pixel_x,
                     "pixel_y": pixel_y,
                     "pixel_radius": radius,
                     "pixel_half_height": radial_half_width,
+                    "center_localization_half_width_px": localization_half_width,
                     "support_pixels": int(np.count_nonzero(accepted)),
                     "angular_half_width_deg": half_width,
                     "evidence_status": "visible_pixel_support",
@@ -2876,6 +3070,7 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
 
     normalized_uncertainties: list[float] = []
     candidate_normalized_uncertainty: dict[str, float] = {}
+    axis_spans = declared_axis_spans(project)
     for series, grouped_rows in series_rows.items():
         for value_key, uncertainty_key in (
             ("x", "x_uncertainty"),
@@ -2893,7 +3088,9 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
                     valid_rows.append((row, numeric_value, uncertainty_value))
             if not valid_rows:
                 continue
-            span = max(item[1] for item in valid_rows) - min(item[1] for item in valid_rows)
+            span = axis_spans.get(value_key)
+            if span is None:
+                span = max(item[1] for item in valid_rows) - min(item[1] for item in valid_rows)
             if span <= 0:
                 continue
             for row, _, uncertainty_value in valid_rows:
@@ -3424,9 +3621,18 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
 
 
 def review_confirm_command(
-    project_dir: Path, reviewed_by: str, confirmation: str
+    project_dir: Path,
+    reviewed_by: str,
+    confirmation: str,
+    *,
+    accept_anomalies: bool = False,
 ) -> dict[str, Any]:
-    """Turn an explicit conversational approval into complete hash-bound decisions."""
+    """Turn an explicit conversational approval into complete hash-bound decisions.
+
+    ``accept_anomalies`` is deliberately opt-in: it is only valid after the user has
+    explicitly authorized the reviewer to inspect the anomaly evidence and accept
+    every listed anomaly. The original user wording remains bound into the record.
+    """
     project_dir = project_dir.expanduser().resolve()
     reviewed_by = reviewed_by.strip()
     confirmation = confirmation.strip()
@@ -3444,14 +3650,20 @@ def review_confirm_command(
     candidate_hash = sha256_file(candidates_path)
     if assessment.get("candidate_sha256") != candidate_hash:
         raise FigureError("综合评估绑定的候选哈希与当前 candidates.csv 不一致")
-    if assessment.get("recommended_action") != "batch_confirm":
+    anomalies_path = project_dir / "review-anomalies.csv"
+    anomaly_rows = read_tabular_rows(anomalies_path) if anomalies_path.is_file() else []
+    recommended_action = str(assessment.get("recommended_action", ""))
+    allowed_action = recommended_action == "batch_confirm" or (
+        accept_anomalies
+        and bool(anomaly_rows)
+        and recommended_action == "review_anomaly_groups"
+    )
+    if not allowed_action:
         raise FigureError(
             f"当前综合风险为 {assessment.get('risk_level')}，建议动作为 "
             f"{assessment.get('recommended_action')}；不得一键批量确认"
         )
-    anomalies_path = project_dir / "review-anomalies.csv"
-    anomaly_rows = read_tabular_rows(anomalies_path) if anomalies_path.is_file() else []
-    if anomaly_rows:
+    if anomaly_rows and not accept_anomalies:
         raise FigureError(
             f"存在 {len(anomaly_rows)} 个异常候选，必须先在独立异常复核区逐项处理；"
             "不得与普通候选一起批量确认"
@@ -3459,11 +3671,6 @@ def review_confirm_command(
     rows = read_tabular_rows(candidates_path)
     assessment_hash = sha256_file(assessment_path)
     anomaly_groups = assessment.get("anomaly_groups", {})
-    acknowledged_anomaly_count = sum(
-        int(value)
-        for key, value in anomaly_groups.items()
-        if key != "model_assisted_assignment" and isinstance(value, int)
-    )
     payload = {
         "schema": REVIEW_SCHEMA,
         "candidate_sha256": candidate_hash,
@@ -3471,16 +3678,26 @@ def review_confirm_command(
         "source_sha256": assessment.get("source_sha256"),
         "reviewed_by": reviewed_by,
         "reviewed_at": datetime.now(timezone.utc).isoformat(),
-        "review_method": "ai_assisted_batch_confirmation",
+        "review_method": (
+            "explicit_visual_anomaly_acceptance"
+            if anomaly_rows
+            else "ai_assisted_batch_confirmation"
+        ),
         "assessment_sha256": assessment_hash,
         "assessment_score": assessment.get("overall_score"),
         "assessment_risk_level": assessment.get("risk_level"),
         "conversation_confirmation": confirmation,
         "anomaly_acknowledgement": {
             "confirmed": True,
-            "candidate_count": acknowledged_anomaly_count,
+            "candidate_count": len(anomaly_rows),
             "groups": anomaly_groups,
             "confirmation": confirmation,
+            "accept_all_anomalies_authorized": bool(
+                anomaly_rows and accept_anomalies
+            ),
+            "candidate_ids": [
+                str(item.get("candidate_id", "")) for item in anomaly_rows
+            ],
         },
         "decisions": [
             {
@@ -4741,6 +4958,198 @@ def review_serve_command(project_dir: Path, port: int = 0) -> dict[str, Any]:
     return {"status": "stopped", "fixed_save_path": serving["fixed_save_path"]}
 
 
+def build_formal_data_rows(
+    project: dict[str, Any], reviewed_observations: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Build style-independent formal data from reviewed pixel observations.
+
+    Pixel visibility gaps remain in ``observations.csv`` and in each formal row's
+    ``evidence_segment_break`` field. They become formal curve breaks only when the
+    reviewed project explicitly declares ``curve_topology=segmented``.
+    """
+    chart = project.get("chart", {}) if isinstance(project, dict) else {}
+    chart_type = str(chart.get("type", "line")) if isinstance(chart, dict) else "line"
+    if chart_type not in {"line", "polar_line"}:
+        rows = []
+        for index, observation in enumerate(reviewed_observations):
+            row = dict(observation)
+            row["data_id"] = f"data-{index + 1:06d}"
+            row["data_provenance"] = "reviewed_visible_observation"
+            rows.append(row)
+        return rows, {
+            "schema": "more-sci-figure.formal-data-report.v1",
+            "chart_type": chart_type,
+            "observation_rows": len(reviewed_observations),
+            "formal_rows": len(rows),
+            "series": [],
+            "说明": "非曲线图保持复核观测坐标，不应用曲线连续性规则。",
+        }
+
+    series_specs = {
+        str(item["id"]): item
+        for item in chart.get("series", [])
+        if isinstance(item, dict) and item.get("id")
+    }
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in reviewed_observations:
+        grouped.setdefault(str(row.get("series", "series")), []).append(row)
+    declared_order = [series_id for series_id in series_specs if series_id in grouped]
+    series_order = declared_order + [
+        series_id for series_id in grouped if series_id not in declared_order
+    ]
+    formal_rows: list[dict[str, Any]] = []
+    series_reports: list[dict[str, Any]] = []
+    chart_x_map = AxisMap(chart["x_axis"]) if chart_type == "line" else None
+    chart_y_map = AxisMap(chart["y_axis"]) if chart_type == "line" else None
+
+    for series_id in series_order:
+        observations = grouped[series_id]
+        entry = series_specs.get(series_id, {})
+        topology = str(entry.get("curve_topology", "continuous"))
+        data_mode = str(entry.get("curve_data_mode", "observations"))
+        if topology not in {"continuous", "segmented"}:
+            raise FigureError(
+                f"系列 {series_id} 的 curve_topology 只支持 continuous 或 segmented"
+            )
+        if data_mode not in {"observations", "guide_constrained"}:
+            raise FigureError(
+                f"系列 {series_id} 的 curve_data_mode 只支持 observations 或 guide_constrained"
+            )
+        ordered = sorted(
+            observations,
+            key=(
+                (lambda row: numeric(row, "x"))
+                if chart_type == "polar_line"
+                else (
+                    lambda row: numeric(row, "pixel_x")
+                    if row.get("pixel_x") not in {None, ""}
+                    else numeric(row, "x")
+                )
+            ),
+        )
+        evidence_segments = max(
+            1,
+            sum(1 for row in ordered if truthy(row.get("segment_break", False))),
+        )
+        normalized_visual_breaks = 0
+
+        if data_mode == "guide_constrained":
+            if chart_type != "line":
+                raise FigureError(
+                    f"系列 {series_id} 的 guide_constrained 正式数据目前只支持笛卡尔曲线"
+                )
+            if topology != "continuous":
+                raise FigureError(
+                    f"系列 {series_id} 的 guide_constrained 正式数据要求 curve_topology=continuous"
+                )
+            if len(parse_guide_points(entry)) < 2:
+                raise FigureError(
+                    f"系列 {series_id} 使用 guide_constrained 正式数据时至少需要两个 guide_points_px"
+                )
+            curve_x, curve_y, source_count, retained_count, derived_count = (
+                guide_constrained_display_geometry(
+                    entry,
+                    ordered,
+                    chart,
+                    maximum_residual_px=float(
+                        entry.get("curve_data_max_residual_px", 5.0)
+                    ),
+                    residual_smoothing_window=int(
+                        entry.get("curve_data_residual_smoothing_window", 21)
+                    ),
+                )
+            )
+            start_x, _ = guide_x_bounds(entry, tuple(int(round(v)) for v in chart["plot_box"]))
+            reviewer = str(ordered[0].get("reviewed_by", "")) if ordered else ""
+            for index, (x_value, y_value) in enumerate(zip(curve_x, curve_y, strict=True)):
+                pixel_x = float(start_x + index)
+                pixel_y = float(chart_y_map.pixel(float(y_value))) if chart_y_map else ""
+                formal_rows.append(
+                    {
+                        "series": series_id,
+                        "x": float(x_value),
+                        "y": float(y_value),
+                        "x_uncertainty": (
+                            chart_x_map.uncertainty(pixel_x, 0.5) if chart_x_map else ""
+                        ),
+                        "y_uncertainty": (
+                            chart_y_map.uncertainty(pixel_y, 0.5) if chart_y_map else ""
+                        ),
+                        "pixel_x": pixel_x,
+                        "pixel_y": pixel_y,
+                        "segment_break": index == 0,
+                        "evidence_segment_break": "",
+                        "curve_topology": topology,
+                        "curve_segment": 0,
+                        "curve_order": index,
+                        "data_id": f"curve-{series_id}-{index + 1:06d}",
+                        "data_provenance": "derived_guide_constrained_curve_data",
+                        "topology_provenance": "confirmed_continuous_curve",
+                        "source_candidate_count": source_count,
+                        "retained_residual_candidate_count": retained_count,
+                        "derived_coordinate_count": derived_count,
+                        "reviewed_by": reviewer,
+                        "review_decision": "derived_from_reviewed_observations",
+                    }
+                )
+            normalized_visual_breaks = max(0, evidence_segments - 1)
+            formal_segment_count = 1
+        else:
+            segment_index = 0
+            for index, observation in enumerate(ordered):
+                row = dict(observation)
+                evidence_break = truthy(row.get("segment_break", False))
+                if topology == "continuous":
+                    formal_break = index == 0
+                    if index > 0 and evidence_break:
+                        normalized_visual_breaks += 1
+                else:
+                    formal_break = index == 0 or evidence_break
+                if index > 0 and formal_break:
+                    segment_index += 1
+                row["evidence_segment_break"] = evidence_break
+                row["segment_break"] = formal_break
+                row["curve_topology"] = topology
+                row["curve_segment"] = segment_index
+                row["curve_order"] = index
+                row["data_id"] = f"curve-{series_id}-{index + 1:06d}"
+                row["data_provenance"] = "reviewed_visible_observation"
+                row["topology_provenance"] = (
+                    "confirmed_continuous_curve"
+                    if topology == "continuous"
+                    else "confirmed_segmented_curve"
+                )
+                formal_rows.append(row)
+            formal_segment_count = segment_index + 1 if ordered else 0
+
+        series_reports.append(
+            {
+                "id": series_id,
+                "curve_topology": topology,
+                "curve_data_mode": data_mode,
+                "observation_rows": len(observations),
+                "formal_rows": sum(
+                    1 for row in formal_rows if str(row.get("series", "")) == series_id
+                ),
+                "evidence_segment_count": evidence_segments,
+                "formal_segment_count": formal_segment_count,
+                "normalized_visual_breaks": normalized_visual_breaks,
+            }
+        )
+
+    return formal_rows, {
+        "schema": "more-sci-figure.formal-data-report.v1",
+        "chart_type": chart_type,
+        "observation_rows": len(reviewed_observations),
+        "formal_rows": len(formal_rows),
+        "series": series_reports,
+        "说明": (
+            "observations.csv 保存可见像素与证据断点；data.csv 保存经确认的曲线拓扑，"
+            "视觉空档不再自动成为正式数据断点。"
+        ),
+    }
+
+
 def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, Any]:
     project_dir = project_dir.expanduser().resolve()
     decisions_path = decisions_path.expanduser().resolve()
@@ -4877,20 +5286,44 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
             normalized[key] = payload[key]
     applied_path = project_dir / "review-decisions.json"
     write_json(applied_path, normalized)
+    observations_path = project_dir / "observations.csv"
+    write_csv(observations_path, accepted_rows)
+    formal_rows, formal_data_report = build_formal_data_rows(project, accepted_rows)
     data_path = project_dir / "data.csv"
-    write_csv(data_path, accepted_rows)
+    write_csv(data_path, formal_rows)
+    formal_data_report.update(
+        {
+            "project_spec": artifact_entry(project_path),
+            "candidates": artifact_entry(candidates_path),
+            "review_decisions": artifact_entry(applied_path),
+            "observations": artifact_entry(observations_path),
+            "data": artifact_entry(data_path),
+        }
+    )
+    formal_data_report_path = project_dir / "formal-data-report.json"
+    write_json(formal_data_report_path, formal_data_report)
 
     report_path = project_dir / "extraction-report.json"
     report = read_json(report_path)
     report["review_status"] = review_status
     report["numeric_output_authorized"] = accepted_count > 0
     report["review_summary"] = normalized["summary"]
+    report["formal_data"] = {
+        "observations": artifact_entry(observations_path),
+        "data": artifact_entry(data_path),
+        "report": artifact_entry(formal_data_report_path),
+        "rows": len(formal_rows),
+    }
     write_json(report_path, report)
 
     manifest = load_manifest(project_dir)
     manifest["review_status"] = review_status
     manifest["artifacts"]["review_decisions"] = artifact_entry(applied_path)
+    manifest["artifacts"]["observations"] = artifact_entry(observations_path)
     manifest["artifacts"]["data"] = artifact_entry(data_path)
+    manifest["artifacts"]["formal_data_report"] = artifact_entry(
+        formal_data_report_path
+    )
     manifest["artifacts"]["extraction_report"] = artifact_entry(report_path)
     write_json(project_dir / "manifest.json", manifest)
     return {
@@ -4900,7 +5333,9 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
         "rejected": rejected_count,
         "corrected": corrected_count,
         "reassigned": reassigned_count,
+        "observations": str(observations_path),
         "data": str(data_path),
+        "formal_data_report": str(formal_data_report_path),
     }
 
 
@@ -5016,7 +5451,6 @@ def display_segments(
     mode: str,
     smoothing_window: int,
     samples_per_interval: int,
-    max_bridge_gap_px: float,
     outlier_window: int = 1,
     max_outlier_pixel_residual: float | None = None,
     knot_stride: int = 1,
@@ -5025,35 +5459,22 @@ def display_segments(
     ordered = sorted(
         group_rows,
         key=(
-            (lambda row: numeric(row, x_key))
+            lambda row: numeric(row, "curve_order")
+            if row.get("curve_order") not in {None, ""}
+            else numeric(row, x_key)
             if sort_by_data_x
-            else (
-                lambda row: numeric(row, "pixel_x")
-                if row.get("pixel_x") not in {None, ""}
-                else numeric(row, x_key)
-            )
+            else numeric(row, "pixel_x")
+            if row.get("pixel_x") not in {None, ""}
+            else numeric(row, x_key)
         ),
     )
     raw_segments: list[list[dict[str, Any]]] = []
     current: list[dict[str, Any]] = []
-    previous_pixel_x: float | None = None
     for row in ordered:
-        pixel_value = row.get("pixel_x")
-        pixel_x = float(pixel_value) if pixel_value not in {None, ""} else None
-        bridgeable = (
-            current
-            and truthy(row.get("segment_break", False))
-            and max_bridge_gap_px > 0
-            and pixel_x is not None
-            and previous_pixel_x is not None
-            and pixel_x - previous_pixel_x <= max_bridge_gap_px
-        )
-        if current and truthy(row.get("segment_break", False)) and not bridgeable:
+        if current and truthy(row.get("segment_break", False)):
             raw_segments.append(current)
             current = []
         current.append(row)
-        if pixel_x is not None:
-            previous_pixel_x = pixel_x
     if current:
         raw_segments.append(current)
     result: list[tuple[np.ndarray, np.ndarray, int, int, int]] = []
@@ -5223,6 +5644,19 @@ def render_command(
     plot_type = render.get("plot_type") or spec.get("chart", {}).get("type")
     if plot_type not in SUPPORTED_CHARTS:
         raise FigureError(f"不支持的重绘类型：{plot_type}")
+    formal_curve_data = (
+        plot_type in {"line", "polar_line"}
+        and any(row.get("data_id") not in {None, ""} for row in rows)
+    )
+    if formal_curve_data and any(
+        row.get("curve_topology") not in {"continuous", "segmented"}
+        or row.get("data_provenance") in {None, ""}
+        for row in rows
+    ):
+        raise FigureError(
+            "正式曲线 data.csv 必须包含 curve_topology 与 data_provenance；"
+            "请重新运行 review-apply 构建样式无关曲线数据"
+        )
     polar_plot = plot_type == "polar_line"
     x_key = str(
         render.get(
@@ -5290,8 +5724,12 @@ def render_command(
             color = str(style.get("color", colors.get(group, fallback[index % len(fallback)])))
             label = str(style.get("label", group))
             if plot_type in {"line", "polar_line"}:
-                max_bridge_gap_px = float(style.get("max_bridge_gap_px", display_policy.get("max_bridge_gap_px", 0.0)))
                 geometry_source = str(style.get("geometry_source", "observations"))
+                if formal_curve_data and geometry_source == "guide_constrained":
+                    raise FigureError(
+                        f"系列 {group} 不得在 render 阶段使用 guide_constrained；"
+                        "请在 chart.series.curve_data_mode 中构建正式曲线数据"
+                    )
                 if (
                     plot_type == "line"
                     and geometry_source == "guide_constrained"
@@ -5323,7 +5761,6 @@ def render_command(
                         mode=display_mode,
                         smoothing_window=smoothing_window,
                         samples_per_interval=samples_per_interval,
-                        max_bridge_gap_px=max_bridge_gap_px,
                         outlier_window=outlier_window,
                         max_outlier_pixel_residual=(
                             float(maximum_outlier_residual)
@@ -5333,11 +5770,17 @@ def render_command(
                         knot_stride=knot_stride,
                         sort_by_data_x=polar_plot,
                     )
-                    geometry_provenance = (
-                        "derived_display_geometry"
-                        if display_mode == "shape_preserving"
-                        else "accepted_observation_geometry"
-                    )
+                    group_data_provenance = {
+                        str(row.get("data_provenance", "")) for row in group_rows
+                    }
+                    if display_mode == "shape_preserving":
+                        geometry_provenance = "derived_display_geometry"
+                    elif "derived_guide_constrained_curve_data" in group_data_provenance:
+                        geometry_provenance = "formal_derived_curve_data_geometry"
+                    elif formal_curve_data:
+                        geometry_provenance = "formal_curve_data_geometry"
+                    else:
+                        geometry_provenance = "accepted_observation_geometry"
                 geometry_sources[group] = geometry_provenance
                 rendered_segments[group] = len(segments)
                 for segment_index, (
@@ -5511,6 +5954,14 @@ def render_command(
         "axis_scales": {"x": x_scale, "y": y_scale},
         "rendered_segments": rendered_segments,
         "geometry_sources": geometry_sources,
+        "formal_curve_data": formal_curve_data,
+        "data_provenance": sorted(
+            {
+                str(row.get("data_provenance", ""))
+                for row in rows
+                if row.get("data_provenance") not in {None, ""}
+            }
+        ),
         "display_geometry": {
             "mode": display_mode,
             "rows": len(display_geometry_rows),
@@ -5604,6 +6055,8 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
         required.update(
             {
                 "candidates": project_dir / "candidates.csv",
+                "observations": project_dir / "observations.csv",
+                "formal_data_report": project_dir / "formal-data-report.json",
                 "overlay": project_dir / "overlay.png",
                 "extraction_report": project_dir / "extraction-report.json",
                 "review_decisions": project_dir / "review-decisions.json",
@@ -6005,6 +6458,11 @@ def build_parser() -> argparse.ArgumentParser:
     confirm_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
     confirm_parser.add_argument("--reviewed-by", required=True, help="复核人或可追溯身份")
     confirm_parser.add_argument("--confirmation", required=True, help="用户的原始确认语句")
+    confirm_parser.add_argument(
+        "--accept-anomalies",
+        action="store_true",
+        help="仅在用户明确授权复核人查看证据并接受全部异常候选时使用",
+    )
 
     serve_parser = subparsers.add_parser(
         "review-serve", help="启动仅本机复核会话并固定保存到当前项目目录"
@@ -6095,7 +6553,10 @@ def main(argv: list[str] | None = None) -> int:
             result = review_assess_command(args.project_dir)
         elif args.command == "review-confirm":
             result = review_confirm_command(
-                args.project_dir, args.reviewed_by, args.confirmation
+                args.project_dir,
+                args.reviewed_by,
+                args.confirmation,
+                accept_anomalies=args.accept_anomalies,
             )
         elif args.command == "review-serve":
             result = review_serve_command(args.project_dir, args.port)

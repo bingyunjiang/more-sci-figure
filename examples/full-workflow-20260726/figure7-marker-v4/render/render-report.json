@@ -1,0 +1,67 @@
+{
+  "axis_scales": {
+    "x": "linear",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "data_provenance": [
+    "derived_guide_constrained_curve_data",
+    "reviewed_visible_observation"
+  ],
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure7-marker-v4/render/display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 1255
+  },
+  "formal_curve_data": true,
+  "formal_render": true,
+  "geometry_sources": {
+    "mfh-0deg": "formal_derived_curve_data_geometry",
+    "mfh-45deg": "formal_derived_curve_data_geometry",
+    "mfh-90deg": "formal_derived_curve_data_geometry",
+    "test-0deg": "formal_curve_data_geometry",
+    "test-45deg": "formal_curve_data_geometry",
+    "test-90deg": "formal_curve_data_geometry"
+  },
+  "input_status": "accepted_or_supplied",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 18047,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/render/render.pdf",
+      "sha256": "01c23615cff08a0b8c06edc259a9644863446e737d9016ad0984efed1a72bae9"
+    },
+    "png": {
+      "bytes": 87778,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/render/render.png",
+      "sha256": "e11c83a6e494532fd90c9a802c248898d5d6d3726da056f948ae0b1384e2f902"
+    },
+    "svg": {
+      "bytes": 53145,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/render/render.svg",
+      "sha256": "efba398c895a818360a38c15da92fba61a056fc0d5c9784d4b0a317715413283"
+    }
+  },
+  "plot_type": "line",
+  "project_spec": {
+    "bytes": 12806,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/project.json",
+    "sha256": "33929fbafe41ec9fedf8fdd4cd96b26960a51736bfe944653a9241ac85a27484"
+  },
+  "rendered_segments": {
+    "mfh-0deg": 1,
+    "mfh-45deg": 1,
+    "mfh-90deg": 1,
+    "test-0deg": 1,
+    "test-45deg": 1,
+    "test-90deg": 1
+  },
+  "rows": 1255,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

@@ -1,0 +1,282 @@
+{
+  "calibration": {
+    "x_axis": {
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        0.0004107590668887551,
+        -0.0009008492840368865,
+        0.0006558041754625155,
+        -0.0006558041754629595,
+        0.0009008492840363314,
+        -0.00041075906688914365
+      ],
+      "intercept": -0.3552537054258107,
+      "normalized_rmse": 0.0003428230301646308,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.0006856460603292616,
+      "scale": "linear",
+      "slope": 0.0028682618104249958,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        -0.0006756648059071946,
+        0.0010183233860459606,
+        0.0003394411286820054,
+        -0.0003394411286820054,
+        -0.0010183233860459051,
+        0.0006756648059071946
+      ],
+      "intercept": 1.0410144624442979,
+      "normalized_rmse": 0.0007322854016366785,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.0007322854016366785,
+      "scale": "linear",
+      "slope": -0.0023728704493170957,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "chart_type": "line",
+  "diagnostics": {
+    "series": [
+      {
+        "accepted_markers": 18,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            145,
+            812,
+            176
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "simulation-a11",
+        "marker_min_distance_px": 12.0,
+        "marker_shape": "triangle",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 1,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "accepted_markers": 20,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            190,
+            812,
+            220
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "simulation-a22",
+        "marker_min_distance_px": 14.0,
+        "marker_shape": "circle",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 7,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "accepted_markers": 20,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            235,
+            812,
+            265
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "simulation-a33",
+        "marker_min_distance_px": 14.0,
+        "marker_shape": "x",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 21,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            280,
+            812,
+            310
+          ]
+        ],
+        "coverage": 0.8967391304347826,
+        "extraction_mode": "guided_path",
+        "id": "uct-test-a11",
+        "maximum_gap_columns": 23,
+        "maximum_gap_fraction": 0.041666666666666664,
+        "mean_guide_residual_px": 2.076408389117915,
+        "supported_columns": 495
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            323,
+            812,
+            353
+          ]
+        ],
+        "coverage": 0.9257246376811594,
+        "extraction_mode": "guided_path",
+        "id": "uct-test-a22",
+        "maximum_gap_columns": 14,
+        "maximum_gap_fraction": 0.025362318840579712,
+        "mean_guide_residual_px": 2.66032727681531,
+        "supported_columns": 511
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            365,
+            812,
+            397
+          ]
+        ],
+        "coverage": 0.6912878787878788,
+        "extraction_mode": "guided_path",
+        "id": "uct-test-a33",
+        "maximum_gap_columns": 12,
+        "maximum_gap_fraction": 0.022727272727272728,
+        "mean_guide_residual_px": 1.092300842021443,
+        "supported_columns": 365
+      }
+    ]
+  },
+  "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
+  "numeric_output_authorized": false,
+  "plot_box": [
+    124,
+    17,
+    821,
+    439
+  ],
+  "quality_gates": {
+    "checks": [
+      {
+        "name": "x_axis.anchor_count",
+        "observed": 6,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "x_axis.normalized_rmse",
+        "observed": 0.0003428230301646308,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "y_axis.anchor_count",
+        "observed": 6,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "y_axis.normalized_rmse",
+        "observed": 0.0007322854016366785,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "simulation-a11.accepted_markers",
+        "observed": 18,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "simulation-a22.accepted_markers",
+        "observed": 20,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "simulation-a33.accepted_markers",
+        "observed": 20,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "uct-test-a11.coverage",
+        "observed": 0.8967391304347826,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "uct-test-a11.maximum_gap_fraction",
+        "observed": 0.041666666666666664,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "uct-test-a22.coverage",
+        "observed": 0.9257246376811594,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "uct-test-a22.maximum_gap_fraction",
+        "observed": 0.025362318840579712,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "uct-test-a33.coverage",
+        "observed": 0.6912878787878788,
+        "status": "failed",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "uct-test-a33.maximum_gap_fraction",
+        "observed": 0.022727272727272728,
+        "status": "pass",
+        "threshold": "<=0.08"
+      }
+    ],
+    "status": "partial",
+    "说明": "质量门槛只用于筛查风险，不能替代人工语义复核。"
+  },
+  "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
+  "review_status": "not_run",
+  "rows": 1429,
+  "schema": "more-sci-figure.extraction-report.v1",
+  "source": {
+    "height": 546,
+    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v2/source-image.jpeg",
+    "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+    "width": 843
+  },
+  "specification_confirmation": {
+    "confirmation": "确认 Fig. 7/9 marker v2 规格，继续提取。",
+    "confirmed_at": "2026-07-26T07:45:16.891559+00:00",
+    "confirmed_by": "Bing（Codex 对话用户）",
+    "record_sha256": "6261caa11f57769a41649a81e36e81a89f4d01847dd828b0682ef54b767ab44f",
+    "status": "confirmed"
+  },
+  "status": "partial"
+}

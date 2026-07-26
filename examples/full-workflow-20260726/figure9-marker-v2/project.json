@@ -1,0 +1,658 @@
+{
+  "chart": {
+    "type": "line",
+    "plot_box": [
+      124,
+      17,
+      821,
+      439
+    ],
+    "x_axis": {
+      "scale": "linear",
+      "anchors": [
+        {
+          "pixel": 124,
+          "value": 0
+        },
+        {
+          "pixel": 263,
+          "value": 0.4
+        },
+        {
+          "pixel": 403,
+          "value": 0.8
+        },
+        {
+          "pixel": 542,
+          "value": 1.2
+        },
+        {
+          "pixel": 682,
+          "value": 1.6
+        },
+        {
+          "pixel": 821,
+          "value": 2
+        }
+      ]
+    },
+    "y_axis": {
+      "scale": "linear",
+      "anchors": [
+        {
+          "pixel": 439,
+          "value": 0
+        },
+        {
+          "pixel": 354,
+          "value": 0.2
+        },
+        {
+          "pixel": 270,
+          "value": 0.4
+        },
+        {
+          "pixel": 186,
+          "value": 0.6
+        },
+        {
+          "pixel": 102,
+          "value": 0.8
+        },
+        {
+          "pixel": 17,
+          "value": 1
+        }
+      ]
+    },
+    "series": [
+      {
+        "id": "simulation-a11",
+        "color": "#205b8e",
+        "color_space": "lab",
+        "tolerance": 17,
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 11,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            138,
+            122
+          ],
+          [
+            166,
+            118
+          ],
+          [
+            194,
+            93
+          ],
+          [
+            229,
+            72
+          ],
+          [
+            281,
+            76
+          ],
+          [
+            333,
+            110
+          ],
+          [
+            368,
+            148
+          ],
+          [
+            389,
+            173
+          ],
+          [
+            410,
+            169
+          ],
+          [
+            438,
+            148
+          ],
+          [
+            466,
+            118
+          ],
+          [
+            507,
+            93
+          ],
+          [
+            549,
+            72
+          ],
+          [
+            612,
+            76
+          ],
+          [
+            647,
+            93
+          ],
+          [
+            689,
+            123
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            145,
+            812,
+            176
+          ]
+        ],
+        "marker_shape": "triangle",
+        "marker_min_span_px": 5,
+        "marker_min_width_px": 1,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "marker_min_distance_px": 12
+      },
+      {
+        "id": "simulation-a22",
+        "color": "#0879bd",
+        "color_space": "lab",
+        "tolerance": 17,
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 11,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            138,
+            350
+          ],
+          [
+            166,
+            363
+          ],
+          [
+            194,
+            384
+          ],
+          [
+            246,
+            393
+          ],
+          [
+            316,
+            380
+          ],
+          [
+            361,
+            346
+          ],
+          [
+            382,
+            232
+          ],
+          [
+            403,
+            173
+          ],
+          [
+            417,
+            169
+          ],
+          [
+            438,
+            236
+          ],
+          [
+            459,
+            334
+          ],
+          [
+            490,
+            367
+          ],
+          [
+            542,
+            393
+          ],
+          [
+            612,
+            393
+          ],
+          [
+            689,
+            354
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            190,
+            812,
+            220
+          ]
+        ],
+        "marker_shape": "circle",
+        "marker_min_span_px": 7,
+        "marker_min_width_px": 1,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "marker_min_distance_px": 14
+      },
+      {
+        "id": "simulation-a33",
+        "color": "#111111",
+        "color_space": "lab",
+        "tolerance": 16,
+        "extraction_mode": "marker_centers",
+        "guide_group": "black-a33",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            138,
+            426
+          ],
+          [
+            194,
+            426
+          ],
+          [
+            264,
+            427
+          ],
+          [
+            333,
+            426
+          ],
+          [
+            382,
+            424
+          ],
+          [
+            403,
+            422
+          ],
+          [
+            438,
+            423
+          ],
+          [
+            473,
+            424
+          ],
+          [
+            542,
+            427
+          ],
+          [
+            612,
+            427
+          ],
+          [
+            682,
+            427
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            235,
+            812,
+            265
+          ]
+        ],
+        "marker_shape": "x",
+        "marker_min_span_px": 4,
+        "marker_min_width_px": 1,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3,
+        "marker_min_distance_px": 14
+      },
+      {
+        "id": "uct-test-a11",
+        "color": "#f20d13",
+        "color_space": "lab",
+        "tolerance": 15,
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "solid",
+        "guide_points_px": [
+          [
+            138,
+            122
+          ],
+          [
+            166,
+            135
+          ],
+          [
+            201,
+            101
+          ],
+          [
+            229,
+            93
+          ],
+          [
+            298,
+            97
+          ],
+          [
+            351,
+            118
+          ],
+          [
+            382,
+            177
+          ],
+          [
+            396,
+            308
+          ],
+          [
+            410,
+            342
+          ],
+          [
+            424,
+            321
+          ],
+          [
+            438,
+            241
+          ],
+          [
+            452,
+            160
+          ],
+          [
+            480,
+            114
+          ],
+          [
+            525,
+            97
+          ],
+          [
+            612,
+            93
+          ],
+          [
+            664,
+            135
+          ],
+          [
+            689,
+            118
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            280,
+            812,
+            310
+          ]
+        ]
+      },
+      {
+        "id": "uct-test-a22",
+        "color": "#347fb5",
+        "color_space": "lab",
+        "tolerance": 15,
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "solid",
+        "guide_points_px": [
+          [
+            138,
+            356
+          ],
+          [
+            166,
+            373
+          ],
+          [
+            194,
+            390
+          ],
+          [
+            246,
+            397
+          ],
+          [
+            316,
+            382
+          ],
+          [
+            368,
+            350
+          ],
+          [
+            389,
+            232
+          ],
+          [
+            403,
+            151
+          ],
+          [
+            417,
+            157
+          ],
+          [
+            431,
+            232
+          ],
+          [
+            452,
+            342
+          ],
+          [
+            480,
+            376
+          ],
+          [
+            542,
+            401
+          ],
+          [
+            612,
+            400
+          ],
+          [
+            665,
+            361
+          ],
+          [
+            689,
+            354
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            323,
+            812,
+            353
+          ]
+        ]
+      },
+      {
+        "id": "uct-test-a33",
+        "color": "#111111",
+        "color_space": "lab",
+        "tolerance": 12,
+        "extraction_mode": "guided_path",
+        "guide_group": "black-a33",
+        "guide_corridor_px": 8,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "dashed",
+        "guide_points_px": [
+          [
+            138,
+            408
+          ],
+          [
+            194,
+            409
+          ],
+          [
+            264,
+            411
+          ],
+          [
+            333,
+            407
+          ],
+          [
+            382,
+            404
+          ],
+          [
+            403,
+            401
+          ],
+          [
+            438,
+            403
+          ],
+          [
+            473,
+            405
+          ],
+          [
+            542,
+            410
+          ],
+          [
+            612,
+            409
+          ],
+          [
+            665,
+            402
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            575,
+            365,
+            812,
+            397
+          ]
+        ]
+      }
+    ]
+  },
+  "project_id": "jiang-tian-2021-figure9-marker-v2",
+  "quality_gates": {
+    "calibration": {
+      "require_three_anchors": true,
+      "max_normalized_rmse": 0.003
+    },
+    "line": {
+      "min_coverage_solid": 0.7,
+      "min_coverage_dashed": 0.25,
+      "max_gap_fraction_solid": 0.08,
+      "max_gap_fraction_dashed": 0.08
+    }
+  },
+  "render": {
+    "plot_type": "line",
+    "x": "x",
+    "y": "y",
+    "group": "series",
+    "title": "",
+    "x_label": "The Z-position of thickness (mm)",
+    "y_label": "Fiber orientation tensor",
+    "x_limits": [
+      0,
+      2
+    ],
+    "y_limits": [
+      0,
+      1
+    ],
+    "x_ticks": [
+      0,
+      0.4,
+      0.8,
+      1.2,
+      1.6,
+      2
+    ],
+    "y_ticks": [
+      0,
+      0.2,
+      0.4,
+      0.6,
+      0.8,
+      1
+    ],
+    "grid": "none",
+    "legend": {
+      "loc": "center right",
+      "frameon": false,
+      "ncol": 1
+    },
+    "series_styles": {
+      "simulation-a11": {
+        "label": "Simulation a11",
+        "color": "#205b8e",
+        "line_style": "-",
+        "marker": "^",
+        "linewidth": 1.5
+      },
+      "simulation-a22": {
+        "label": "Simulation a22",
+        "color": "#0879bd",
+        "line_style": "-",
+        "marker": "o",
+        "linewidth": 1.5
+      },
+      "simulation-a33": {
+        "label": "Simulation a33",
+        "color": "#111111",
+        "line_style": "-",
+        "marker": "x",
+        "linewidth": 1.5
+      },
+      "uct-test-a11": {
+        "label": "µCT Test a11",
+        "color": "#f20d13",
+        "line_style": "-",
+        "linewidth": 2
+      },
+      "uct-test-a22": {
+        "label": "µCT Test a22",
+        "color": "#347fb5",
+        "line_style": "-",
+        "linewidth": 1.5
+      },
+      "uct-test-a33": {
+        "label": "µCT Test a33",
+        "color": "#111111",
+        "line_style": "--",
+        "linewidth": 1.7
+      }
+    }
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "measurement_raster": "source-image.jpeg",
+    "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
+    "page": 8,
+    "path": "../../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "pdf_image_index": 0,
+    "pdf_xref": 219,
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387"
+  },
+  "assessment": {
+    "acceptance_profile": "publication"
+  }
+}

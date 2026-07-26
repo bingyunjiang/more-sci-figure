@@ -1,0 +1,751 @@
+{
+  "acceptance": {
+    "decision": "not_qualified",
+    "dimension_floor_pass": false,
+    "hard_gates": {
+      "automatic_quality_gates": false,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": false,
+    "next_instruction": "暂不接受：修复未通过的自动质量门并重新提取，然后再次评估。",
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "responsibility": {
+      "agent_completed": [
+        "七维质量评估",
+        "锚点留一扰动稳定性检查",
+        "定位 616 个高不确定候选并合并为 16 个区间"
+      ],
+      "agent_next": [
+        "锚点留一稳定性已达标（99.2 分），主要问题是像素/局部测量不确定度；Agent 先检查 12 个最高风险代表区间并寻找更高分辨率或矢量图源，不要求用户调整锚点。",
+        "保留当前候选作为基线，比较重提取前后的最低维度和局部不确定区间。"
+      ],
+      "user_not_required": [
+        "运行命令",
+        "选择保存路径",
+        "调整算法参数",
+        "逐点复核全部普通候选"
+      ],
+      "user_required_now": false,
+      "user_tasks": [
+        "如有更高分辨率原图、矢量 PDF 或作者原始数据则提供。",
+        "若自动改进仍不达标，只判断高不确定区间是否影响科研结论，或降低用途等级/拒绝使用。"
+      ],
+      "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+      "workflow_order": "agent_first_then_targeted_user_judgment"
+    },
+    "score_threshold_pass": false,
+    "technical_eligibility": false,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "unresolved_anomaly_count": 3,
+    "unresolved_anomaly_ids": [
+      "line-uct-test-a11-000001",
+      "line-uct-test-a11-000271",
+      "line-uct-test-a11-000495"
+    ]
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 3,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 0
+  },
+  "candidate_count": 1456,
+  "candidate_sha256": "825554344cb9db1013073505d9629b55f97f7e27aa937066e6aa5a5a130689f4",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "visible_marker_support": 85,
+    "visible_pixel_support": 1371
+  },
+  "generated_at": "2026-07-26T07:41:17.721893+00:00",
+  "high_risk_issues": [
+    "自动提取质量门仅部分通过",
+    "1 项自动质量检查未通过"
+  ],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      0.0003428230301646308,
+      0.0007322854016366785
+    ],
+    "extraction_status": "partial",
+    "high_anomalies": 0,
+    "medium_anomalies": 3,
+    "model_assisted_candidates": 0,
+    "model_assisted_ratio": 0.0,
+    "quality_checks_failed": 1,
+    "quality_checks_total": 13
+  },
+  "minimum_dimension_score": 57.8,
+  "overall_score": 92.8,
+  "project_id": "jiang-tian-2021-figure9-mixed-markers",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-mixed-markers/project.json",
+  "recommended_action": "re_extract",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "high",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.00206,
+          "total_high_anomalies": 0,
+          "total_medium_anomalies": 3,
+          "unresolved_high_anomalies": 0,
+          "unresolved_medium_anomalies": 3
+        },
+        "score": 99.8,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 6,
+              "axis": "x_axis",
+              "normalized_rmse": 0.0003428230301646308,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 6,
+              "axis": "y_axis",
+              "normalized_rmse": 0.0007322854016366785,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.0,
+          "support_evaluable": true,
+          "valid_support_ratio": 1.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 1,
+          "checks_total": 13
+        },
+        "score": 92.3,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 99.9,
+          "worst_series_score": 99.4
+        },
+        "score": 99.7,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": 0.014717200665060642,
+          "high_uncertainty_candidate_count": 616,
+          "high_uncertainty_group_count": 16,
+          "normalized_uncertainty_p95": 0.15384615384615496,
+          "operational_threshold": 0.02,
+          "perturbation_stability": {
+            "axes": [
+              {
+                "anchor_count": 6,
+                "axis": "x_axis",
+                "candidate_count": 1456,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0003014974580547835,
+                "normalized_shift_p95": 0.0002821949703048056,
+                "score": 99.7,
+                "status": "measured",
+                "trials": 6,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              },
+              {
+                "anchor_count": 6,
+                "axis": "y_axis",
+                "candidate_count": 1456,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0008537698313627513,
+                "normalized_shift_p95": 0.0008106792518171076,
+                "score": 99.2,
+                "status": "measured",
+                "trials": 6,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              }
+            ],
+            "method": "leave_one_anchor_out",
+            "score": 99.2,
+            "status": "measured",
+            "说明": "已自动完成锚点留一扰动；该检查不改写候选数据。"
+          },
+          "uncertainty_proxy_score": 57.8
+        },
+        "score": 57.8,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "uncertainty_stability",
+    "worst_series_score": 99.4
+  },
+  "series_assessment": [
+    {
+      "candidates": 16,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "simulation-a11",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 31,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "simulation-a22",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 38,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "simulation-a33",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 495,
+      "coverage": 0.8967391304347826,
+      "flagged_anomalies": 3,
+      "maximum_gap_fraction": 0.041666666666666664,
+      "mean_guide_residual_px": 2.076408389117915,
+      "model_assisted": 0,
+      "series": "uct-test-a11",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 511,
+      "coverage": 0.9257246376811594,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.025362318840579712,
+      "mean_guide_residual_px": 2.66032727681531,
+      "model_assisted": 0,
+      "series": "uct-test-a22",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 365,
+      "coverage": 0.6912878787878788,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.022727272727272728,
+      "mean_guide_residual_px": 1.092300842021443,
+      "model_assisted": 0,
+      "series": "uct-test-a33",
+      "series_quality_score": 99.4
+    }
+  ],
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "tool_version": "0.3.1",
+  "top_anomalies": [
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-uct-test-a11-000001",
+      "observed": 9.2449,
+      "reason": "系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px",
+      "recommended_action": "batch_review",
+      "series": "uct-test-a11",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-uct-test-a11-000271",
+      "observed": 9.6518,
+      "reason": "系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px",
+      "recommended_action": "batch_review",
+      "series": "uct-test-a11",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-uct-test-a11-000495",
+      "observed": 9.7076,
+      "reason": "系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px",
+      "recommended_action": "batch_review",
+      "series": "uct-test-a11",
+      "severity": "medium"
+    }
+  ],
+  "uncertainty_review": {
+    "candidate_count": 616,
+    "default_owner": "agent",
+    "group_count": 16,
+    "groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "line-simulation-a33-000038",
+        "group_id": "simulation-a33-uncertainty-001",
+        "mean_normalized_uncertainty": 0.78007519,
+        "peak_normalized_uncertainty": 1.14285714,
+        "representative_candidate_id": "line-simulation-a33-000029",
+        "series": "simulation-a33",
+        "start_candidate_id": "line-simulation-a33-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5980325874736114",
+        "x_start": "0.05490773346496369"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 365,
+        "end_candidate_id": "line-uct-test-a33-000365",
+        "group_id": "uct-test-a33-uncertainty-001",
+        "mean_normalized_uncertainty": 0.12054795,
+        "peak_normalized_uncertainty": 0.15384615,
+        "representative_candidate_id": "line-uct-test-a33-000004",
+        "series": "uct-test-a33",
+        "start_candidate_id": "line-uct-test-a33-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5521403985068114",
+        "x_start": "0.07498556613793866"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 16,
+        "end_candidate_id": "line-simulation-a11-000016",
+        "group_id": "simulation-a11-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0553125,
+        "peak_normalized_uncertainty": 0.085,
+        "representative_candidate_id": "line-simulation-a11-000008",
+        "series": "simulation-a11",
+        "start_candidate_id": "line-simulation-a11-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.6066373729048864",
+        "x_start": "0.04630294803368873"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 30,
+        "end_candidate_id": "line-simulation-a22-000031",
+        "group_id": "simulation-a22-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0309884,
+        "peak_normalized_uncertainty": 0.04503676,
+        "representative_candidate_id": "line-simulation-a22-000008",
+        "series": "simulation-a22",
+        "start_candidate_id": "line-simulation-a22-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.6095056347153114",
+        "x_start": "0.04917120984411372"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 15,
+        "end_candidate_id": "line-uct-test-a11-000238",
+        "group_id": "uct-test-a11-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0288,
+        "peak_normalized_uncertainty": 0.038,
+        "representative_candidate_id": "line-uct-test-a11-000228",
+        "series": "uct-test-a11",
+        "start_candidate_id": "line-uct-test-a11-000215",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.7977875423650376",
+        "x_start": "0.7203444734835627"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 39,
+        "end_candidate_id": "line-uct-test-a22-000313",
+        "group_id": "uct-test-a22-uncertainty-006",
+        "mean_normalized_uncertainty": 0.02693804,
+        "peak_normalized_uncertainty": 0.03696498,
+        "representative_candidate_id": "line-uct-test-a22-000276",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000255",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.0243802253886123",
+        "x_start": "0.8379432077109876"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "line-uct-test-a22-000162",
+        "group_id": "uct-test-a22-uncertainty-004",
+        "mean_normalized_uncertainty": 0.02518943,
+        "peak_normalized_uncertainty": 0.03307393,
+        "representative_candidate_id": "line-uct-test-a22-000097",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000089",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.5568535502893379",
+        "x_start": "0.34747043812831324"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "line-uct-test-a22-000073",
+        "group_id": "uct-test-a22-uncertainty-003",
+        "mean_normalized_uncertainty": 0.02617616,
+        "peak_normalized_uncertainty": 0.0311284,
+        "representative_candidate_id": "line-uct-test-a22-000068",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000063",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.3015782491615133",
+        "x_start": "0.27289563105726333"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 30,
+        "end_candidate_id": "line-uct-test-a22-000239",
+        "group_id": "uct-test-a22-uncertainty-005",
+        "mean_normalized_uncertainty": 0.02607004,
+        "peak_normalized_uncertainty": 0.0311284,
+        "representative_candidate_id": "line-uct-test-a22-000179",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000179",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.7891827569337626",
+        "x_start": "0.6084822628769879"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000495",
+        "group_id": "uct-test-a22-uncertainty-010",
+        "mean_normalized_uncertainty": 0.0250139,
+        "peak_normalized_uncertainty": 0.02918288,
+        "representative_candidate_id": "line-uct-test-a22-000491",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000481",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5750864929902115",
+        "x_start": "1.5349308276442615"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 2,
+        "end_candidate_id": "line-uct-test-a22-000040",
+        "group_id": "uct-test-a22-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02431907,
+        "peak_normalized_uncertainty": 0.02529183,
+        "representative_candidate_id": "line-uct-test-a22-000039",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000039",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.2040573476070635",
+        "x_start": "0.20118908579663852"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000456",
+        "group_id": "uct-test-a22-uncertainty-009",
+        "mean_normalized_uncertainty": 0.02251251,
+        "peak_normalized_uncertainty": 0.02529183,
+        "representative_candidate_id": "line-uct-test-a22-000452",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000450",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.4603560205732116",
+        "x_start": "1.4431464497106616"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 2,
+        "end_candidate_id": "line-uct-test-a22-000022",
+        "group_id": "uct-test-a22-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02237354,
+        "peak_normalized_uncertainty": 0.0233463,
+        "representative_candidate_id": "line-uct-test-a22-000021",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000021",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.1036681842421886",
+        "x_start": "0.10079992243176361"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000399",
+        "group_id": "uct-test-a22-uncertainty-007",
+        "mean_normalized_uncertainty": 0.02251251,
+        "peak_normalized_uncertainty": 0.0233463,
+        "representative_candidate_id": "line-uct-test-a22-000391",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000390",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.2939968355685618",
+        "x_start": "1.268182479274737"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 2,
+        "end_candidate_id": "line-uct-test-a11-000257",
+        "group_id": "uct-test-a11-uncertainty-002",
+        "mean_normalized_uncertainty": 0.021,
+        "peak_normalized_uncertainty": 0.022,
+        "representative_candidate_id": "line-uct-test-a11-000257",
+        "series": "uct-test-a11",
+        "start_candidate_id": "line-uct-test-a11-000256",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.8522845167631126",
+        "x_start": "0.8494162549526876"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000426",
+        "group_id": "uct-test-a22-uncertainty-008",
+        "mean_normalized_uncertainty": 0.02140078,
+        "peak_normalized_uncertainty": 0.02140078,
+        "representative_candidate_id": "line-uct-test-a22-000420",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000420",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.3714399044500367",
+        "x_start": "1.3542303335874868"
+      }
+    ],
+    "priority_group_count": 12,
+    "priority_groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "line-simulation-a33-000038",
+        "group_id": "simulation-a33-uncertainty-001",
+        "mean_normalized_uncertainty": 0.78007519,
+        "peak_normalized_uncertainty": 1.14285714,
+        "representative_candidate_id": "line-simulation-a33-000029",
+        "series": "simulation-a33",
+        "start_candidate_id": "line-simulation-a33-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5980325874736114",
+        "x_start": "0.05490773346496369"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 365,
+        "end_candidate_id": "line-uct-test-a33-000365",
+        "group_id": "uct-test-a33-uncertainty-001",
+        "mean_normalized_uncertainty": 0.12054795,
+        "peak_normalized_uncertainty": 0.15384615,
+        "representative_candidate_id": "line-uct-test-a33-000004",
+        "series": "uct-test-a33",
+        "start_candidate_id": "line-uct-test-a33-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5521403985068114",
+        "x_start": "0.07498556613793866"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 16,
+        "end_candidate_id": "line-simulation-a11-000016",
+        "group_id": "simulation-a11-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0553125,
+        "peak_normalized_uncertainty": 0.085,
+        "representative_candidate_id": "line-simulation-a11-000008",
+        "series": "simulation-a11",
+        "start_candidate_id": "line-simulation-a11-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.6066373729048864",
+        "x_start": "0.04630294803368873"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 30,
+        "end_candidate_id": "line-simulation-a22-000031",
+        "group_id": "simulation-a22-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0309884,
+        "peak_normalized_uncertainty": 0.04503676,
+        "representative_candidate_id": "line-simulation-a22-000008",
+        "series": "simulation-a22",
+        "start_candidate_id": "line-simulation-a22-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.6095056347153114",
+        "x_start": "0.04917120984411372"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 15,
+        "end_candidate_id": "line-uct-test-a11-000238",
+        "group_id": "uct-test-a11-uncertainty-001",
+        "mean_normalized_uncertainty": 0.0288,
+        "peak_normalized_uncertainty": 0.038,
+        "representative_candidate_id": "line-uct-test-a11-000228",
+        "series": "uct-test-a11",
+        "start_candidate_id": "line-uct-test-a11-000215",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.7977875423650376",
+        "x_start": "0.7203444734835627"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 39,
+        "end_candidate_id": "line-uct-test-a22-000313",
+        "group_id": "uct-test-a22-uncertainty-006",
+        "mean_normalized_uncertainty": 0.02693804,
+        "peak_normalized_uncertainty": 0.03696498,
+        "representative_candidate_id": "line-uct-test-a22-000276",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000255",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.0243802253886123",
+        "x_start": "0.8379432077109876"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "line-uct-test-a22-000162",
+        "group_id": "uct-test-a22-uncertainty-004",
+        "mean_normalized_uncertainty": 0.02518943,
+        "peak_normalized_uncertainty": 0.03307393,
+        "representative_candidate_id": "line-uct-test-a22-000097",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000089",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.5568535502893379",
+        "x_start": "0.34747043812831324"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "line-uct-test-a22-000073",
+        "group_id": "uct-test-a22-uncertainty-003",
+        "mean_normalized_uncertainty": 0.02617616,
+        "peak_normalized_uncertainty": 0.0311284,
+        "representative_candidate_id": "line-uct-test-a22-000068",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000063",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.3015782491615133",
+        "x_start": "0.27289563105726333"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 30,
+        "end_candidate_id": "line-uct-test-a22-000239",
+        "group_id": "uct-test-a22-uncertainty-005",
+        "mean_normalized_uncertainty": 0.02607004,
+        "peak_normalized_uncertainty": 0.0311284,
+        "representative_candidate_id": "line-uct-test-a22-000179",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000179",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.7891827569337626",
+        "x_start": "0.6084822628769879"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000495",
+        "group_id": "uct-test-a22-uncertainty-010",
+        "mean_normalized_uncertainty": 0.0250139,
+        "peak_normalized_uncertainty": 0.02918288,
+        "representative_candidate_id": "line-uct-test-a22-000491",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000481",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.5750864929902115",
+        "x_start": "1.5349308276442615"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 2,
+        "end_candidate_id": "line-uct-test-a22-000040",
+        "group_id": "uct-test-a22-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02431907,
+        "peak_normalized_uncertainty": 0.02529183,
+        "representative_candidate_id": "line-uct-test-a22-000039",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000039",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.2040573476070635",
+        "x_start": "0.20118908579663852"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-uct-test-a22-000456",
+        "group_id": "uct-test-a22-uncertainty-009",
+        "mean_normalized_uncertainty": 0.02251251,
+        "peak_normalized_uncertainty": 0.02529183,
+        "representative_candidate_id": "line-uct-test-a22-000452",
+        "series": "uct-test-a22",
+        "start_candidate_id": "line-uct-test-a22-000450",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "1.4603560205732116",
+        "x_start": "1.4431464497106616"
+      }
+    ],
+    "user_review_policy": "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，不得要求逐点复核全部高不确定候选。"
+  },
+  "warnings": []
+}

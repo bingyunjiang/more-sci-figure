@@ -1,0 +1,62 @@
+{
+  "axis_scales": {
+    "x": "linear",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "data_provenance": [
+    "reviewed_visible_observation"
+  ],
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure10a-centerline-v2/render/display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 2266
+  },
+  "formal_curve_data": true,
+  "formal_render": true,
+  "geometry_sources": {
+    "p1": "formal_curve_data_geometry",
+    "p2": "formal_curve_data_geometry",
+    "p3": "formal_curve_data_geometry",
+    "p4": "formal_curve_data_geometry"
+  },
+  "input_status": "accepted_or_supplied",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 25679,
+      "path": "examples/full-workflow-20260726/figure10a-centerline-v2/render/render.pdf",
+      "sha256": "4df73ef3f41edb2b6331f937a99f97fc1dea42eb591db53d4da9a8782d924dc7"
+    },
+    "png": {
+      "bytes": 170513,
+      "path": "examples/full-workflow-20260726/figure10a-centerline-v2/render/render.png",
+      "sha256": "1947f399a2a532ec61e35eed5edb95e4274d930c4efeab6786714b72c6860368"
+    },
+    "svg": {
+      "bytes": 73958,
+      "path": "examples/full-workflow-20260726/figure10a-centerline-v2/render/render.svg",
+      "sha256": "feb86ef54f0b6c02ca15a3a0625a8d485ea54c5390556442533080d76da625d0"
+    }
+  },
+  "plot_type": "line",
+  "project_spec": {
+    "bytes": 5312,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a-centerline-v2/project.json",
+    "sha256": "0011519c93f3e3ed96f24c486e61002c7047eac2ee1113d29633a7d22f7cf2c2"
+  },
+  "rendered_segments": {
+    "p1": 1,
+    "p2": 1,
+    "p3": 1,
+    "p4": 1
+  },
+  "rows": 2266,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

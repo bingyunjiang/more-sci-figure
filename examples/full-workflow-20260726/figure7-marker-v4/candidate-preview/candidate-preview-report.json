@@ -1,0 +1,62 @@
+{
+  "axis_scales": {
+    "x": "linear",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure7-marker-v4/candidate-preview/candidate-preview-display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 1255
+  },
+  "formal_render": false,
+  "geometry_sources": {
+    "mfh-0deg": "derived_guide_constrained_geometry",
+    "mfh-45deg": "derived_guide_constrained_geometry",
+    "mfh-90deg": "derived_guide_constrained_geometry",
+    "test-0deg": "accepted_observation_geometry",
+    "test-45deg": "accepted_observation_geometry",
+    "test-90deg": "accepted_observation_geometry"
+  },
+  "input_status": "unreviewed_candidates",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 21260,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/candidate-preview/candidate-preview.pdf",
+      "sha256": "43c18627bbb3eb500ab625623a5685555bb1c404fd58fa8b4ab4e6db440ae758"
+    },
+    "png": {
+      "bytes": 90053,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/candidate-preview/candidate-preview.png",
+      "sha256": "a82cda5c594f389272332e3ccbf8a9223711b1424600c8448abc88fd320c2ec9"
+    },
+    "svg": {
+      "bytes": 59882,
+      "path": "examples/full-workflow-20260726/figure7-marker-v4/candidate-preview/candidate-preview.svg",
+      "sha256": "1c794fce1d83f28389e72e717f690bb03ba6173d9e51cf5a9ea6c5be2c08ac3f"
+    }
+  },
+  "plot_type": "line",
+  "project_spec": {
+    "bytes": 12458,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/project.json",
+    "sha256": "c5b7d6bae21d5f9f506488a19b1cb58dd4d4fb0fde711bf287cd2e484b06b033"
+  },
+  "rendered_segments": {
+    "mfh-0deg": 1,
+    "mfh-45deg": 1,
+    "mfh-90deg": 1,
+    "test-0deg": 1,
+    "test-45deg": 1,
+    "test-90deg": 1
+  },
+  "rows": 1048,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

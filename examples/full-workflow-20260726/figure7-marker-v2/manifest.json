@@ -1,0 +1,84 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 106854,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/candidates.csv",
+      "sha256": "62880d2f37d749df813c725de34577149cd8579b47455999b84c99f654c4ca61"
+    },
+    "extraction_report": {
+      "bytes": 8225,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/extraction-report.json",
+      "sha256": "20a5dd30bb68b1c8577b97fb20334eb34074c7c43506189ec34c718d2cbb06c3"
+    },
+    "overlay": {
+      "bytes": 219788,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/overlay.png",
+      "sha256": "c9293383358e33e2656d6ce4171407e5d461e2e16dc1cbba8ed6ad6ad0f1975f"
+    },
+    "project_spec": {
+      "bytes": 11975,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/project.json",
+      "sha256": "b84634410491ad932e56038516ad0e073289083d2e366b2ad441ff47c0529bc6"
+    },
+    "review_anomalies": {
+      "bytes": 0,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/review-anomalies.csv",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review_assessment": {
+      "bytes": 25561,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/review-assessment.json",
+      "sha256": "bfd2b8235bbfd46803514f91ad670d08400b5a527ae111949efdcf9c257a3839"
+    },
+    "review_html": {
+      "bytes": 792636,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/review.html",
+      "sha256": "aa75884fd92d91776cb0dd1ccdea3c66c8414a1a287d05b205e2a9ec7d530396"
+    },
+    "review_template": {
+      "bytes": 60316,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/review-template.json",
+      "sha256": "25095c91a9add0ad0c3f5d6db2bb6bbeecff9c08d04b6bdd16be8546b83c4593"
+    },
+    "review_uncertainty": {
+      "bytes": 8055,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/review-uncertainty.csv",
+      "sha256": "f91e81f50d19b17858ab03c83442c74dde3ab673682a60ca6977253bae92b448"
+    },
+    "source_report": {
+      "bytes": 1881,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/source-report.json",
+      "sha256": "86e49c819caadca389ad31fdce4fd1f08e8af99d8cd0e65d4e80e5eb11bb7523"
+    },
+    "spec_confirmation": {
+      "bytes": 795,
+      "path": "examples/full-workflow-20260726/figure7-marker-v2/spec-confirmation.json",
+      "sha256": "edee67cd1ed515a85ad980680ff87e697e87171b0e8769303fdb5f3410aca3ac"
+    },
+    "spec_review": {
+      "bytes": 3141,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/spec-review.json",
+      "sha256": "8b161ab691d4673bcc536072977501ffc1a07764b84d1a55a9b9b80e95be1ede"
+    },
+    "spec_review_overlay": {
+      "bytes": 226819,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/spec-review.png",
+      "sha256": "98ee2193ed44ec3dcf9c22813eb4c44c6a17b554d4639726f30658e5690b5ab5"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "partial",
+  "project_id": "jiang-tian-2021-figure7-marker-v2",
+  "project_spec": {
+    "bytes": 11975,
+    "path": "examples/full-workflow-20260726/figure7-marker-v2/project.json",
+    "sha256": "b84634410491ad932e56038516ad0e073289083d2e366b2ad441ff47c0529bc6"
+  },
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "spec_confirmation_status": "confirmed",
+  "spec_review_status": "confirmed",
+  "tool_version": "0.3.1"
+}

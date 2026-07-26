@@ -104,9 +104,9 @@
   <path d="M1120 260 V229 M1120 260 H1157 M1126 252 L1138 242 L1147 247 L1155 232" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <text x="1138" y="307" class="card-title">论文级重绘</text>
   <line x1="1067" y1="327" x2="1209" y2="327" stroke="#b7d9e8" stroke-width="2"/>
-  <text x="1138" y="365" class="body" text-anchor="middle">观测 / 展示分离</text>
-  <text x="1138" y="398" class="body" text-anchor="middle">受限补线 · 固定画布</text>
-  <text x="1138" y="432" class="small" text-anchor="middle">派生几何单独留痕</text>
+  <text x="1138" y="365" class="body" text-anchor="middle">观测 / 数据分离</text>
+  <text x="1138" y="398" class="body" text-anchor="middle">拓扑先定 · 样式后选</text>
+  <text x="1138" y="432" class="small" text-anchor="middle">正式数据血缘单独留痕</text>
 
   <!-- Capability 5 -->
   <g filter="url(#shadow)">
@@ -128,7 +128,7 @@
   <path d="M1615 239 L1633 229 L1651 239 L1633 249 Z M1615 239 V258 L1633 269 L1651 258 V239 M1633 249 V269" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
   <text x="1633" y="307" class="card-title" fill="#126b3d">可审计交付包</text>
   <line x1="1540" y1="327" x2="1725" y2="327" stroke="#a8d7ba" stroke-width="2"/>
-  <text x="1633" y="361" class="body" text-anchor="middle">data.csv</text>
+  <text x="1633" y="361" class="body" text-anchor="middle">observations.csv · data.csv</text>
   <text x="1633" y="393" class="body" text-anchor="middle">PNG · SVG · PDF</text>
   <text x="1633" y="425" class="small" text-anchor="middle">manifest.json</text>
   <text x="1633" y="448" class="small" text-anchor="middle">validation-report.json</text>
@@ -160,7 +160,7 @@
   <text x="775" y="875" class="chip">render_status</text>
   <rect x="930" y="848" width="260" height="42" rx="16" fill="#eaf8ef" stroke="#16844b" stroke-width="1.8"/>
   <text x="1060" y="875" class="chip">delivery_status</text>
-  <text x="1260" y="861" class="body" font-weight="700">候选值 → AI 评判 + 人工确认 → 重绘产物 → 完整交付</text>
+  <text x="1260" y="861" class="body" font-weight="700">候选 → 可见观测 → 正式数据 → 重绘 → 交付</text>
   <text x="1260" y="889" class="small">每一阶段单独记录，禁止用下游成功覆盖上游不确定性</text>
 
   <!-- Footer -->

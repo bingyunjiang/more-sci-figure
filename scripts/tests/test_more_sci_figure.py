@@ -56,6 +56,56 @@ class AxisMapTests(unittest.TestCase):
         )
         self.assertGreater(mapping.uncertainty(50), 0)
 
+    def test_declared_axis_spans_use_confirmed_plot_range(self) -> None:
+        project = {
+            "chart": {
+                "type": "line",
+                "x_axis": {
+                    "anchors": [
+                        {"pixel": 10, "value": 0},
+                        {"pixel": 110, "value": 2},
+                    ]
+                },
+                "y_axis": {
+                    "anchors": [
+                        {"pixel": 90, "value": -1},
+                        {"pixel": 10, "value": 1},
+                    ]
+                },
+            }
+        }
+        self.assertEqual(
+            {"x": 2.0, "y": 2.0, "value": 2.0},
+            msf.declared_axis_spans(project),
+        )
+
+    def test_declared_polar_angle_span_uses_full_sampling_range(self) -> None:
+        project = {
+            "chart": {
+                "type": "polar_line",
+                "polar": {
+                    "angle_start_deg": 0,
+                    "angle_end_deg": 360,
+                    "angle_axis": {
+                        "anchors": [
+                            {"pixel": [0, 0], "value": 0},
+                            {"pixel": [1, 0], "value": 270},
+                        ]
+                    },
+                    "radius_axis": {
+                        "anchors": [
+                            {"pixel": 20, "value": 40},
+                            {"pixel": 220, "value": 70},
+                        ]
+                    },
+                },
+            }
+        }
+        self.assertEqual(
+            {"x": 360.0, "y": 30.0, "value": 30.0},
+            msf.declared_axis_spans(project),
+        )
+
     def test_anchor_jackknife_reports_stable_and_unstable_calibration(self) -> None:
         stable_axis = {
             "scale": "linear",
@@ -433,6 +483,25 @@ class WorkflowTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(msf.FigureError, "必须先在独立异常复核区逐项处理"):
             msf.review_confirm_command(output, "Dr.Jiang", "下一步")
+        confirmation = msf.review_confirm_command(
+            output,
+            "Dr.Jiang",
+            "已查看局部证据并接受全部异常",
+            accept_anomalies=True,
+        )
+        self.assertEqual(
+            "explicit_visual_anomaly_acceptance", confirmation["review_method"]
+        )
+        decisions = msf.read_json(output / "review-decisions.json")
+        self.assertTrue(
+            decisions["anomaly_acknowledgement"]["accept_all_anomalies_authorized"]
+        )
+        self.assertEqual(
+            [anomaly_id], decisions["anomaly_acknowledgement"]["candidate_ids"]
+        )
+        self.assertTrue(
+            all(item["decision"] == "accepted" for item in decisions["decisions"])
+        )
 
     def test_ai_batch_confirmation_stops_on_critical_source_issue(self) -> None:
         spec_path = self.make_line_project()
@@ -450,7 +519,12 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual("critical", assessment["risk_level"])
         self.assertEqual("stop", assessment["recommended_action"])
         with self.assertRaisesRegex(msf.FigureError, "不得一键批量确认"):
-            msf.review_confirm_command(output, "Dr.Jiang", "继续")
+            msf.review_confirm_command(
+                output,
+                "Dr.Jiang",
+                "已查看证据并继续",
+                accept_anomalies=True,
+            )
         self.assertFalse((output / "review-decisions.json").exists())
 
     def test_publication_profile_requires_a_higher_dimension_floor(self) -> None:
@@ -662,16 +736,27 @@ class WorkflowTests(unittest.TestCase):
         spec_path = self.make_line_project()
         spec = msf.read_json(spec_path)
         spec["quality_gates"]["scatter"] = {"min_accepted_components": 0}
+        spec["chart"]["series"][0]["curve_topology"] = "invented"
+        spec["chart"]["series"][0]["curve_data_mode"] = "invented"
         spec["render"]["display_geometry"] = {
             "mode": "invented",
             "max_bridge_gap_px": -1,
+        }
+        spec["render"]["series_styles"] = {
+            "trend": {
+                "max_bridge_gap_px": -2,
+                "geometry_source": "invented",
+            }
         }
         spec["render"]["canvas_px"] = [220, 140]
         spec["render"]["axes_box_px"] = [20, 15, 260, 115]
         errors = msf.validate_spec(spec, spec_path)
         self.assertTrue(any("min_accepted_components" in error for error in errors))
+        self.assertTrue(any("curve_topology" in error for error in errors))
+        self.assertTrue(any("curve_data_mode" in error for error in errors))
         self.assertTrue(any("display_geometry.mode" in error for error in errors))
         self.assertTrue(any("max_bridge_gap_px" in error for error in errors))
+        self.assertTrue(any("geometry_source" in error for error in errors))
         self.assertTrue(any("canvas_px 内" in error for error in errors))
 
     def test_measurement_hash_mismatch_is_rejected(self) -> None:
@@ -693,14 +778,23 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(msf.FigureError, "未覆盖全部候选值"):
             msf.review_apply_command(output, decisions)
 
-    def test_gap_is_preserved_as_two_render_segments(self) -> None:
+    def test_formal_curve_topology_is_independent_of_render_line_style(self) -> None:
         spec_path = self.make_line_project(with_gap=True)
         output = self.root / "evidence"
         self.extract_command(spec_path, output)
         decisions = self.decisions_for(output)
         msf.review_apply_command(output, decisions)
-        report = msf.render_command(spec_path, output / "data.csv", output / "render")
-        self.assertEqual(2, report["rendered_segments"]["trend"])
+        data_hash = digest(output / "data.csv")
+        solid = msf.render_command(spec_path, output / "data.csv", output / "render")
+        spec = msf.read_json(spec_path)
+        spec["render"]["series_styles"] = {
+            "trend": {"line_style": "--", "color": "#d62728"}
+        }
+        msf.write_json(spec_path, spec)
+        dashed = msf.render_command(spec_path, output / "data.csv", output / "render")
+        self.assertEqual(1, solid["rendered_segments"]["trend"])
+        self.assertEqual(1, dashed["rendered_segments"]["trend"])
+        self.assertEqual(data_hash, digest(output / "data.csv"))
 
     def test_guided_path_separates_same_colour_curves_and_ignores_local_legend(self) -> None:
         image = Image.new("RGB", (220, 140), "white")
@@ -823,36 +917,40 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual("solid", by_id["solid"]["line_semantics"])
         self.assertGreater(by_id["dash"]["maximum_gap_columns"], 0)
 
-    def test_display_geometry_only_bridges_an_explicitly_bounded_gap(self) -> None:
-        rows = [
-            {"x": 0, "y": 0, "pixel_x": 10, "segment_break": True},
-            {"x": 1, "y": 1, "pixel_x": 11, "segment_break": False},
-            {"x": 3, "y": 2, "pixel_x": 14, "segment_break": True},
-            {"x": 4, "y": 3, "pixel_x": 15, "segment_break": False},
-        ]
-        preserved = msf.display_segments(
-            rows,
-            "x",
-            "y",
-            mode="none",
-            smoothing_window=1,
-            samples_per_interval=1,
-            max_bridge_gap_px=0,
+    def test_review_apply_separates_visual_gaps_from_continuous_curve_topology(self) -> None:
+        spec_path = self.make_line_project(with_gap=True)
+        output = self.root / "evidence"
+        self.extract_command(spec_path, output)
+        msf.review_apply_command(output, self.decisions_for(output))
+        observations = msf.read_tabular_rows(output / "observations.csv")
+        formal = msf.read_tabular_rows(output / "data.csv")
+        self.assertEqual(2, sum(msf.truthy(row["segment_break"]) for row in observations))
+        self.assertEqual(
+            2,
+            sum(msf.truthy(row["evidence_segment_break"]) for row in formal),
         )
-        bridged = msf.display_segments(
-            rows,
-            "x",
-            "y",
-            mode="shape_preserving",
-            smoothing_window=1,
-            samples_per_interval=4,
-            max_bridge_gap_px=3,
+        self.assertEqual(1, sum(msf.truthy(row["segment_break"]) for row in formal))
+        self.assertTrue(all(row["curve_topology"] == "continuous" for row in formal))
+        data_report = msf.read_json(output / "formal-data-report.json")
+        self.assertEqual(1, data_report["series"][0]["normalized_visual_breaks"])
+        render = msf.render_command(spec_path, output / "data.csv", output / "render")
+        self.assertEqual(1, render["rendered_segments"]["trend"])
+        self.assertEqual(
+            "formal_curve_data_geometry", render["geometry_sources"]["trend"]
         )
-        self.assertEqual(2, len(preserved))
-        self.assertEqual(1, len(bridged))
-        self.assertGreater(len(bridged[0][0]), len(rows))
-        self.assertEqual(0, bridged[0][0][0])
-        self.assertEqual(4, bridged[0][0][-1])
+
+    def test_explicit_segmented_curve_preserves_semantic_breaks(self) -> None:
+        spec_path = self.make_line_project(with_gap=True)
+        spec = msf.read_json(spec_path)
+        spec["chart"]["series"][0]["curve_topology"] = "segmented"
+        msf.write_json(spec_path, spec)
+        output = self.root / "segmented-evidence"
+        self.extract_command(spec_path, output)
+        msf.review_apply_command(output, self.decisions_for(output))
+        formal = msf.read_tabular_rows(output / "data.csv")
+        self.assertEqual(2, sum(msf.truthy(row["segment_break"]) for row in formal))
+        render = msf.render_command(spec_path, output / "data.csv", output / "render")
+        self.assertEqual(2, render["rendered_segments"]["trend"])
 
     def test_display_geometry_rejects_pixel_outlier_and_reports_retained_knots(self) -> None:
         rows = [
@@ -868,7 +966,6 @@ class WorkflowTests(unittest.TestCase):
             mode="shape_preserving",
             smoothing_window=1,
             samples_per_interval=2,
-            max_bridge_gap_px=0,
             outlier_window=3,
             max_outlier_pixel_residual=5,
             knot_stride=1,
@@ -915,6 +1012,42 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(181, len(display_x))
         self.assertTrue(np.all(np.isfinite(display_y)))
 
+    def test_guide_constrained_curve_is_materialized_in_data_before_render(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["chart"]["series"][0].update(
+            {
+                "extraction_mode": "guided_path",
+                "guide_points_px": [[20, 110], [200, 30]],
+                "guide_corridor_px": 6,
+                "curve_topology": "continuous",
+                "curve_data_mode": "guide_constrained",
+                "curve_data_max_residual_px": 5,
+                "curve_data_residual_smoothing_window": 5,
+            }
+        )
+        msf.write_json(spec_path, spec)
+        output = self.root / "curve-data-evidence"
+        self.extract_command(spec_path, output)
+        msf.review_apply_command(output, self.decisions_for(output))
+        observations = msf.read_tabular_rows(output / "observations.csv")
+        formal = msf.read_tabular_rows(output / "data.csv")
+        self.assertTrue(observations)
+        self.assertEqual(181, len(formal))
+        self.assertTrue(
+            all(
+                row["data_provenance"] == "derived_guide_constrained_curve_data"
+                for row in formal
+            )
+        )
+        self.assertEqual(1, sum(msf.truthy(row["segment_break"]) for row in formal))
+        render = msf.render_command(spec_path, output / "data.csv", output / "render")
+        self.assertEqual(
+            "formal_derived_curve_data_geometry",
+            render["geometry_sources"]["trend"],
+        )
+        self.assertEqual(1, render["rendered_segments"]["trend"])
+
     def test_fixed_canvas_and_derived_display_geometry_are_auditable(self) -> None:
         spec_path = self.make_line_project()
         spec = msf.read_json(spec_path)
@@ -927,7 +1060,6 @@ class WorkflowTests(unittest.TestCase):
                     "mode": "shape_preserving",
                     "smoothing_window": 5,
                     "samples_per_interval": 3,
-                    "max_bridge_gap_px": 0,
                 },
             }
         )
@@ -1276,7 +1408,39 @@ class WorkflowTests(unittest.TestCase):
             self.assertAlmostEqual(expected_x, float(row["pixel_x"]), delta=1.0)
             self.assertAlmostEqual(expected_y, float(row["pixel_y"]), delta=1.0)
             self.assertEqual("visible_marker_support", row["evidence_status"])
+            self.assertGreater(float(row["pixel_half_height"]), 3.0)
+            self.assertEqual(0.5, float(row["center_localization_half_width_px"]))
+            self.assertLess(float(row["y_uncertainty"]), 0.01)
         self.assertEqual(3, diagnostics["series"][0]["accepted_markers"])
+
+    def test_guided_path_preserves_line_width_without_inflating_coordinate_uncertainty(self) -> None:
+        image = Image.new("RGB", (120, 100), "white")
+        draw = ImageDraw.Draw(image)
+        draw.line((10, 80, 110, 20), fill="#0072b2", width=9)
+        mapping = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 0, "value": 0}, {"pixel": 119, "value": 1}]}
+        )
+        rows, diagnostics = msf.extract_line(
+            np.asarray(image),
+            (0, 0, 119, 99),
+            [
+                {
+                    "id": "thick-line",
+                    "color": "#0072b2",
+                    "tolerance": 10,
+                    "extraction_mode": "guided_path",
+                    "line_semantics": "dashed",
+                    "guide_points_px": [[10, 80], [110, 20]],
+                    "guide_corridor_px": 7,
+                }
+            ],
+            mapping,
+            mapping,
+        )
+        self.assertTrue(rows)
+        self.assertGreater(max(float(row["pixel_half_height"]) for row in rows), 3.0)
+        self.assertLess(max(float(row["y_uncertainty"]) for row in rows), 0.01)
+        self.assertEqual("dashed", diagnostics["series"][0]["line_semantics"])
 
     def test_bar_rectangles_are_recovered(self) -> None:
         image = Image.new("RGB", (140, 110), "white")

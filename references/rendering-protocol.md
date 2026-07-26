@@ -12,8 +12,9 @@
 在 `render` 中明确声明图表类型、横纵坐标列、分组列、标签和坐标尺度。支持 `line`、`polar_line`、`scatter`、`bar` 和 `histogram`。
 
 - 只能按声明的列分组；
-- 曲线默认保留行序；
-- `segment_break` 默认必须拆分曲线；只有项目显式声明 `max_bridge_gap_px` 时，展示层才能跨接不超过该像素上限的短缺口；
+- 曲线按 `curve_order`（缺失时回退到坐标顺序）绘制；
+- `data.csv.segment_break` 只表示数据构建阶段已经确认的物理或定义域断裂，render 必须照此分段且不得补线；
+- 虚线、实线、点划线、颜色、粗细和标记只属于样式，改变它们不得改变数据拓扑；
 - `linear` 与 `log10` 必须在提取和重绘中保持一致；
 - `polar_line` 按角度数值排序，使用声明的零度方位和增角方向；只有首尾属于同一无缺口圆周段时，才可周期性重复首个已接受点闭合曲线；
 - 外部数据先规范化为独立 `data.csv`，不能覆盖原始数据文件。
@@ -27,22 +28,21 @@
 - SVG 和 PDF 中的文字应保持可编辑；
 - 中文标签优先使用系统可用中文字体，并保留通用回退字体。
 
-## 观测值与展示几何
+## 正式数据与展示几何
 
 项目可声明 `display_geometry.mode=shape_preserving`，用于生成连续、可编辑的展示路径。必须同时满足：
 
-- `data.csv` 保持人工接受的观测点和原始 `segment_break`，不得被平滑结果覆盖；
+- `data.csv` 已经包含正式曲线顺序与语义分段；`observations.csv` 另行保留可见像素和证据断点；
 - 派生点写入 `render/display-geometry.csv`，并标记 `derived_display_geometry`；
-- 补线仅适用于明确的连续物理曲线，并受 `max_bridge_gap_px` 限制；
-- 虚线的可见空白、遮挡或真实数据缺口不得仅因视觉美观而无界跨接；
+- 展示层可以在同一正式数据段内做形状保持采样，但不能跨正式 `segment_break`，也不能改变 `data.csv`；
 - 渲染报告记录观测锚点数、派生点数和实际分段数。
 
-同色虚线在可见证据过稀、不适合直接插值时，可为该系列声明 `geometry_source=guide_constrained`：
+同色虚线在可见证据过稀、不适合直接形成曲线数据时，应在数据构建层声明 `curve_data_mode=guide_constrained`：
 
 - 连续骨架只能来自项目中已审计的 `guide_points_px`；
 - 可见候选仅用于计算有上限的像素残差校正；
-- 输出必须标记 `derived_guide_constrained_geometry`，不得称为恢复的作者原始数据；
-- 渲染报告必须逐系列记录实际几何来源。
+- 正式 `data.csv` 必须标记 `derived_guide_constrained_curve_data`，不得称为作者原始实验数据；
+- `formal-data-report.json` 必须记录观测数量、保留残差候选数、正式点数和数据来源；render 不得再次运行引导重建。
 
 ## 导出与视觉验证
 

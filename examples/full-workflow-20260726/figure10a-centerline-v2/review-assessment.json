@@ -1,0 +1,269 @@
+{
+  "acceptance": {
+    "decision": "review_record_ready",
+    "dimension_floor_pass": true,
+    "hard_gates": {
+      "automatic_quality_gates": true,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": true,
+    "next_instruction": "复核记录已完整保存；请 Agent 校验哈希与覆盖后应用，生成正式 data.csv。",
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "responsibility": {
+      "agent_completed": [
+        "七维质量评估",
+        "锚点留一扰动稳定性检查",
+        "定位 0 个高不确定候选并合并为 0 个区间"
+      ],
+      "agent_next": [
+        "校验复核哈希与覆盖并应用，生成正式 data.csv。"
+      ],
+      "user_not_required": [
+        "运行命令",
+        "选择保存路径",
+        "调整算法参数",
+        "逐点复核全部普通候选"
+      ],
+      "user_required_now": false,
+      "user_tasks": [],
+      "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+      "workflow_order": "agent_first_then_targeted_user_judgment"
+    },
+    "score_threshold_pass": true,
+    "technical_eligibility": true,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "unresolved_anomaly_count": 0,
+    "unresolved_anomaly_ids": []
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 0,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 0
+  },
+  "candidate_count": 2266,
+  "candidate_sha256": "3436bc89f5ba1ab1ff7581ba5a7d655daac4cb2ac1bc53357ddd5f6124abc8a9",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "visible": 2266
+  },
+  "generated_at": "2026-07-26T11:36:20.890586+00:00",
+  "high_risk_issues": [],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      0.0005677382168993041,
+      0.0005706654958607814
+    ],
+    "extraction_status": "pass",
+    "high_anomalies": 0,
+    "medium_anomalies": 0,
+    "model_assisted_candidates": 0,
+    "model_assisted_ratio": 0.0,
+    "quality_checks_failed": 0,
+    "quality_checks_total": 12
+  },
+  "minimum_dimension_score": 91.0,
+  "overall_score": 98.1,
+  "project_id": "jiang-2026-figure10a-full-workflow-rerun-20260726",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a-centerline-v2/project.json",
+  "recommended_action": "apply_review",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "low",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.0,
+          "total_high_anomalies": 0,
+          "total_medium_anomalies": 0,
+          "unresolved_high_anomalies": 0,
+          "unresolved_medium_anomalies": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 6,
+              "axis": "x_axis",
+              "normalized_rmse": 0.0005677382168993041,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 10,
+              "axis": "y_axis",
+              "normalized_rmse": 0.0005706654958607814,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.0,
+          "support_evaluable": false,
+          "valid_support_ratio": null
+        },
+        "score": 91.0,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 0,
+          "checks_total": 12
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 100.0,
+          "worst_series_score": 100.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": null,
+          "high_uncertainty_candidate_count": 0,
+          "high_uncertainty_group_count": 0,
+          "normalized_uncertainty_p95": 0.001040835398813221,
+          "operational_threshold": 0.02,
+          "perturbation_stability": {
+            "axes": [
+              {
+                "anchor_count": 6,
+                "axis": "x_axis",
+                "candidate_count": 2266,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0006079433261445826,
+                "normalized_shift_p95": 0.0005677044265126704,
+                "score": 99.4,
+                "status": "measured",
+                "trials": 6,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              },
+              {
+                "anchor_count": 10,
+                "axis": "y_axis",
+                "candidate_count": 2266,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0003362066257903236,
+                "normalized_shift_p95": 0.00025216530380848113,
+                "score": 99.7,
+                "status": "measured",
+                "trials": 10,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              }
+            ],
+            "method": "leave_one_anchor_out",
+            "score": 99.4,
+            "status": "measured",
+            "说明": "已自动完成锚点留一扰动；该检查不改写候选数据。"
+          },
+          "uncertainty_proxy_score": 99.5
+        },
+        "score": 99.4,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "pixel_evidence",
+    "worst_series_score": 100.0
+  },
+  "series_assessment": [
+    {
+      "candidates": 581,
+      "coverage": 0.9251592356687898,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.030254777070063694,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "p1",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 616,
+      "coverage": 0.9808917197452229,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.01592356687898089,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "p2",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 526,
+      "coverage": 0.8375796178343949,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.007961783439490446,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "p3",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 543,
+      "coverage": 0.8646496815286624,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.007961783439490446,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "p4",
+      "series_quality_score": 100.0
+    }
+  ],
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "tool_version": "0.3.1",
+  "top_anomalies": [],
+  "uncertainty_review": {
+    "candidate_count": 0,
+    "default_owner": "agent",
+    "group_count": 0,
+    "groups": [],
+    "priority_group_count": 0,
+    "priority_groups": [],
+    "user_review_policy": "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，不得要求逐点复核全部高不确定候选。"
+  },
+  "warnings": []
+}

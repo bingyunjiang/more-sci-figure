@@ -1,0 +1,313 @@
+{
+  "calibration": {
+    "x_axis": {
+      "anchor_count": 7,
+      "anchor_residuals_transformed_units": [
+        -3.469446951953614e-18,
+        -1.734723475976807e-17,
+        -2.7755575615628914e-17,
+        -3.469446951953614e-17,
+        -4.163336342344337e-17,
+        -5.551115123125783e-17,
+        -5.551115123125783e-17
+      ],
+      "intercept": -0.022086956521739122,
+      "normalized_rmse": 3.1784484118033985e-16,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 3.814138094164078e-17,
+      "scale": "linear",
+      "slope": 0.00017391304347826077,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "anchor_count": 7,
+      "anchor_residuals_transformed_units": [
+        0.13116935525727058,
+        -0.06022404056761843,
+        0.030298547745843507,
+        -0.1610948480790455,
+        -0.07057225976558357,
+        0.01995032854787837,
+        0.11047291686134031
+      ],
+      "intercept": 154.05729669479828,
+      "normalized_rmse": 0.000643820993121427,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.09657314896821405,
+      "scale": "linear",
+      "slope": -0.2819159841383535,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "chart_type": "line",
+  "diagnostics": {
+    "series": [
+      {
+        "accepted_markers": 10,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            215,
+            398,
+            492,
+            438
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "test-0deg",
+        "marker_min_distance_px": 10.0,
+        "marker_shape": "square",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 5,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            520,
+            445,
+            812,
+            485
+          ]
+        ],
+        "coverage": 0.5655172413793104,
+        "extraction_mode": "guided_path",
+        "id": "mfh-0deg",
+        "line_semantics": "dashed",
+        "maximum_gap_columns": 27,
+        "maximum_gap_fraction": 0.09310344827586207,
+        "mean_guide_residual_px": 3.2836354594944726,
+        "supported_columns": 164
+      },
+      {
+        "accepted_markers": 21,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            516,
+            398,
+            812,
+            438
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "test-45deg",
+        "marker_min_distance_px": 12.0,
+        "marker_shape": "triangle",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 14,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            215,
+            493,
+            493,
+            533
+          ]
+        ],
+        "coverage": 0.9760869565217392,
+        "extraction_mode": "guided_path",
+        "id": "mfh-45deg",
+        "line_semantics": "dashed",
+        "maximum_gap_columns": 8,
+        "maximum_gap_fraction": 0.017391304347826087,
+        "mean_guide_residual_px": 2.4680552486093625,
+        "supported_columns": 449
+      },
+      {
+        "accepted_markers": 14,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            215,
+            445,
+            493,
+            485
+          ]
+        ],
+        "coverage": 1.0,
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "extraction_mode": "marker_centers",
+        "id": "test-90deg",
+        "marker_min_distance_px": 10.0,
+        "marker_shape": "diamond",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "merged_detections": 5,
+        "minimum_declared_marker_count": 3,
+        "rejected_runs": 0
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            520,
+            493,
+            812,
+            533
+          ]
+        ],
+        "coverage": 0.8478260869565217,
+        "extraction_mode": "guided_path",
+        "id": "mfh-90deg",
+        "line_semantics": "dashed",
+        "maximum_gap_columns": 17,
+        "maximum_gap_fraction": 0.03695652173913044,
+        "mean_guide_residual_px": 2.950384324822906,
+        "supported_columns": 390
+      }
+    ]
+  },
+  "formal_data": {
+    "data": {
+      "bytes": 413715,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/data.csv",
+      "sha256": "b6064ef5555e64204be5e34343875c2230731ad3f32eaea2b3bcc251511115bd"
+    },
+    "observations": {
+      "bytes": 266990,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/observations.csv",
+      "sha256": "7aebe3dd14019cf45e48228c108b663a917e611412ec48813e2957f541106296"
+    },
+    "report": {
+      "bytes": 3230,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/formal-data-report.json",
+      "sha256": "595890226fa52b208f67fd81b70feb2c8f8b3bb7c8f3e5cb35fd5537f39d3355"
+    },
+    "rows": 1255
+  },
+  "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
+  "numeric_output_authorized": true,
+  "plot_box": [
+    127,
+    14,
+    817,
+    546
+  ],
+  "quality_gates": {
+    "checks": [
+      {
+        "name": "x_axis.anchor_count",
+        "observed": 7,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "x_axis.normalized_rmse",
+        "observed": 3.1784484118033985e-16,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "y_axis.anchor_count",
+        "observed": 7,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "y_axis.normalized_rmse",
+        "observed": 0.000643820993121427,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "test-0deg.accepted_markers",
+        "observed": 10,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "mfh-0deg.coverage",
+        "observed": 0.5655172413793104,
+        "status": "pass",
+        "threshold": ">=0.18"
+      },
+      {
+        "name": "mfh-0deg.maximum_gap_fraction",
+        "observed": 0.09310344827586207,
+        "status": "pass",
+        "threshold": "<=0.12"
+      },
+      {
+        "name": "test-45deg.accepted_markers",
+        "observed": 21,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "mfh-45deg.coverage",
+        "observed": 0.9760869565217392,
+        "status": "pass",
+        "threshold": ">=0.18"
+      },
+      {
+        "name": "mfh-45deg.maximum_gap_fraction",
+        "observed": 0.017391304347826087,
+        "status": "pass",
+        "threshold": "<=0.12"
+      },
+      {
+        "name": "test-90deg.accepted_markers",
+        "observed": 14,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "name": "mfh-90deg.coverage",
+        "observed": 0.8478260869565217,
+        "status": "pass",
+        "threshold": ">=0.18"
+      },
+      {
+        "name": "mfh-90deg.maximum_gap_fraction",
+        "observed": 0.03695652173913044,
+        "status": "pass",
+        "threshold": "<=0.12"
+      }
+    ],
+    "status": "pass",
+    "说明": "质量门槛只用于筛查风险，不能替代人工语义复核。"
+  },
+  "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
+  "review_status": "accepted",
+  "review_summary": {
+    "accepted": 1048,
+    "corrected": 0,
+    "reassigned": 0,
+    "rejected": 0,
+    "review_status": "accepted",
+    "total": 1048
+  },
+  "rows": 1048,
+  "schema": "more-sci-figure.extraction-report.v1",
+  "source": {
+    "height": 643,
+    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v2/source-image.jpeg",
+    "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+    "width": 843
+  },
+  "specification_confirmation": {
+    "confirmation": "用户要求：优化此 skill，走正确的绘图路径；此前已授权 Agent 查看规格截图自行判断。",
+    "confirmed_at": "2026-07-26T11:36:21.728163+00:00",
+    "confirmed_by": "Codex agent, user-authorized workflow correction",
+    "record_sha256": "41dceb2d7644248e8e376c411981e5d672a28949a3124ff5f6b52e86f989704d",
+    "status": "confirmed"
+  },
+  "status": "pass"
+}

@@ -6,7 +6,13 @@
 
 ### 新增
 
-- 增加混合线图的 `marker_centers` 系列提取模式：从连接线上的方形、三角形、菱形、圆形或叉形真实像素恢复标记中心，并以合成夹具回归，避免把连接线扩展成密集实验点。
+- 增加混合线图的 `marker_centers` 系列提取模式：从连接线上的方形、三角形、菱形、圆形或叉形真实像素恢复标记中心，按最小标记间距合并 JPEG 轮廓造成的近邻重复检测，并以合成夹具回归，避免把连接线扩展成密集实验点。
+- 修正曲线质量语义：`guided_path` 的 `solid` / `dashed` 声明现进入覆盖率与最大缺口质量门；标记尺寸、线宽和径向像素带继续作为字形证据保存，但不再被误当成坐标误差棒，坐标不确定度改由可声明的中心定位半宽与轴标定计算。
+- 修正候选不确定度归一化：使用用户已确认的完整坐标轴量程，而不是各系列自身跨度，避免近水平曲线被错误标成整段高不确定。
+- 增加显式视觉异常接受路径：用户授权 Agent 截图判断且 Agent 已检查证据时，`review-confirm --accept-anomalies` 可将 `review_anomaly_groups` 全部异常写入哈希绑定复核记录；仍禁止绕过 `re_extract`、来源错误和停止状态。
+- 重构曲线数据主链：`review-apply` 先写入保留可见性断点的 `observations.csv`，再按 `curve_topology` 生成样式无关的 `data.csv` 与 `formal-data-report.json`；虚线空白、遮挡和 JPEG 缺色不再自动成为正式数据断点。
+- 将引导约束连续曲线从 render 层迁移到 `curve_data_mode=guide_constrained` 数据构建层；正式 `data.csv` 记录派生坐标来源，render 只能更换线型/颜色等样式，不能补线或重建数据。
+- 弃用 `max_bridge_gap_px` 和 render 层 `geometry_source=guide_constrained`；旧显示层短缺口补线方案由正式曲线拓扑取代。
 - 增加提取前 `spec-review → 用户判断 → spec-confirm` 强制门禁：同时展示原始测量栅格与绘图区/锚点/引导路径/排除框叠图，确认记录绑定项目、来源、测量栅格和叠图哈希；缺失确认或确认后修改规格时，`extract`/`pipeline` 拒绝继续。
 - `inspect` 增加 `--pdf-image-index`，可在保留 PDF 页码、xref、编码和对象哈希的前提下直接锁定页内原始栅格对象，避免整页重采样。
 - 增加 `polar_line`：使用中心、角度锚点、径向锚点、零度方位和增角方向提取单值径向曲线，并统一导出极坐标 PNG/SVG/PDF。

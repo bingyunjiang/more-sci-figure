@@ -98,14 +98,24 @@
         "y_limits": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
         "x_ticks": {"type": "array", "items": {"type": "number"}},
         "y_ticks": {"type": "array", "items": {"type": "number"}},
-        "series_styles": {"type": "object", "additionalProperties": {"type": "object"}},
+        "series_styles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "geometry_source": {"enum": ["observations", "guide_constrained"]},
+              "guide_constraint_max_residual_px": {"type": "number", "minimum": 0},
+              "guide_residual_smoothing_window": {"type": "integer", "minimum": 1}
+            },
+            "additionalProperties": true
+          }
+        },
         "display_geometry": {
           "type": "object",
           "properties": {
             "mode": {"enum": ["none", "shape_preserving"]},
             "smoothing_window": {"type": "integer", "minimum": 1},
             "samples_per_interval": {"type": "integer", "minimum": 1},
-            "max_bridge_gap_px": {"type": "number", "minimum": 0},
             "outlier_window": {"type": "integer", "minimum": 1},
             "max_outlier_pixel_residual": {"type": "number", "minimum": 0},
             "knot_stride": {"type": "integer", "minimum": 1}
@@ -146,6 +156,7 @@
         "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
         "color_space": {"enum": ["rgb", "lab"]},
         "tolerance": {"type": "number", "exclusiveMinimum": 0},
+        "center_localization_half_width_px": {"type": "number", "exclusiveMinimum": 0, "maximum": 10},
         "min_area": {"type": "integer", "minimum": 1},
         "max_area": {"type": "integer", "minimum": 1},
         "min_fill_ratio": {"type": "number", "minimum": 0, "maximum": 1},
@@ -156,6 +167,10 @@
         "shared_color_group": {"type": "string"},
         "guide_interpolation": {"enum": ["linear", "shape_preserving"]},
         "line_semantics": {"enum": ["solid", "dashed"]},
+        "curve_topology": {"enum": ["continuous", "segmented"]},
+        "curve_data_mode": {"enum": ["observations", "guide_constrained"]},
+        "curve_data_max_residual_px": {"type": "number", "exclusiveMinimum": 0},
+        "curve_data_residual_smoothing_window": {"type": "integer", "minimum": 1},
         "guide_corridor_px": {"type": "number", "exclusiveMinimum": 0},
         "missing_penalty": {"type": "number", "minimum": 0},
         "continuity_weight": {"type": "number", "minimum": 0},
@@ -165,6 +180,7 @@
         "marker_min_span_px": {"type": "number", "exclusiveMinimum": 0},
         "marker_min_width_px": {"type": "number", "exclusiveMinimum": 0},
         "marker_window_radius_px": {"type": "number", "exclusiveMinimum": 0},
+        "marker_min_distance_px": {"type": "number", "exclusiveMinimum": 0},
         "min_marker_count": {"type": "integer", "minimum": 1},
         "angular_half_width_deg": {"type": "number", "exclusiveMinimum": 0, "maximum": 10},
         "guide_points_px": {

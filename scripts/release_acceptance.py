@@ -48,6 +48,7 @@ def main() -> int:
         "references/extraction-protocol.md",
         "references/rendering-protocol.md",
         "schemas/project.schema.json",
+        "schemas/formal-data-report.schema.json",
         "schemas/review-assessment.schema.json",
         "schemas/review-decisions.schema.json",
         "schemas/validation-report.schema.json",

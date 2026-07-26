@@ -14,9 +14,9 @@ description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可
 1. 测量前保留来源文件并记录 SHA-256。
 2. 只测量原始栅格或声明的 PDF 页面，不测量预览图或缩放截图。
 3. 数值提取前必须向用户同时展示原始测量栅格与 `spec-review.png`，确认图对象、绘图区、坐标锚点、系列语义和排除框；确认记录必须绑定项目、来源、测量栅格和叠图哈希。
-4. 算法候选值、人工接受值、外部提供数据和重绘产物必须分开保存。
+4. 算法候选值、复核后的可见观测、正式曲线数据、外部提供数据和重绘产物必须分开保存。
 5. 不推断隐藏点、原始重复实验、误差含义或作者模型参数。
-6. 算法输出先进入 `candidates.csv`；只有绑定候选哈希的人工复核记录才能生成 `data.csv`。
+6. 算法输出先进入 `candidates.csv`；只有绑定候选哈希的人工复核记录才能生成 `observations.csv`，随后按已确认的曲线拓扑生成样式无关的 `data.csv`。
 7. 独立记录以下状态：
    - `extraction_status`：可见候选值是否通过自动质量门；
    - `review_status`：人工是否接受、部分接受或拒绝候选值；
@@ -76,7 +76,7 @@ python scripts/more_sci_figure.py extract \
   --spec evidence/project.json --out-dir evidence
 ```
 
-支持颜色可区分的 `line`、单值径向 `polar_line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。连续线叠加方形、三角形、菱形、圆形或叉形标记时，标记系列使用 `marker_centers`，只恢复真实标记中心，不把连接线逐列扩展为伪数据点。`polar_line` 必须声明中心、内外半径、至少两个角度锚点、至少两个径向锚点、零度方位和增角方向；候选按声明角度采样，并保留真实颜色像素支持。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
+支持颜色可区分的 `line`、单值径向 `polar_line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。连续线叠加方形、三角形、菱形、圆形或叉形标记时，标记系列使用 `marker_centers`，只恢复真实标记中心，不把连接线逐列扩展为伪数据点。`polar_line` 必须声明中心、内外半径、至少两个角度锚点、至少两个径向锚点、零度方位和增角方向；候选按声明角度采样，并保留真实颜色像素支持。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是候选证据。虚线空白、短时遮挡和 JPEG 缺色在候选层保存为可见性断点，不代表物理曲线中断。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
 
 需要在复核前检查整体轨迹时，只能生成带水印候选预览：
 
@@ -100,7 +100,7 @@ python scripts/more_sci_figure.py preview \
 不达标时必须先由 Agent 工作，不得立即把全部候选交给用户：
 
 - 自动执行锚点留一扰动稳定性，至少三个锚点时逐次移除一个锚点重新拟合；
-- 计算每个候选相对所属系列跨度的归一化不确定度；
+- 计算每个候选相对已确认坐标轴量程的归一化不确定度；不得因近水平曲线自身跨度很小而夸大风险；
 - 将高不确定候选合并为连续区间，完整写入 `review-uncertainty.csv`，页面最多展示 12 个最高风险代表区间；
 - 读取 `acceptance.responsibility`，先完成 `agent_next`；只有 `user_required_now=true` 时才请求用户操作；
 - 用户不负责运行命令、选择保存路径、调整提取参数或逐点复核普通候选；
@@ -124,7 +124,7 @@ python scripts/more_sci_figure.py review-confirm \
   --confirmation "用户原始确认语句"
 ```
 
-`review-confirm` 只有在综合评估允许批量确认且 `review-anomalies.csv` 为空时，才会生成固定路径的 `review-decisions.json`。存在异常时必须使用页面独立处理异常项；页面把普通候选预置为批量接受，异常候选保持待决策，只有全部异常都有明确决定后才生成覆盖全部候选的复核文件。然后应用复核：
+`review-confirm` 默认只有在综合评估允许批量确认且 `review-anomalies.csv` 为空时，才会生成固定路径的 `review-decisions.json`。存在异常时通常使用页面独立处理异常项；页面把普通候选预置为批量接受，异常候选保持待决策。若用户明确授权 Agent 截图检查并接受全部异常，可在完成视觉检查后显式使用 `--accept-anomalies`；该参数只接受 `review_anomaly_groups` 状态，必须绑定用户原始授权语句、异常编号和候选哈希，不得用于 `re_extract` 或 `stop`。然后应用复核：
 
 若综合评估返回 `recommended_action=apply_review`，表示完整复核记录已经保存；Agent 应直接执行应用与哈希校验，不得再次要求用户批量确认。
 
@@ -134,7 +134,7 @@ python scripts/more_sci_figure.py review-apply \
   --decisions evidence/review-decisions.json
 ```
 
-复核文件仍必须覆盖全部候选值，且候选哈希必须与当前 `candidates.csv` 一致。只有接受项会进入正式 `data.csv`。逐点页面保留为异常深挖工具，不再是默认入口。
+复核文件仍必须覆盖全部候选值，且候选哈希必须与当前 `candidates.csv` 一致。接受项先原样进入 `observations.csv`，保留可见像素断点；随后 `review-apply` 按每条系列已确认的 `curve_topology=continuous|segmented` 生成 `data.csv`。默认 `continuous` 会把虚线空白、遮挡和压缩缺色从正式拓扑中消除，但保留为 `evidence_segment_break`；只有明确声明为 `segmented` 的物理或定义域断裂才保留正式 `segment_break`。逐点页面保留为异常深挖工具，不再是默认入口。
 
 ### 5. 重绘
 
@@ -147,7 +147,7 @@ python scripts/more_sci_figure.py render \
   --out-dir evidence/render
 ```
 
-同一图形对象统一导出 PNG、SVG 和 PDF。不得自行添加误差条、显著性或拟合。只有项目明确声明时，才可为展示生成形状保持的派生几何；派生点写入独立 `display-geometry.csv`，不得覆盖人工接受的 `data.csv`。
+同一图形对象统一导出 PNG、SVG 和 PDF。render 只读取 `data.csv` 中已经确定的曲线拓扑；实线、虚线、点划线、颜色、标记和粗细只是样式，改变样式不得改变数据行、顺序或分段。不得在 render 阶段补线或调用引导路径重建数据。若连续曲线需要由确认的引导路径与可见残差形成稠密数值，应在系列中声明 `curve_data_mode=guide_constrained`，由 `review-apply` 写入正式 `data.csv` 并记录派生来源。不得自行添加误差条、显著性或拟合。
 
 ### 6. 验证
 
@@ -200,7 +200,9 @@ python scripts/more_sci_figure.py pipeline \
 - `review-uncertainty.csv`：候选级归一化不确定度、连续区间编号和 Agent 优先处理标记；
 - `candidate-preview/`：可选的未复核水印预览，不属于正式交付；
 - `review-decisions.json`：与候选哈希绑定的人工决定；
-- `data.csv`：仅包含人工接受值；
+- `observations.csv`：仅包含人工接受的可见像素观测，保留证据断点；
+- `data.csv`：样式无关的正式数据集；连续性、顺序和语义分段在重绘前已确定；
+- `formal-data-report.json`：观测到正式数据的行数、系列拓扑、可见性断点归一化和哈希血缘；
 - `render/render.png`、`render.svg`、`render.pdf`：一致重绘；
 - `render/display-geometry.csv`：可选的派生展示几何及其血缘；
 - `manifest.json`：哈希、工具版本及独立状态；

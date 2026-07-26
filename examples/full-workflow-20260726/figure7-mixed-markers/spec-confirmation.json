@@ -1,0 +1,14 @@
+{
+  "confirmation": "确认 Fig. 7/9 混合标记规格，继续提取。",
+  "confirmed_at": "2026-07-26T07:41:17.148231+00:00",
+  "confirmed_by": "Bing（Codex 对话用户）",
+  "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+  "project_id": "jiang-tian-2021-figure7-mixed-markers",
+  "project_sha256": "7883ba79eed5b91d50a8c90accf87ccce84a72c23bbde64addf74a3512f998a6",
+  "schema": "more-sci-figure.spec-confirmation.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "spec_review_overlay_sha256": "98ee2193ed44ec3dcf9c22813eb4c44c6a17b554d4639726f30658e5690b5ab5",
+  "spec_review_sha256": "dd6a823f7f67dad9abfe06ac4e3a57ae40530430be6039492b26872b4e21eeac",
+  "status": "confirmed",
+  "tool_version": "0.3.1"
+}

@@ -1,0 +1,129 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 295508,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/candidates.csv",
+      "sha256": "ad4beba6cf9d85988e06e2f0efe2c9ba37b82c5f6ba433c88601a62ba892bc5e"
+    },
+    "data": {
+      "bytes": 523990,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
+      "sha256": "1658f0652e1e1277829206cc397494f4633c26a3b29805a0b57751b9241e4e7f"
+    },
+    "display_geometry": {
+      "bytes": 133639,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/display-geometry.csv",
+      "sha256": "192c57aeab01013a2af6d12e617f97e744e53c9ce0d15943a474c6e3b8a54865"
+    },
+    "extraction_report": {
+      "bytes": 9375,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/extraction-report.json",
+      "sha256": "cb0df6ea7033591b18881d339fb7f126d97d3b62ec3a13b8c105a9aa4da14927"
+    },
+    "formal_data_report": {
+      "bytes": 3240,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
+      "sha256": "4f4ef10710bb516514bf3d513f282257f7231d2a320be6d9bbcd51681d22fca6"
+    },
+    "observations": {
+      "bytes": 374145,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
+      "sha256": "919544ecc59dbb8b8b09caeef93c158b467f56df885e1c987ee2d05a6ed832b2"
+    },
+    "overlay": {
+      "bytes": 238038,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/overlay.png",
+      "sha256": "4c7ea6efc671d62fe235a40fcea2d31094d246629c03904e14e1be02f0763a52"
+    },
+    "project_spec": {
+      "bytes": 12406,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+      "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
+    },
+    "render_pdf": {
+      "bytes": 22431,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/render.pdf",
+      "sha256": "c27ae9690f29356ac25c83fc46f3cf2fcf64cf6f749226afd7afda5ca6b829a4"
+    },
+    "render_png": {
+      "bytes": 112767,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/render.png",
+      "sha256": "eaf88e225110c2548a2c0e465942d9fe2dd4599898b93a9f6b41190a0eb11623"
+    },
+    "render_report": {
+      "bytes": 2055,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/render-report.json",
+      "sha256": "4d1bc6246edcf3dd862a83c4a0c5502c4e51f8420652ccb20b6c621f1c5fc2e0"
+    },
+    "render_svg": {
+      "bytes": 66879,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/render.svg",
+      "sha256": "6a1ded1dc349924ceaeb38329bbc42c49ff21868550ac40895162279281c21a1"
+    },
+    "review_anomalies": {
+      "bytes": 546,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-anomalies.csv",
+      "sha256": "996de6ba9ccd3533ad06203cd3b9de6437d454faef9f44056e5e1a5ce1176421"
+    },
+    "review_assessment": {
+      "bytes": 10475,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-assessment.json",
+      "sha256": "cc34d5027a62c7271be6f50580f8ae9831fb3a8b5b23e2d5f5d6f0cf49a2d617"
+    },
+    "review_decisions": {
+      "bytes": 161700,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-decisions.json",
+      "sha256": "4c9d08021933c25397e2e2c4235a03fffd49949a50d9f5c613c94e2f431601fd"
+    },
+    "review_html": {
+      "bytes": 2103802,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review.html",
+      "sha256": "9fc323ece25a65ca318d32d1f5d0a4e00cd2bc303ed90999aab004f11df359e4"
+    },
+    "review_template": {
+      "bytes": 160784,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-template.json",
+      "sha256": "b67f9bfa3db6d14f96b321ec8806dea3d802e582f76ca27fd6452f291104840c"
+    },
+    "review_uncertainty": {
+      "bytes": 0,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-uncertainty.csv",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "spec_confirmation": {
+      "bytes": 880,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/spec-confirmation.json",
+      "sha256": "39f0dc1883b91ec68156ceeac11aca8de7d15555bf64ec2c2fc9dae87279f668"
+    },
+    "spec_review": {
+      "bytes": 3156,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/spec-review.json",
+      "sha256": "8be22ffb94064ae5d30e81a0b6c97663561c93ada98f17189ac4c686ea8c0b08"
+    },
+    "spec_review_overlay": {
+      "bytes": 238977,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/spec-review.png",
+      "sha256": "3326c429e3897dd78faa60d75093cfe64a089a9b0f8443f2a4648c3a0ebb6764"
+    },
+    "validation_report": {
+      "bytes": 5814,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/validation-report.json",
+      "sha256": "39ba3c127741f0ad173d8f3721387c776bba3602f84288d2dee27aa0456cc48b"
+    }
+  },
+  "delivery_status": "pass",
+  "extraction_status": "pass",
+  "project_id": "jiang-tian-2021-figure9-marker-v2",
+  "project_spec": {
+    "bytes": 12406,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+    "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
+  },
+  "render_status": "pass",
+  "review_status": "accepted",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "spec_confirmation_status": "confirmed",
+  "spec_review_status": "confirmed",
+  "tool_version": "0.3.1"
+}

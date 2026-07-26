@@ -1,0 +1,62 @@
+{
+  "axis_scales": {
+    "x": "linear",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure9-marker-v3/candidate-preview/candidate-preview-display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 1429
+  },
+  "formal_render": false,
+  "geometry_sources": {
+    "simulation-a11": "accepted_observation_geometry",
+    "simulation-a22": "accepted_observation_geometry",
+    "simulation-a33": "accepted_observation_geometry",
+    "uct-test-a11": "accepted_observation_geometry",
+    "uct-test-a22": "accepted_observation_geometry",
+    "uct-test-a33": "accepted_observation_geometry"
+  },
+  "input_status": "unreviewed_candidates",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 27785,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/candidate-preview/candidate-preview.pdf",
+      "sha256": "de0a9cfb54402a44f7f346178052ca81fcc47cc2a9951cf2ace86f9793b4924c"
+    },
+    "png": {
+      "bytes": 112357,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/candidate-preview/candidate-preview.png",
+      "sha256": "b759de671a7446f125ebbca523df1983280b94ecfddb686e98aec10bcd03729d"
+    },
+    "svg": {
+      "bytes": 90917,
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/candidate-preview/candidate-preview.svg",
+      "sha256": "bc03ac893dfccd4c9178b0e0b6514e3c13f808749fb067747c4cb1f72ff3e8f7"
+    }
+  },
+  "plot_type": "line",
+  "project_spec": {
+    "bytes": 11887,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v2/project.json",
+    "sha256": "04ca2299cf230fdf4bc89fc9c44a0f32213361160d13e90bab9fa58b94afddf7"
+  },
+  "rendered_segments": {
+    "simulation-a11": 1,
+    "simulation-a22": 1,
+    "simulation-a33": 1,
+    "uct-test-a11": 4,
+    "uct-test-a22": 22,
+    "uct-test-a33": 25
+  },
+  "rows": 1429,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bingyunjiang/more-sci-figure/schemas/formal-data-report.schema.json",
+  "title": "More Sci Figure Formal Data Report",
+  "type": "object",
+  "required": [
+    "schema",
+    "chart_type",
+    "observation_rows",
+    "formal_rows",
+    "series",
+    "project_spec",
+    "candidates",
+    "review_decisions",
+    "observations",
+    "data"
+  ],
+  "properties": {
+    "schema": {"const": "more-sci-figure.formal-data-report.v1"},
+    "chart_type": {"type": "string"},
+    "observation_rows": {"type": "integer", "minimum": 0},
+    "formal_rows": {"type": "integer", "minimum": 0},
+    "series": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "curve_topology",
+          "curve_data_mode",
+          "observation_rows",
+          "formal_rows",
+          "evidence_segment_count",
+          "formal_segment_count",
+          "normalized_visual_breaks"
+        ],
+        "properties": {
+          "id": {"type": "string"},
+          "curve_topology": {"enum": ["continuous", "segmented"]},
+          "curve_data_mode": {"enum": ["observations", "guide_constrained"]},
+          "observation_rows": {"type": "integer", "minimum": 0},
+          "formal_rows": {"type": "integer", "minimum": 0},
+          "evidence_segment_count": {"type": "integer", "minimum": 0},
+          "formal_segment_count": {"type": "integer", "minimum": 0},
+          "normalized_visual_breaks": {"type": "integer", "minimum": 0}
+        },
+        "additionalProperties": true
+      }
+    },
+    "project_spec": {"$ref": "#/$defs/artifact"},
+    "candidates": {"$ref": "#/$defs/artifact"},
+    "review_decisions": {"$ref": "#/$defs/artifact"},
+    "observations": {"$ref": "#/$defs/artifact"},
+    "data": {"$ref": "#/$defs/artifact"},
+    "说明": {"type": "string"}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "bytes": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  }
+}

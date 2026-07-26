@@ -1,0 +1,94 @@
+{
+  "candidates": {
+    "bytes": 295508,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/candidates.csv",
+    "sha256": "ad4beba6cf9d85988e06e2f0efe2c9ba37b82c5f6ba433c88601a62ba892bc5e"
+  },
+  "chart_type": "line",
+  "data": {
+    "bytes": 523990,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
+    "sha256": "1658f0652e1e1277829206cc397494f4633c26a3b29805a0b57751b9241e4e7f"
+  },
+  "formal_rows": 1429,
+  "observation_rows": 1429,
+  "observations": {
+    "bytes": 374145,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
+    "sha256": "919544ecc59dbb8b8b09caeef93c158b467f56df885e1c987ee2d05a6ed832b2"
+  },
+  "project_spec": {
+    "bytes": 12406,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+    "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
+  },
+  "review_decisions": {
+    "bytes": 161700,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-decisions.json",
+    "sha256": "4c9d08021933c25397e2e2c4235a03fffd49949a50d9f5c613c94e2f431601fd"
+  },
+  "schema": "more-sci-figure.formal-data-report.v1",
+  "series": [
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 1,
+      "formal_rows": 18,
+      "formal_segment_count": 1,
+      "id": "simulation-a11",
+      "normalized_visual_breaks": 0,
+      "observation_rows": 18
+    },
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 1,
+      "formal_rows": 20,
+      "formal_segment_count": 1,
+      "id": "simulation-a22",
+      "normalized_visual_breaks": 0,
+      "observation_rows": 20
+    },
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 1,
+      "formal_rows": 20,
+      "formal_segment_count": 1,
+      "id": "simulation-a33",
+      "normalized_visual_breaks": 0,
+      "observation_rows": 20
+    },
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 4,
+      "formal_rows": 495,
+      "formal_segment_count": 1,
+      "id": "uct-test-a11",
+      "normalized_visual_breaks": 3,
+      "observation_rows": 495
+    },
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 22,
+      "formal_rows": 511,
+      "formal_segment_count": 1,
+      "id": "uct-test-a22",
+      "normalized_visual_breaks": 21,
+      "observation_rows": 511
+    },
+    {
+      "curve_data_mode": "observations",
+      "curve_topology": "continuous",
+      "evidence_segment_count": 25,
+      "formal_rows": 365,
+      "formal_segment_count": 1,
+      "id": "uct-test-a33",
+      "normalized_visual_breaks": 24,
+      "observation_rows": 365
+    }
+  ],
+  "说明": "observations.csv 保存可见像素与证据断点；data.csv 保存经确认的曲线拓扑，视觉空档不再自动成为正式数据断点。"
+}

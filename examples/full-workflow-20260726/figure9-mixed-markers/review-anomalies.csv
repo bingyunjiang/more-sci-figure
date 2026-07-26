@@ -1,0 +1,4 @@
+candidate_id,series,severity,anomaly_type,observed,reason,recommended_action
+line-uct-test-a11-000001,uct-test-a11,medium,guide_residual_outlier,9.2449,系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px,batch_review
+line-uct-test-a11-000271,uct-test-a11,medium,guide_residual_outlier,9.6518,系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px,batch_review
+line-uct-test-a11-000495,uct-test-a11,medium,guide_residual_outlier,9.7076,系列 uct-test-a11 的引导残差显著高于稳健阈值 8.49px,batch_review

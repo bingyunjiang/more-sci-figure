@@ -1,0 +1,471 @@
+{
+  "acceptance": {
+    "decision": "review_record_ready",
+    "dimension_floor_pass": true,
+    "hard_gates": {
+      "automatic_quality_gates": true,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": true,
+    "next_instruction": "复核记录已完整保存；请 Agent 校验哈希与覆盖后应用，生成正式 data.csv。",
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "responsibility": {
+      "agent_completed": [
+        "七维质量评估",
+        "锚点留一扰动稳定性检查",
+        "定位 0 个高不确定候选并合并为 0 个区间"
+      ],
+      "agent_next": [
+        "校验复核哈希与覆盖并应用，生成正式 data.csv。"
+      ],
+      "user_not_required": [
+        "运行命令",
+        "选择保存路径",
+        "调整算法参数",
+        "逐点复核全部普通候选"
+      ],
+      "user_required_now": false,
+      "user_tasks": [],
+      "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+      "workflow_order": "agent_first_then_targeted_user_judgment"
+    },
+    "score_threshold_pass": true,
+    "technical_eligibility": true,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "unresolved_anomaly_count": 0,
+    "unresolved_anomaly_ids": []
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 81,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 0
+  },
+  "candidate_count": 1048,
+  "candidate_sha256": "82ad14c785acd0bc93ecab20347d3a6d0f504541e854739c49aba64ce967d7dd",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "visible_marker_support": 45,
+    "visible_pixel_support": 1003
+  },
+  "generated_at": "2026-07-26T11:36:22.178516+00:00",
+  "high_risk_issues": [],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      3.1784484118033985e-16,
+      0.000643820993121427
+    ],
+    "extraction_status": "pass",
+    "high_anomalies": 0,
+    "medium_anomalies": 81,
+    "model_assisted_candidates": 0,
+    "model_assisted_ratio": 0.0,
+    "quality_checks_failed": 0,
+    "quality_checks_total": 13
+  },
+  "minimum_dimension_score": 95.1,
+  "overall_score": 99.3,
+  "project_id": "jiang-tian-2021-figure7-marker-v2",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/project.json",
+  "recommended_action": "apply_review",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "low",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.0,
+          "total_high_anomalies": 0,
+          "total_medium_anomalies": 81,
+          "unresolved_high_anomalies": 0,
+          "unresolved_medium_anomalies": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 7,
+              "axis": "x_axis",
+              "normalized_rmse": 3.1784484118033985e-16,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 7,
+              "axis": "y_axis",
+              "normalized_rmse": 0.000643820993121427,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.0,
+          "support_evaluable": true,
+          "valid_support_ratio": 1.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 0,
+          "checks_total": 13
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 100.0,
+          "worst_series_score": 100.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": 0.018557143863232158,
+          "high_uncertainty_candidate_count": 0,
+          "high_uncertainty_group_count": 0,
+          "normalized_uncertainty_p95": 0.0009397199471279312,
+          "operational_threshold": 0.02,
+          "perturbation_stability": {
+            "axes": [
+              {
+                "anchor_count": 7,
+                "axis": "x_axis",
+                "candidate_count": 1048,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 1.193230353569094e-15,
+                "normalized_shift_p95": 8.949227651768205e-16,
+                "score": 100.0,
+                "status": "measured",
+                "trials": 7,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              },
+              {
+                "anchor_count": 7,
+                "axis": "y_axis",
+                "candidate_count": 1048,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0008154385278949417,
+                "normalized_shift_p95": 0.0007231468277336349,
+                "score": 99.3,
+                "status": "measured",
+                "trials": 7,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              }
+            ],
+            "method": "leave_one_anchor_out",
+            "score": 99.3,
+            "status": "measured",
+            "说明": "已自动完成锚点留一扰动；该检查不改写候选数据。"
+          },
+          "uncertainty_proxy_score": 95.1
+        },
+        "score": 95.1,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "uncertainty_stability",
+    "worst_series_score": 100.0
+  },
+  "series_assessment": [
+    {
+      "candidates": 164,
+      "coverage": 0.5655172413793104,
+      "flagged_anomalies": 28,
+      "maximum_gap_fraction": 0.09310344827586207,
+      "mean_guide_residual_px": 3.2836354594944726,
+      "model_assisted": 0,
+      "series": "mfh-0deg",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 449,
+      "coverage": 0.9760869565217392,
+      "flagged_anomalies": 52,
+      "maximum_gap_fraction": 0.017391304347826087,
+      "mean_guide_residual_px": 2.4680552486093625,
+      "model_assisted": 0,
+      "series": "mfh-45deg",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 390,
+      "coverage": 0.8478260869565217,
+      "flagged_anomalies": 1,
+      "maximum_gap_fraction": 0.03695652173913044,
+      "mean_guide_residual_px": 2.950384324822906,
+      "model_assisted": 0,
+      "series": "mfh-90deg",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 10,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "test-0deg",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 21,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "test-45deg",
+      "series_quality_score": 100.0
+    },
+    {
+      "candidates": 14,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "test-90deg",
+      "series_quality_score": 100.0
+    }
+  ],
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "tool_version": "0.3.1",
+  "top_anomalies": [
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000037",
+      "observed": 5.9207,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000038",
+      "observed": 8.6487,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000039",
+      "observed": 11.4138,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000040",
+      "observed": 13.2041,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000041",
+      "observed": 15.0078,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000042",
+      "observed": 7.8128,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000043",
+      "observed": 10.6075,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000044",
+      "observed": 10.3797,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000045",
+      "observed": 12.1178,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000046",
+      "observed": 14.8097,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000047",
+      "observed": 17.4437,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000048",
+      "observed": 17.1615,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000049",
+      "observed": 17.327,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000050",
+      "observed": 17.2582,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000051",
+      "observed": 17.6578,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000052",
+      "observed": 18.0,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000053",
+      "observed": 16.2797,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000054",
+      "observed": 16.51,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000055",
+      "observed": 17.6928,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-mfh-0deg-000056",
+      "observed": 11.8994,
+      "reason": "系列 mfh-0deg 的引导残差显著高于稳健阈值 5.81px",
+      "recommended_action": "batch_review",
+      "series": "mfh-0deg",
+      "severity": "medium"
+    }
+  ],
+  "uncertainty_review": {
+    "candidate_count": 0,
+    "default_owner": "agent",
+    "group_count": 0,
+    "groups": [],
+    "priority_group_count": 0,
+    "priority_groups": [],
+    "user_review_policy": "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，不得要求逐点复核全部高不确定候选。"
+  },
+  "warnings": []
+}

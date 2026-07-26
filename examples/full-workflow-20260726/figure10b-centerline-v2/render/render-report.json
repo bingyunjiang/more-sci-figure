@@ -1,0 +1,56 @@
+{
+  "axis_scales": {
+    "x": "circular_degree",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "data_provenance": [
+    "reviewed_visible_observation"
+  ],
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure10b-centerline-v2/render/display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 361
+  },
+  "formal_curve_data": true,
+  "formal_render": true,
+  "geometry_sources": {
+    "sound-pressure-level-directivity": "formal_curve_data_geometry"
+  },
+  "input_status": "accepted_or_supplied",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 19953,
+      "path": "examples/full-workflow-20260726/figure10b-centerline-v2/render/render.pdf",
+      "sha256": "5d6feae2e883d646dc487d03722ae4de7a51da4311925a85118acd09d5078459"
+    },
+    "png": {
+      "bytes": 199049,
+      "path": "examples/full-workflow-20260726/figure10b-centerline-v2/render/render.png",
+      "sha256": "370de4bf10272865d604af1d744395a55d9022bccba70a6650bf1d3868de77ad"
+    },
+    "svg": {
+      "bytes": 65485,
+      "path": "examples/full-workflow-20260726/figure10b-centerline-v2/render/render.svg",
+      "sha256": "c1823bb438232661cd052b7c449fde89b8b6391136d454387df6aded68155534"
+    }
+  },
+  "plot_type": "polar_line",
+  "project_spec": {
+    "bytes": 4067,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
+    "sha256": "f2d51afd74e786354b4933cf06ed5bad175d73a3199b40e2f0b349bf17f63753"
+  },
+  "rendered_segments": {
+    "sound-pressure-level-directivity": 1
+  },
+  "rows": 360,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

@@ -1,0 +1,149 @@
+{
+  "artifact_checks": {
+    "candidates": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/candidates.csv",
+      "sha256": "ad4beba6cf9d85988e06e2f0efe2c9ba37b82c5f6ba433c88601a62ba892bc5e"
+    },
+    "data": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
+      "sha256": "1658f0652e1e1277829206cc397494f4633c26a3b29805a0b57751b9241e4e7f"
+    },
+    "extraction_report": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/extraction-report.json",
+      "sha256": "cb0df6ea7033591b18881d339fb7f126d97d3b62ec3a13b8c105a9aa4da14927"
+    },
+    "formal_data_report": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
+      "sha256": "4f4ef10710bb516514bf3d513f282257f7231d2a320be6d9bbcd51681d22fca6"
+    },
+    "observations": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
+      "sha256": "919544ecc59dbb8b8b09caeef93c158b467f56df885e1c987ee2d05a6ed832b2"
+    },
+    "overlay": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/overlay.png",
+      "sha256": "4c7ea6efc671d62fe235a40fcea2d31094d246629c03904e14e1be02f0763a52"
+    },
+    "project_spec": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+      "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
+    },
+    "render_pdf": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/render/render.pdf",
+      "sha256": "c27ae9690f29356ac25c83fc46f3cf2fcf64cf6f749226afd7afda5ca6b829a4"
+    },
+    "render_png": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/render/render.png",
+      "sha256": "eaf88e225110c2548a2c0e465942d9fe2dd4599898b93a9f6b41190a0eb11623"
+    },
+    "render_report": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/render/render-report.json",
+      "sha256": "4d1bc6246edcf3dd862a83c4a0c5502c4e51f8420652ccb20b6c621f1c5fc2e0"
+    },
+    "render_svg": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/render/render.svg",
+      "sha256": "6a1ded1dc349924ceaeb38329bbc42c49ff21868550ac40895162279281c21a1"
+    },
+    "review_decisions": {
+      "exists": true,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-decisions.json",
+      "sha256": "4c9d08021933c25397e2e2c4235a03fffd49949a50d9f5c613c94e2f431601fd"
+    }
+  },
+  "delivery_assessment": {
+    "decision": "accepted",
+    "dimension_floor_pass": true,
+    "dimensions": {
+      "artifact_integrity": {
+        "label": "交付物与哈希完整性",
+        "metrics": {
+          "required_artifacts": 12,
+          "verified_artifacts": 12
+        },
+        "score": 100.0,
+        "weight": 30
+      },
+      "data_geometry_traceability": {
+        "label": "数据到图形可追溯性",
+        "metrics": {
+          "declared_xy_mapping": true,
+          "formal_data_present": true,
+          "positive_rendered_rows": true,
+          "project_spec_present": true,
+          "render_report_pass": true
+        },
+        "score": 100.0,
+        "weight": 25
+      },
+      "format_completeness": {
+        "label": "PNG/SVG/PDF 格式完整性",
+        "metrics": {
+          "render_pdf": true,
+          "render_png": true,
+          "render_svg": true
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "render_spec_compliance": {
+        "label": "重绘规格符合度",
+        "metrics": {
+          "canvas_matches_when_declared": true,
+          "plot_type_matches": true,
+          "x_mapping_matches": true,
+          "x_scale_matches": true,
+          "y_mapping_matches": true,
+          "y_scale_matches": true
+        },
+        "score": 100.0,
+        "weight": 25
+      }
+    },
+    "hard_gates": {
+      "artifact_hashes_valid": true,
+      "required_formats_complete": true,
+      "stage_status_allows_delivery": true
+    },
+    "hard_gates_pass": true,
+    "method": "weighted_render_delivery_dimensions_with_non_compensable_hard_gates",
+    "minimum_dimension_score": 100.0,
+    "next_instruction": "重绘技术交付达到所选用途阈值；可接受当前版本，或按需进行视觉审美复核。",
+    "overall_score": 100.0,
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "此分数评价文件、哈希、格式、数据映射和规格执行；参考图像素残差仅用于定位差异，不等同于科研数据准确率或视觉审美评分。",
+    "score_threshold_pass": true,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "visual_reference_diagnostic": {
+      "status": "not_run"
+    },
+    "worst_dimension": "artifact_integrity"
+  },
+  "delivery_status": "pass",
+  "errors": [],
+  "schema": "more-sci-figure.validation-report.v1",
+  "stage_statuses": {
+    "extraction_status": "pass",
+    "render_status": "pass",
+    "review_status": "accepted"
+  },
+  "status": "pass",
+  "visual_comparison": {
+    "status": "not_run"
+  },
+  "warnings": []
+}
