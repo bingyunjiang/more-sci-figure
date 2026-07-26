@@ -72,7 +72,27 @@
         "y_label": {"type": "string"},
         "title": {"type": "string"},
         "x_scale": {"enum": ["linear", "log10"]},
-        "y_scale": {"enum": ["linear", "log10"]}
+        "y_scale": {"enum": ["linear", "log10"]},
+        "canvas_px": {"type": "array", "prefixItems": [{"type": "integer", "minimum": 1}, {"type": "integer", "minimum": 1}], "minItems": 2, "maxItems": 2},
+        "axes_box_px": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}, {"type": "number"}], "minItems": 4, "maxItems": 4},
+        "x_limits": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+        "y_limits": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+        "x_ticks": {"type": "array", "items": {"type": "number"}},
+        "y_ticks": {"type": "array", "items": {"type": "number"}},
+        "series_styles": {"type": "object", "additionalProperties": {"type": "object"}},
+        "display_geometry": {
+          "type": "object",
+          "properties": {
+            "mode": {"enum": ["none", "shape_preserving"]},
+            "smoothing_window": {"type": "integer", "minimum": 1},
+            "samples_per_interval": {"type": "integer", "minimum": 1},
+            "max_bridge_gap_px": {"type": "number", "minimum": 0},
+            "outlier_window": {"type": "integer", "minimum": 1},
+            "max_outlier_pixel_residual": {"type": "number", "minimum": 0},
+            "knot_stride": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": true
     }
@@ -112,7 +132,31 @@
         "min_fill_ratio": {"type": "number", "minimum": 0, "maximum": 1},
         "max_aspect_ratio": {"type": "number", "minimum": 1},
         "min_rectangularity": {"type": "number", "minimum": 0, "maximum": 1},
-        "baseline_tolerance": {"type": "number", "minimum": 0}
+        "baseline_tolerance": {"type": "number", "minimum": 0},
+        "extraction_mode": {"enum": ["color_column_median", "guided_path", "guided_group_path"]},
+        "shared_color_group": {"type": "string"},
+        "guide_interpolation": {"enum": ["linear", "shape_preserving"]},
+        "line_semantics": {"enum": ["solid", "dashed"]},
+        "guide_corridor_px": {"type": "number", "exclusiveMinimum": 0},
+        "missing_penalty": {"type": "number", "minimum": 0},
+        "continuity_weight": {"type": "number", "minimum": 0},
+        "search_half_width_px": {"type": "integer", "minimum": 0},
+        "max_track_gap_px": {"type": "integer", "minimum": 0},
+        "guide_points_px": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "oneOf": [
+              {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+              {"type": "object", "required": ["x", "y"], "properties": {"x": {"type": "number"}, "y": {"type": "number"}}, "additionalProperties": false}
+            ]
+          }
+        },
+        "x_pixel_range": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+        "exclude_boxes_px": {
+          "type": "array",
+          "items": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}, {"type": "number"}], "minItems": 4, "maxItems": 4}
+        }
       },
       "additionalProperties": true
     }

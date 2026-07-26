@@ -144,10 +144,75 @@ class WorkflowTests(unittest.TestCase):
         spec_path = self.make_line_project()
         output = self.root / "evidence"
         waiting = msf.pipeline_command(spec_path, output)
-        self.assertEqual("awaiting_review", waiting["review"])
+        self.assertEqual("awaiting_confirmation", waiting["review"])
+        self.assertIn("综合评分", waiting)
+        self.assertEqual("batch_confirm", waiting["建议动作"])
         self.assertEqual("not_run", waiting["render"])
         self.assertTrue((output / "candidates.csv").is_file())
         self.assertTrue((output / "review.html").is_file())
+        self.assertTrue((output / "review-assessment.json").is_file())
+        self.assertTrue((output / "review-anomalies.csv").is_file())
+        review_html = (output / "review.html").read_text(encoding="utf-8")
+        self.assertIn("AI 综合评判", review_html)
+        self.assertIn("普通候选可批量确认", review_html)
+        self.assertIn("异常候选独立复核", review_html)
+        self.assertIn("普通候选批量区", review_html)
+        self.assertIn("普通候选批量确认", review_html)
+        self.assertIn("id='confirm-assessment-anomalies'", review_html)
+        self.assertIn("id='confirm-assessment'", review_html)
+        self.assertIn('fetch("/api/review-confirm"', review_html)
+        self.assertIn("接受全部异常项", review_html)
+        self.assertIn("拒绝全部异常项", review_html)
+        self.assertIn("普通候选全部接受", review_html)
+        self.assertIn("decision-summary", review_html)
+        self.assertIn("decision-toast", review_html)
+        self.assertIn("待决策", review_html)
+        self.assertIn("decision-accepted", review_html)
+        self.assertIn("decision-rejected", review_html)
+        self.assertIn("export-result", review_html)
+        self.assertIn("生成完整复核文件（下一步）", review_html)
+        self.assertIn('id="reviewed-by" required aria-required="true"', review_html)
+        self.assertIn('id="export" disabled', review_html)
+        self.assertIn("export-readiness", review_html)
+        self.assertIn("正在生成 ${index}/${decisionSelects.length}", review_html)
+        self.assertIn("requestAnimationFrame", review_html)
+        self.assertIn("confirm-uncertain", review_html)
+        self.assertIn("confirm-export-scope", review_html)
+        self.assertIn("必须填写复核人", review_html)
+        self.assertNotIn("alert(", review_html)
+        self.assertNotIn("confirm(", review_html)
+        self.assertIn("只有 Agent 成功应用复核后才会生成正式", review_html)
+        self.assertIn("保存到当前项目目录", review_html)
+        self.assertIn("复制复核 JSON", review_html)
+        self.assertIn('fetch("/api/review-decisions"', review_html)
+        self.assertIn("X-Review-Token", review_html)
+        self.assertIn("需由 Agent 启动本地复核会话", review_html)
+        self.assertNotIn("showSaveFilePicker", review_html)
+        self.assertIn("保存成功", review_html)
+        self.assertNotIn("new Blob", review_html)
+        self.assertNotIn("URL.createObjectURL", review_html)
+        self.assertNotIn("showModal", review_html)
+        self.assertIn("复制完整管线 Agent 任务语句", review_html)
+        self.assertIn("复制仅应用复核 Agent 任务语句", review_html)
+        self.assertIn("请使用 more-sci-figure skill", review_html)
+        self.assertIn("Codex、Claude Code、Hermes", review_html)
+        self.assertIn("不要假定固定文件名或固定路径", review_html)
+        self.assertIn("不得为寻找文件而扫描整个用户磁盘", review_html)
+        self.assertIn("如果复核 JSON、候选文件或项目规格没有唯一匹配", review_html)
+        self.assertNotIn(str(output), review_html)
+        self.assertNotIn("python3 ", review_html)
+        self.assertIn("不会自动保存文件", review_html)
+        self.assertLess(
+            review_html.index('id="export"'),
+            review_html.index("<table>"),
+        )
+        self.assertIn("校正坐标", review_html)
+        self.assertIn("重新归属", review_html)
+        self.assertGreater(review_html.index('id="reviewed-by"'), review_html.index("异常候选独立复核"))
+        template = msf.read_json(output / "review-template.json")
+        self.assertTrue(all(item["decision"] == "accepted" for item in template["decisions"]))
+        self.assertEqual("line-fixture", template["project_id"])
+        self.assertIn("source_sha256", template)
         self.assertFalse((output / "data.csv").exists())
 
         decisions = self.decisions_for(output)
@@ -170,6 +235,199 @@ class WorkflowTests(unittest.TestCase):
         ):
             self.assertTrue((output / relative).is_file(), relative)
 
+    def test_ai_assessment_supports_conversational_batch_confirmation(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+
+        assessment = msf.review_assess_command(output)
+        self.assertEqual("pass", assessment["status"])
+        self.assertEqual("batch_confirm", assessment["recommended_action"])
+        self.assertTrue((output / "review-assessment.json").is_file())
+        self.assertTrue((output / "review-anomalies.csv").is_file())
+        manifest_before = msf.read_json(output / "manifest.json")
+        self.assertEqual("not_run", manifest_before["review_status"])
+
+        confirmation = msf.review_confirm_command(output, "Dr.Jiang", "下一步")
+        self.assertEqual("ai_assisted_batch_confirmation", confirmation["review_method"])
+        self.assertEqual("saved", confirmation["save_status"])
+        self.assertFalse(confirmation["applied"])
+        decisions = msf.read_json(output / "review-decisions.json")
+        self.assertEqual(len(msf.read_tabular_rows(output / "candidates.csv")), len(decisions["decisions"]))
+        self.assertTrue(all(item["decision"] == "accepted" for item in decisions["decisions"]))
+        self.assertEqual("下一步", decisions["conversation_confirmation"])
+        self.assertTrue(decisions["anomaly_acknowledgement"]["confirmed"])
+        self.assertEqual(
+            assessment["anomaly_count"],
+            decisions["anomaly_acknowledgement"]["candidate_count"],
+        )
+        self.assertEqual("下一步", decisions["anomaly_acknowledgement"]["confirmation"])
+        self.assertFalse((output / "data.csv").exists())
+
+        applied = msf.review_apply_command(output, output / "review-decisions.json")
+        self.assertEqual("accepted", applied["review_status"])
+        normalized = msf.read_json(output / "review-decisions.json")
+        self.assertEqual("ai_assisted_batch_confirmation", normalized["review_method"])
+        self.assertIn("assessment_sha256", normalized)
+        self.assertTrue(normalized["anomaly_acknowledgement"]["confirmed"])
+
+    def test_anomalies_are_reviewed_separately_from_normal_batch(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        candidates = msf.read_tabular_rows(output / "candidates.csv")
+        anomaly_candidate = candidates[0]
+        anomaly_id = str(anomaly_candidate["candidate_id"])
+        msf.write_csv(
+            output / "review-anomalies.csv",
+            [
+                {
+                    "candidate_id": anomaly_id,
+                    "series": anomaly_candidate["series"],
+                    "severity": "medium",
+                    "anomaly_type": "guide_residual_outlier",
+                    "observed": "6.2",
+                    "reason": "测试异常候选必须独立复核",
+                    "recommended_action": "batch_review",
+                }
+            ],
+        )
+        assessment = msf.read_json(output / "review-assessment.json")
+        assessment["recommended_action"] = "batch_confirm"
+        assessment["anomaly_groups"]["guide_residual_outlier"] = 1
+        msf.write_json(output / "review-assessment.json", assessment)
+
+        msf.review_command(output)
+        review_html = (output / "review.html").read_text(encoding="utf-8")
+        self.assertIn('id="anomaly-decisions"', review_html)
+        self.assertIn('id="normal-decisions"', review_html)
+        self.assertIn("data-anomaly='true'", review_html)
+        self.assertIn("data-anomaly='false'", review_html)
+        self.assertIn("evidence-crop", review_html)
+        self.assertIn("测试异常候选必须独立复核", review_html)
+        self.assertIn("仍有 ${anomalyPending} 个异常候选待独立决策", review_html)
+        template = msf.read_json(output / "review-template.json")
+        decision_by_id = {item["candidate_id"]: item["decision"] for item in template["decisions"]}
+        self.assertEqual("anomaly_first_split_review", template["review_method"])
+        self.assertEqual(1, template["anomaly_review"]["candidate_count"])
+        self.assertEqual([anomaly_id], template["anomaly_review"]["candidate_ids"])
+        self.assertTrue(template["anomaly_review"]["separated_from_normal_batch"])
+        self.assertEqual("pending", decision_by_id[anomaly_id])
+        self.assertTrue(
+            all(
+                decision == "accepted"
+                for candidate_id, decision in decision_by_id.items()
+                if candidate_id != anomaly_id
+            )
+        )
+        with self.assertRaisesRegex(msf.FigureError, "必须先在独立异常复核区逐项处理"):
+            msf.review_confirm_command(output, "Dr.Jiang", "下一步")
+
+    def test_ai_batch_confirmation_stops_on_critical_source_issue(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        project = msf.read_json(output / "project.json")
+        project["source"]["path"] = "missing-source.png"
+        msf.write_json(output / "project.json", project)
+        original_project = msf.read_json(spec_path)
+        original_project["source"]["path"] = "missing-source.png"
+        msf.write_json(spec_path, original_project)
+
+        assessment = msf.review_assess_command(output)
+        self.assertEqual("attention_required", assessment["status"])
+        self.assertEqual("critical", assessment["risk_level"])
+        self.assertEqual("stop", assessment["recommended_action"])
+        with self.assertRaisesRegex(msf.FigureError, "不得一键批量确认"):
+            msf.review_confirm_command(output, "Dr.Jiang", "继续")
+        self.assertFalse((output / "review-decisions.json").exists())
+
+    def test_extract_rebases_relative_source_paths_in_project_copy(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["source"]["path"] = "line.png"
+        spec["source"]["measurement_raster"] = "line.png"
+        msf.write_json(spec_path, spec)
+        output = self.root / "nested" / "evidence"
+
+        msf.extract_command(spec_path, output)
+
+        copied_path = output / "project.json"
+        copied = msf.read_json(copied_path)
+        self.assertEqual(
+            (self.root / "line.png").resolve(),
+            msf.resolve_from(copied_path, copied["source"]["path"]),
+        )
+        self.assertEqual(
+            (self.root / "line.png").resolve(),
+            msf.resolve_from(copied_path, copied["source"]["measurement_raster"]),
+        )
+        assessment = msf.read_json(output / "review-assessment.json")
+        self.assertEqual("batch_confirm", assessment["recommended_action"])
+
+    def test_validate_uses_the_actual_project_spec_recorded_by_render(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        msf.review_apply_command(output, self.decisions_for(output))
+        stale_copy = msf.read_json(output / "project.json")
+        stale_copy["source"]["path"] = "missing-source.png"
+        msf.write_json(output / "project.json", stale_copy)
+
+        msf.render_command(spec_path, output / "data.csv", output / "render")
+        validation = msf.validate_command(output, self.root / "line.png")
+
+        self.assertEqual("pass", validation["status"])
+        self.assertEqual("pass", validation["delivery_status"])
+        manifest = msf.read_json(output / "manifest.json")
+        self.assertEqual(str(spec_path.resolve()), manifest["artifacts"]["project_spec"]["path"])
+        self.assertIn("extraction_project_spec", manifest["artifacts"])
+
+    def test_review_save_uses_fixed_project_path_without_advancing_status(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        payload = msf.read_json(self.decisions_for(output))
+        manifest_before = msf.read_json(output / "manifest.json")
+
+        result = msf.save_review_decisions_command(output, payload)
+
+        fixed_path = output.resolve() / "review-decisions.json"
+        self.assertEqual(str(fixed_path), result["saved_path"])
+        self.assertEqual("saved", result["save_status"])
+        self.assertEqual("not_run", result["review_status"])
+        self.assertFalse(result["applied"])
+        self.assertTrue(fixed_path.is_file())
+        self.assertEqual(digest(fixed_path), result["sha256"])
+        self.assertEqual(manifest_before, msf.read_json(output / "manifest.json"))
+        self.assertFalse((output / "data.csv").exists())
+
+    def test_review_save_rejects_tampered_candidate_hash(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        payload = msf.read_json(self.decisions_for(output))
+        payload["candidate_sha256"] = "0" * 64
+
+        with self.assertRaisesRegex(msf.FigureError, "哈希"):
+            msf.save_review_decisions_command(output, payload)
+
+        self.assertFalse((output / "review-decisions.json").exists())
+
+    def test_review_save_does_not_overwrite_applied_evidence(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        decisions_path = self.decisions_for(output)
+        payload = msf.read_json(decisions_path)
+        msf.review_apply_command(output, decisions_path)
+        applied_hash = digest(output / "review-decisions.json")
+
+        with self.assertRaisesRegex(msf.FigureError, "保护证据链"):
+            msf.save_review_decisions_command(output, payload)
+
+        self.assertEqual(applied_hash, digest(output / "review-decisions.json"))
+
     def test_review_partial_only_promotes_accepted_rows(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
@@ -181,6 +439,41 @@ class WorkflowTests(unittest.TestCase):
         promoted = msf.read_tabular_rows(output / "data.csv")
         self.assertEqual(1, len(promoted))
         self.assertEqual(accepted_id, promoted[0]["candidate_id"])
+
+    def test_review_can_correct_coordinates_and_reassign_series_with_provenance(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["chart"]["series"].append(
+            {"id": "alternate", "color": "#0072b2", "tolerance": 15}
+        )
+        msf.write_json(spec_path, spec)
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        decisions_path = self.decisions_for(output, set())
+        payload = msf.read_json(decisions_path)
+        first, second = payload["decisions"][:2]
+        original_rows = msf.read_tabular_rows(output / "candidates.csv")
+        first["decision"] = "corrected"
+        first["corrected_y"] = float(original_rows[0]["y"]) + 0.25
+        first["reason"] = "人工按证据叠图校正"
+        second["decision"] = "reassigned"
+        second["target_series"] = "alternate"
+        second["reason"] = "颜色分支归属修正"
+        msf.write_json(decisions_path, payload)
+        result = msf.review_apply_command(output, decisions_path)
+        promoted = msf.read_tabular_rows(output / "data.csv")
+        self.assertEqual(1, result["corrected"])
+        self.assertEqual(1, result["reassigned"])
+        self.assertEqual(2, len(promoted))
+        corrected = next(row for row in promoted if row["review_decision"] == "corrected")
+        reassigned = next(row for row in promoted if row["review_decision"] == "reassigned")
+        self.assertIn("original_y", corrected)
+        self.assertEqual("alternate", reassigned["series"])
+        self.assertEqual("trend", reassigned["original_series"])
+        render = msf.render_command(
+            spec_path, output / "data.csv", output / "render"
+        )
+        self.assertEqual("pass", render["status"])
 
     def test_review_hash_mismatch_is_rejected(self) -> None:
         spec_path = self.make_line_project()
@@ -230,6 +523,22 @@ class WorkflowTests(unittest.TestCase):
         errors = msf.validate_spec(spec, spec_path)
         self.assertTrue(any("min_coverage" in error for error in errors))
 
+    def test_invalid_component_and_display_geometry_settings_are_rejected(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["quality_gates"]["scatter"] = {"min_accepted_components": 0}
+        spec["render"]["display_geometry"] = {
+            "mode": "invented",
+            "max_bridge_gap_px": -1,
+        }
+        spec["render"]["canvas_px"] = [220, 140]
+        spec["render"]["axes_box_px"] = [20, 15, 260, 115]
+        errors = msf.validate_spec(spec, spec_path)
+        self.assertTrue(any("min_accepted_components" in error for error in errors))
+        self.assertTrue(any("display_geometry.mode" in error for error in errors))
+        self.assertTrue(any("max_bridge_gap_px" in error for error in errors))
+        self.assertTrue(any("canvas_px 内" in error for error in errors))
+
     def test_measurement_hash_mismatch_is_rejected(self) -> None:
         spec_path = self.make_line_project()
         spec = msf.read_json(spec_path)
@@ -257,6 +566,276 @@ class WorkflowTests(unittest.TestCase):
         msf.review_apply_command(output, decisions)
         report = msf.render_command(spec_path, output / "data.csv", output / "render")
         self.assertEqual(2, report["rendered_segments"]["trend"])
+
+    def test_guided_path_separates_same_colour_curves_and_ignores_local_legend(self) -> None:
+        image = Image.new("RGB", (220, 140), "white")
+        draw = ImageDraw.Draw(image)
+        draw.line((20, 112, 200, 62), fill="#d62728", width=3)
+        for start in range(20, 198, 14):
+            end = min(start + 8, 200)
+            draw.line(
+                (start, 108 - 0.42 * (start - 20), end, 108 - 0.42 * (end - 20)),
+                fill="#d62728",
+                width=3,
+            )
+        draw.line((132, 100, 178, 100), fill="#d62728", width=4)
+        x_map = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 20, "value": 0}, {"pixel": 200, "value": 1}]}
+        )
+        y_map = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 120, "value": 0}, {"pixel": 20, "value": 1}]}
+        )
+        series = [
+            {
+                "id": "solid",
+                "color": "#d62728",
+                "tolerance": 12,
+                "extraction_mode": "guided_path",
+                "shared_color_group": "red",
+                "guide_corridor_px": 5,
+                "guide_points_px": [[20, 112], [200, 62]],
+                "exclude_boxes_px": [[132, 96, 178, 104]],
+            },
+            {
+                "id": "dash",
+                "color": "#d62728",
+                "tolerance": 12,
+                "extraction_mode": "guided_path",
+                "shared_color_group": "red",
+                "guide_corridor_px": 5,
+                "guide_points_px": [[20, 108], [200, 32.4]],
+                "exclude_boxes_px": [[132, 96, 178, 104]],
+            },
+        ]
+        rows, diagnostics = msf.extract_line(
+            np.asarray(image), (10, 15, 210, 125), series, x_map, y_map
+        )
+        grouped = {
+            series_id: [row for row in rows if row["series"] == series_id]
+            for series_id in ("solid", "dash")
+        }
+        self.assertGreater(len(grouped["solid"]), 150)
+        self.assertGreater(len(grouped["dash"]), 85)
+        late_solid = [float(row["pixel_y"]) for row in grouped["solid"] if row["pixel_x"] > 170]
+        late_dash = [float(row["pixel_y"]) for row in grouped["dash"] if row["pixel_x"] > 170]
+        self.assertGreater(float(np.mean(late_solid)) - float(np.mean(late_dash)), 18)
+        self.assertTrue(any(row["evidence_status"] == "ambiguous_shared_colour" for row in rows))
+        self.assertEqual(
+            [[132, 96, 178, 104]], diagnostics["series"][0]["applied_exclusions_px"]
+        )
+
+    def test_global_guided_group_assigns_each_colour_cluster_exclusively(self) -> None:
+        image = Image.new("RGB", (220, 140), "white")
+        draw = ImageDraw.Draw(image)
+        draw.line((20, 112, 200, 62), fill="#d62728", width=3)
+        for start in range(20, 198, 14):
+            end = min(start + 8, 200)
+            draw.line(
+                (start, 108 - 0.42 * (start - 20), end, 108 - 0.42 * (end - 20)),
+                fill="#d62728",
+                width=3,
+            )
+        x_map = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 20, "value": 0}, {"pixel": 200, "value": 1}]}
+        )
+        y_map = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 120, "value": 0}, {"pixel": 20, "value": 1}]}
+        )
+        common = {
+            "color": "#d62728",
+            "tolerance": 12,
+            "extraction_mode": "guided_group_path",
+            "shared_color_group": "red",
+            "guide_corridor_px": 5,
+            "guide_interpolation": "shape_preserving",
+        }
+        rows, diagnostics = msf.extract_line(
+            np.asarray(image),
+            (10, 15, 210, 125),
+            [
+                {
+                    **common,
+                    "id": "solid",
+                    "line_semantics": "solid",
+                    "guide_points_px": [[20, 112], [100, 90], [200, 62]],
+                },
+                {
+                    **common,
+                    "id": "dash",
+                    "line_semantics": "dashed",
+                    "guide_points_px": [[20, 108], [100, 74.4], [200, 32.4]],
+                },
+            ],
+            x_map,
+            y_map,
+        )
+        pairs = [(int(row["pixel_x"]), float(row["pixel_y"])) for row in rows]
+        self.assertEqual(len(pairs), len(set(pairs)))
+        grouped = {
+            series_id: [row for row in rows if row["series"] == series_id]
+            for series_id in ("solid", "dash")
+        }
+        self.assertGreater(len(grouped["solid"]), 160)
+        self.assertGreater(len(grouped["dash"]), 70)
+        self.assertLess(len(grouped["dash"]), len(grouped["solid"]))
+        self.assertTrue(
+            any(
+                row["evidence_status"] == "model_assisted_exclusive_assignment"
+                for row in rows
+            )
+        )
+        by_id = {item["id"]: item for item in diagnostics["series"]}
+        self.assertEqual("solid", by_id["solid"]["line_semantics"])
+        self.assertGreater(by_id["dash"]["maximum_gap_columns"], 0)
+
+    def test_display_geometry_only_bridges_an_explicitly_bounded_gap(self) -> None:
+        rows = [
+            {"x": 0, "y": 0, "pixel_x": 10, "segment_break": True},
+            {"x": 1, "y": 1, "pixel_x": 11, "segment_break": False},
+            {"x": 3, "y": 2, "pixel_x": 14, "segment_break": True},
+            {"x": 4, "y": 3, "pixel_x": 15, "segment_break": False},
+        ]
+        preserved = msf.display_segments(
+            rows,
+            "x",
+            "y",
+            mode="none",
+            smoothing_window=1,
+            samples_per_interval=1,
+            max_bridge_gap_px=0,
+        )
+        bridged = msf.display_segments(
+            rows,
+            "x",
+            "y",
+            mode="shape_preserving",
+            smoothing_window=1,
+            samples_per_interval=4,
+            max_bridge_gap_px=3,
+        )
+        self.assertEqual(2, len(preserved))
+        self.assertEqual(1, len(bridged))
+        self.assertGreater(len(bridged[0][0]), len(rows))
+        self.assertEqual(0, bridged[0][0][0])
+        self.assertEqual(4, bridged[0][0][-1])
+
+    def test_display_geometry_rejects_pixel_outlier_and_reports_retained_knots(self) -> None:
+        rows = [
+            {"x": index, "y": value, "pixel_x": 10 + index, "pixel_y": pixel_y, "segment_break": index == 0}
+            for index, (value, pixel_y) in enumerate(
+                [(0, 100), (1, 99), (50, 50), (3, 97), (4, 96)]
+            )
+        ]
+        segments = msf.display_segments(
+            rows,
+            "x",
+            "y",
+            mode="shape_preserving",
+            smoothing_window=1,
+            samples_per_interval=2,
+            max_bridge_gap_px=0,
+            outlier_window=3,
+            max_outlier_pixel_residual=5,
+            knot_stride=1,
+        )
+        _, dense_y, source_count, retained_count, _ = segments[0]
+        self.assertEqual(5, source_count)
+        self.assertEqual(4, retained_count)
+        self.assertLess(float(np.max(dense_y)), 10)
+
+    def test_guide_constrained_geometry_is_dense_and_keeps_observation_count(self) -> None:
+        chart = {
+            "plot_box": [20, 20, 200, 110],
+            "x_axis": {
+                "scale": "linear",
+                "anchors": [{"pixel": 20, "value": 0}, {"pixel": 200, "value": 10}],
+            },
+            "y_axis": {
+                "scale": "linear",
+                "anchors": [{"pixel": 110, "value": 0}, {"pixel": 30, "value": 8}],
+            },
+        }
+        entry = {
+            "id": "trend",
+            "guide_interpolation": "shape_preserving",
+            "guide_points_px": [[20, 110], [100, 72], [200, 30]],
+        }
+        rows = [
+            {"pixel_x": 20, "pixel_y": 109, "x": 0, "y": 0.1},
+            {"pixel_x": 100, "pixel_y": 73, "x": 4.4, "y": 3.7},
+            {"pixel_x": 200, "pixel_y": 31, "x": 10, "y": 7.9},
+        ]
+        display_x, display_y, source_count, retained_count, derived_count = (
+            msf.guide_constrained_display_geometry(
+                entry,
+                rows,
+                chart,
+                maximum_residual_px=5,
+                residual_smoothing_window=5,
+            )
+        )
+        self.assertEqual(3, source_count)
+        self.assertEqual(3, retained_count)
+        self.assertEqual(181, derived_count)
+        self.assertEqual(181, len(display_x))
+        self.assertTrue(np.all(np.isfinite(display_y)))
+
+    def test_fixed_canvas_and_derived_display_geometry_are_auditable(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["render"].update(
+            {
+                "canvas_px": [220, 140],
+                "dpi": 100,
+                "axes_box_px": [20, 15, 205, 115],
+                "display_geometry": {
+                    "mode": "shape_preserving",
+                    "smoothing_window": 5,
+                    "samples_per_interval": 3,
+                    "max_bridge_gap_px": 0,
+                },
+            }
+        )
+        msf.write_json(spec_path, spec)
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        msf.review_apply_command(output, self.decisions_for(output))
+        observed_rows = msf.read_tabular_rows(output / "data.csv")
+        report = msf.render_command(spec_path, output / "data.csv", output / "render")
+        with Image.open(output / "render" / "render.png") as rendered:
+            self.assertEqual((220, 140), rendered.size)
+        self.assertGreater(report["display_geometry"]["rows"], len(observed_rows))
+        self.assertEqual(len(observed_rows), len(msf.read_tabular_rows(output / "data.csv")))
+        display_rows = msf.read_tabular_rows(output / "render" / "display-geometry.csv")
+        self.assertTrue(
+            all(row["provenance"] == "derived_display_geometry" for row in display_rows)
+        )
+
+    def test_candidate_preview_never_promotes_or_updates_manifest(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        manifest_before = msf.read_json(output / "manifest.json")
+        report = msf.preview_command(
+            spec_path, output / "candidates.csv", output / "candidate-preview"
+        )
+        manifest_after = msf.read_json(output / "manifest.json")
+        self.assertFalse(report["formal_render"])
+        self.assertEqual("unreviewed_candidates", report["input_status"])
+        self.assertEqual(manifest_before, manifest_after)
+        self.assertFalse((output / "data.csv").exists())
+        self.assertTrue(
+            (output / "candidate-preview" / "candidate-preview.png").is_file()
+        )
+
+    def test_formal_render_rejects_unreviewed_candidates(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        msf.extract_command(spec_path, output)
+        with self.assertRaisesRegex(msf.FigureError, "未复核候选"):
+            msf.render_command(
+                spec_path, output / "candidates.csv", output / "render"
+            )
 
     def test_direct_data_render_is_not_applicable_to_extraction(self) -> None:
         spec_path = self.make_line_project()

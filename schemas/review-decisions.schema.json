@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:more-sci-figure:review-decisions:v1",
   "title": "More Sci Figure 人工复核决定",
-  "description": "与 candidates.csv 哈希绑定、覆盖全部候选值的人工接受或拒绝记录。",
+  "description": "与 candidates.csv 哈希绑定、覆盖全部候选值的人工接受、拒绝、坐标校正或系列重归属记录。",
   "type": "object",
   "required": ["schema", "candidate_sha256", "reviewed_by", "decisions"],
   "properties": {
@@ -21,6 +21,50 @@
       "type": "string",
       "description": "建议使用 ISO 8601 时间。"
     },
+    "review_method": {
+      "enum": ["manual_point_review", "anomaly_first_split_review", "ai_assisted_batch_confirmation"],
+      "description": "逐点复核或基于综合评估的对话式批量确认。"
+    },
+    "anomaly_review": {
+      "type": "object",
+      "required": ["candidate_count", "candidate_ids", "separated_from_normal_batch"],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "candidate_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "separated_from_normal_batch": {"const": true}
+      },
+      "additionalProperties": false
+    },
+    "assessment_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$"
+    },
+    "assessment_score": {"type": "number", "minimum": 0, "maximum": 100},
+    "assessment_risk_level": {"enum": ["low", "medium", "high", "critical"]},
+    "conversation_confirmation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "用户在对话中的原始批量确认语句。"
+    },
+    "anomaly_acknowledgement": {
+      "type": "object",
+      "description": "用户对综合评估所列异常组的一次性确认；不表示逐点人工测量。",
+      "required": ["confirmed", "candidate_count", "groups", "confirmation"],
+      "properties": {
+        "confirmed": {"const": true},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "groups": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "confirmation": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
     "decisions": {
       "type": "array",
       "minItems": 1,
@@ -29,8 +73,11 @@
         "required": ["candidate_id", "decision"],
         "properties": {
           "candidate_id": {"type": "string", "minLength": 1},
-          "decision": {"enum": ["accepted", "rejected"]},
-          "reason": {"type": "string"}
+          "decision": {"enum": ["accepted", "rejected", "corrected", "reassigned"]},
+          "reason": {"type": "string"},
+          "target_series": {"type": "string", "minLength": 1},
+          "corrected_x": {"type": "number"},
+          "corrected_y": {"type": "number"}
         },
         "additionalProperties": false
       }

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:more-sci-figure:review-assessment:v1",
+  "title": "More Sci Figure AI 综合复核评估",
+  "description": "与 candidates.csv 哈希绑定的综合评分、风险分级、系列指标和异常组。",
+  "type": "object",
+  "required": [
+    "schema",
+    "candidate_sha256",
+    "candidate_count",
+    "overall_score",
+    "risk_level",
+    "recommended_action",
+    "indicator_summary",
+    "series_assessment",
+    "anomaly_groups",
+    "review_policy"
+  ],
+  "properties": {
+    "schema": {"const": "more-sci-figure.review-assessment.v1"},
+    "candidate_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+    "candidate_count": {"type": "integer", "minimum": 1},
+    "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
+    "risk_level": {"enum": ["low", "medium", "high", "critical"]},
+    "recommended_action": {
+      "enum": ["batch_confirm", "review_anomaly_groups", "stop"]
+    },
+    "indicator_summary": {"type": "object"},
+    "series_assessment": {"type": "array", "items": {"type": "object"}},
+    "anomaly_groups": {"type": "object"},
+    "top_anomalies": {"type": "array", "items": {"type": "object"}},
+    "review_policy": {"type": "object"}
+  },
+  "additionalProperties": true
+}

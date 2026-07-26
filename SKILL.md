@@ -7,7 +7,7 @@ description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可
 
 从原始图源到正式数据和验证重绘建立一条可复核证据链。除非用户明确授权远程 OCR 或视觉服务，否则全部在本地处理。
 
-当前版本：`0.2.0`
+当前版本：`0.3.1`
 
 ## 核心规则
 
@@ -46,19 +46,50 @@ python scripts/more_sci_figure.py extract \
   --spec evidence/project.json --out-dir evidence
 ```
 
-支持颜色可区分的 `line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
+支持颜色可区分的 `line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
 
-### 3. 人工复核
+需要在复核前检查整体轨迹时，只能生成带水印候选预览：
 
-在浏览器打开 `evidence/review.html`，逐项接受或拒绝候选值，并导出 `review-decisions.json`。然后运行：
+```bash
+python scripts/more_sci_figure.py preview \
+  --spec evidence/project.json \
+  --candidates evidence/candidates.csv \
+  --out-dir evidence/candidate-preview
+```
+
+`preview` 不生成 `data.csv`、不修改 `manifest.json`，也不推进正式重绘或交付状态。
+
+### 3. AI 综合评判与对话确认
+
+默认流程不得要求用户逐点校对大量候选。`extract` 自动生成 `review-assessment.json` 和 `review-anomalies.csv`；Agent 应读取综合评分、风险等级、逐系列覆盖率/缺口/引导残差、模型辅助比例和异常组，只向用户汇报关键结论。
+
+综合评估使用可重复的本地证据指标，Agent 负责压缩与解释结果。它不会把 AI 判断冒充新的像素证据：来源哈希、候选哈希、质量门和异常记录仍保留。风险处理规则：
+
+- `low` 或 `medium` 且没有异常候选、`recommended_action=batch_confirm`：普通候选可以通过“下一步”“继续”或本地页面批量确认；
+- 存在异常候选时：普通候选仍可批量处理，但异常候选必须在独立复核区查看原始分辨率局部证据，并分别接受、拒绝、校正或重归属；异常项不得混入普通批次，也不得仅用一个总确认替代逐项决定；
+- `high`：只处理独立异常区，不展开全部普通候选；
+- `critical` 或 `recommended_action=stop`：立即停止，不得批量确认；
+- 用户主动要求抽查、校正或重新归属时，才启动 `review-serve` 并展开逐点高级复核页。
+
+Agent 内部执行以下命令；不要要求用户复制命令或选择路径：
+
+```bash
+python scripts/more_sci_figure.py review-assess --project-dir evidence
+python scripts/more_sci_figure.py review-confirm \
+  --project-dir evidence \
+  --reviewed-by "可追溯用户身份" \
+  --confirmation "用户原始确认语句"
+```
+
+`review-confirm` 只有在综合评估允许批量确认且 `review-anomalies.csv` 为空时，才会生成固定路径的 `review-decisions.json`。存在异常时必须使用页面独立处理异常项；页面把普通候选预置为批量接受，异常候选保持待决策，只有全部异常都有明确决定后才生成覆盖全部候选的复核文件。然后应用复核：
 
 ```bash
 python scripts/more_sci_figure.py review-apply \
   --project-dir evidence \
-  --decisions review-decisions.json
+  --decisions evidence/review-decisions.json
 ```
 
-复核文件必须覆盖全部候选值，且候选哈希必须与当前 `candidates.csv` 一致。只有接受项会进入正式 `data.csv`。
+复核文件仍必须覆盖全部候选值，且候选哈希必须与当前 `candidates.csv` 一致。只有接受项会进入正式 `data.csv`。逐点页面保留为异常深挖工具，不再是默认入口。
 
 ### 4. 重绘
 
@@ -71,7 +102,7 @@ python scripts/more_sci_figure.py render \
   --out-dir evidence/render
 ```
 
-同一图形对象统一导出 PNG、SVG 和 PDF。不得自行添加误差条、显著性、平滑或拟合。
+同一图形对象统一导出 PNG、SVG 和 PDF。不得自行添加误差条、显著性或拟合。只有项目明确声明时，才可为展示生成形状保持的派生几何；派生点写入独立 `display-geometry.csv`，不得覆盖人工接受的 `data.csv`。
 
 ### 5. 验证
 
@@ -85,20 +116,20 @@ python scripts/more_sci_figure.py validate \
 
 ### 6. 门控管线
 
-项目规格完整后才能使用 `pipeline`。第一次运行会停在人工复核门：
+项目规格完整后才能使用 `pipeline`。第一次运行会输出综合评分与异常组，并停在对话确认门：
 
 ```bash
 python scripts/more_sci_figure.py pipeline \
   --spec evidence/project.json --out-dir evidence
 ```
 
-完成人工复核后，可带复核文件继续：
+用户对综合评估确认“下一步/继续”、Agent 生成批量复核记录后，可带复核文件继续：
 
 ```bash
 python scripts/more_sci_figure.py pipeline \
   --spec evidence/project.json \
   --out-dir evidence \
-  --review-decisions review-decisions.json
+  --review-decisions evidence/review-decisions.json
 ```
 
 ## 直接数据重绘
@@ -114,10 +145,14 @@ python scripts/more_sci_figure.py pipeline \
 - `candidates.csv`：算法检测到的候选值；
 - `overlay.png`：原始分辨率证据叠图；
 - `extraction-report.json`：标定、覆盖率、排除项、质量门与局限；
-- `review.html`：本地人工复核页面；
+- `review.html`：本地人工复核页面；异常候选独立于普通候选批量区，并提供局部像素证据；
+- `review-assessment.json`：AI 综合评分、风险等级、系列指标和异常组；
+- `review-anomalies.csv`：仅供异常深挖的候选清单；
+- `candidate-preview/`：可选的未复核水印预览，不属于正式交付；
 - `review-decisions.json`：与候选哈希绑定的人工决定；
 - `data.csv`：仅包含人工接受值；
 - `render/render.png`、`render.svg`、`render.pdf`：一致重绘；
+- `render/display-geometry.csv`：可选的派生展示几何及其血缘；
 - `manifest.json`：哈希、工具版本及独立状态；
 - `validation-report.json`：最终结构与可选视觉检查。
 

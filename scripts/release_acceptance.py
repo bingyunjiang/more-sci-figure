@@ -31,6 +31,7 @@ def run(command: list[str]) -> dict[str, object]:
 
 
 def main() -> int:
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     required = [
         "README.md",
         "CHANGELOG.md",
@@ -43,12 +44,49 @@ def main() -> int:
         "references/extraction-protocol.md",
         "references/rendering-protocol.md",
         "schemas/project.schema.json",
+        "schemas/review-assessment.schema.json",
         "schemas/review-decisions.schema.json",
         "scripts/more_sci_figure.py",
     ]
     structure = {
         "status": "pass" if all((ROOT / path).is_file() for path in required) else "failed",
         "missing": [path for path in required if not (ROOT / path).is_file()],
+    }
+    version_surfaces = {
+        "VERSION": version,
+        "SKILL.md": f"当前版本：`{version}`"
+        in (ROOT / "SKILL.md").read_text(encoding="utf-8"),
+        "README.md": f"版本：v{version}"
+        in (ROOT / "README.md").read_text(encoding="utf-8"),
+        "CHANGELOG.md": f"## {version} -"
+        in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+        "python": f'VERSION = "{version}"'
+        in (ROOT / "scripts" / "more_sci_figure.py").read_text(encoding="utf-8"),
+    }
+    version_consistency = {
+        "status": (
+            "pass"
+            if all(value is True for key, value in version_surfaces.items() if key != "VERSION")
+            else "failed"
+        ),
+        "surfaces": version_surfaces,
+    }
+    expected_history = ["0.3.1", "0.3.0", "0.2.0", "0.1.0"]
+    readme_text = (ROOT / "README.md").read_text(encoding="utf-8")
+    changelog_text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    readme_positions = [readme_text.find(f"**v{item} ·") for item in expected_history]
+    changelog_positions = [changelog_text.find(f"## {item} -") for item in expected_history]
+    history_continuity = {
+        "status": (
+            "pass"
+            if all(position >= 0 for position in readme_positions + changelog_positions)
+            and readme_positions == sorted(readme_positions)
+            and changelog_positions == sorted(changelog_positions)
+            else "failed"
+        ),
+        "expected_descending_versions": expected_history,
+        "readme_positions": readme_positions,
+        "changelog_positions": changelog_positions,
     }
     tests = run(
         [
@@ -109,6 +147,8 @@ def main() -> int:
         help_check["status"] = "failed"
     checks = {
         "structure": structure,
+        "version_consistency": version_consistency,
+        "history_continuity": history_continuity,
         "tests": tests,
         "cli": cli,
         "chinese_help": help_check,
@@ -117,7 +157,7 @@ def main() -> int:
     status = "pass" if all(check["status"] == "pass" for check in checks.values()) else "failed"
     report = {
         "schema": "more-sci-figure.release-acceptance.v1",
-        "version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
+        "version": version,
         "status": status,
         "checks": checks,
     }

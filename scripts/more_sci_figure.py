@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""more-sci-figure v0.2 统一中文本地命令行。"""
+"""more-sci-figure v0.3 统一中文本地命令行。"""
 
 from __future__ import annotations
 
@@ -9,12 +9,15 @@ import hashlib
 import json
 import math
 import os
+import secrets
 import sys
 from datetime import datetime, timezone
 from collections import deque
 from html import escape
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Callable
+from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -23,8 +26,9 @@ from PIL import Image, ImageDraw
 SCHEMA = "more-sci-figure.project.v1"
 MANIFEST_SCHEMA = "more-sci-figure.manifest.v1"
 REVIEW_SCHEMA = "more-sci-figure.review-decisions.v1"
+ASSESSMENT_SCHEMA = "more-sci-figure.review-assessment.v1"
 SUPPORTED_CHARTS = {"line", "scatter", "bar", "histogram"}
-VERSION = "0.2.0"
+VERSION = "0.3.1"
 
 
 class FigureError(RuntimeError):
@@ -56,6 +60,23 @@ def read_json(path: Path) -> dict[str, Any]:
 def resolve_from(base_file: Path, value: str) -> Path:
     path = Path(value).expanduser()
     return path.resolve() if path.is_absolute() else (base_file.parent / path).resolve()
+
+
+def project_copy_with_rebased_paths(
+    spec: dict[str, Any], source_spec_path: Path, destination: Path
+) -> dict[str, Any]:
+    """Keep source semantics stable when a project spec is copied to a new directory."""
+    copied = json.loads(json.dumps(spec, ensure_ascii=False))
+    source = copied.get("source")
+    if not isinstance(source, dict):
+        return copied
+    for key in ("path", "measurement_raster"):
+        value = source.get(key)
+        if not value:
+            continue
+        resolved = resolve_from(source_spec_path, str(value))
+        source[key] = os.path.relpath(resolved, destination.parent.resolve())
+    return copied
 
 
 def parse_hex_color(value: str) -> tuple[int, int, int]:
@@ -324,8 +345,94 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 if str(entry.get("color_space", "rgb")).lower() not in {"rgb", "lab"}:
                     errors.append(f"系列 {entry.get('id', '')} 的 color_space 只支持 rgb 或 lab")
                 tolerance = entry.get("tolerance", 45)
-                if not isinstance(tolerance, (int, float)) or float(tolerance) <= 0:
+                if (
+                    not isinstance(tolerance, (int, float))
+                    or not math.isfinite(float(tolerance))
+                    or float(tolerance) <= 0
+                ):
                     errors.append(f"系列 {entry.get('id', '')} 的 tolerance 必须为正数")
+                extraction_mode = str(entry.get("extraction_mode", "color_column_median"))
+                if extraction_mode not in {
+                    "color_column_median",
+                    "guided_path",
+                    "guided_group_path",
+                }:
+                    errors.append(
+                        f"系列 {entry.get('id', '')} 的 extraction_mode 只支持 color_column_median、guided_path 或 guided_group_path"
+                    )
+                if extraction_mode in {"guided_path", "guided_group_path"}:
+                    guide_points = parse_guide_points(entry)
+                    if len(guide_points) < 2:
+                        errors.append(f"系列 {entry.get('id', '')} 的 guided_path 至少需要两个 guide_points_px")
+                    elif len({point[0] for point in guide_points}) != len(guide_points):
+                        errors.append(f"系列 {entry.get('id', '')} 的 guide_points_px 横坐标必须唯一")
+                    corridor = entry.get("guide_corridor_px", 7.0)
+                    if (
+                        not isinstance(corridor, (int, float))
+                        or not math.isfinite(float(corridor))
+                        or float(corridor) <= 0
+                    ):
+                        errors.append(f"系列 {entry.get('id', '')} 的 guide_corridor_px 必须为正数")
+                    x_range = entry.get("x_pixel_range")
+                    if x_range is not None and (
+                        not isinstance(x_range, list)
+                        or len(x_range) != 2
+                        or not all(
+                            isinstance(value, (int, float)) and math.isfinite(float(value))
+                            for value in x_range
+                        )
+                        or float(x_range[0]) >= float(x_range[1])
+                    ):
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 x_pixel_range 必须是递增的两个有限数值"
+                        )
+                    if str(entry.get("guide_interpolation", "linear")) not in {
+                        "linear",
+                        "shape_preserving",
+                    }:
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 guide_interpolation 只支持 linear 或 shape_preserving"
+                        )
+                    if str(entry.get("line_semantics", "solid")) not in {"solid", "dashed"}:
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 line_semantics 只支持 solid 或 dashed"
+                        )
+                    for key in (
+                        "missing_penalty",
+                        "continuity_weight",
+                        "search_half_width_px",
+                        "max_track_gap_px",
+                    ):
+                        value = entry.get(key)
+                        if value is not None and (
+                            not isinstance(value, (int, float))
+                            or not math.isfinite(float(value))
+                            or float(value) < 0
+                        ):
+                            errors.append(f"系列 {entry.get('id', '')} 的 {key} 必须为非负数")
+                for box in entry.get("exclude_boxes_px", []):
+                    if (
+                        not isinstance(box, list)
+                        or len(box) != 4
+                        or not all(
+                            isinstance(value, (int, float)) and math.isfinite(float(value))
+                            for value in box
+                        )
+                        or float(box[0]) > float(box[2])
+                        or float(box[1]) > float(box[3])
+                    ):
+                        errors.append(f"系列 {entry.get('id', '')} 的 exclude_boxes_px 必须是有效 [x0,y0,x1,y1]")
+            grouped: dict[str, list[dict[str, Any]]] = {}
+            for entry in series:
+                if isinstance(entry, dict) and entry.get("extraction_mode") == "guided_group_path":
+                    grouped.setdefault(
+                        str(entry.get("shared_color_group", entry.get("color"))), []
+                    ).append(entry)
+            for group_id, group_entries in grouped.items():
+                if len(group_entries) < 2:
+                    errors.append(f"guided_group_path 颜色组 {group_id!r} 至少需要两个系列")
+                if len({str(item.get("color")) for item in group_entries}) != 1:
+                    errors.append(f"guided_group_path 颜色组 {group_id!r} 的系列必须使用相同颜色")
 
         quality = spec.get("quality_gates", {})
         if quality and not isinstance(quality, dict):
@@ -339,7 +446,14 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 errors.append("quality_gates.calibration.max_normalized_rmse 必须为非负数或 null")
             line_gates = quality.get("line", {})
             if isinstance(line_gates, dict):
-                for key in ("min_coverage", "max_gap_fraction"):
+                for key in (
+                    "min_coverage",
+                    "max_gap_fraction",
+                    "min_coverage_solid",
+                    "min_coverage_dashed",
+                    "max_gap_fraction_solid",
+                    "max_gap_fraction_dashed",
+                ):
                     value = line_gates.get(key)
                     if value is not None and (
                         not isinstance(value, (int, float)) or not 0 <= float(value) <= 1
@@ -363,6 +477,70 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     errors.append(
                         f"quality_gates.{section}.min_accepted_components 必须是正整数"
                     )
+    render = spec.get("render", {})
+    if render and not isinstance(render, dict):
+        errors.append("render 必须是对象")
+    elif isinstance(render, dict):
+        display = render.get("display_geometry", {})
+        if display and not isinstance(display, dict):
+            errors.append("render.display_geometry 必须是对象")
+        elif isinstance(display, dict):
+            mode = display.get("mode", "none")
+            if mode not in {"none", "shape_preserving"}:
+                errors.append("render.display_geometry.mode 只支持 none 或 shape_preserving")
+            for key in (
+                "smoothing_window",
+                "samples_per_interval",
+                "outlier_window",
+                "knot_stride",
+            ):
+                value = display.get(key)
+                if value is not None and (not isinstance(value, int) or value < 1):
+                    errors.append(f"render.display_geometry.{key} 必须为正整数")
+            bridge = display.get("max_bridge_gap_px")
+            if bridge is not None and (
+                not isinstance(bridge, (int, float))
+                or not math.isfinite(float(bridge))
+                or float(bridge) < 0
+            ):
+                errors.append("render.display_geometry.max_bridge_gap_px 必须为非负数")
+            outlier_residual = display.get("max_outlier_pixel_residual")
+            if outlier_residual is not None and (
+                not isinstance(outlier_residual, (int, float))
+                or not math.isfinite(float(outlier_residual))
+                or float(outlier_residual) < 0
+            ):
+                errors.append(
+                    "render.display_geometry.max_outlier_pixel_residual 必须为非负数"
+                )
+        canvas = render.get("canvas_px")
+        if canvas is not None and (
+            not isinstance(canvas, list)
+            or len(canvas) != 2
+            or not all(isinstance(value, int) and value > 0 for value in canvas)
+        ):
+            errors.append("render.canvas_px 必须是两个正整数")
+        axes_box = render.get("axes_box_px")
+        if axes_box is not None:
+            valid_box = (
+                isinstance(axes_box, list)
+                and len(axes_box) == 4
+                and all(
+                    isinstance(value, (int, float)) and math.isfinite(float(value))
+                    for value in axes_box
+                )
+                and float(axes_box[0]) < float(axes_box[2])
+                and float(axes_box[1]) < float(axes_box[3])
+            )
+            if not valid_box:
+                errors.append("render.axes_box_px 必须是有效 [left,top,right,bottom]")
+            elif isinstance(canvas, list) and len(canvas) == 2 and (
+                float(axes_box[0]) < 0
+                or float(axes_box[1]) < 0
+                or float(axes_box[2]) > float(canvas[0])
+                or float(axes_box[3]) > float(canvas[1])
+            ):
+                errors.append("render.axes_box_px 必须位于 canvas_px 内")
     return errors
 
 
@@ -477,6 +655,321 @@ def series_mask(array: np.ndarray, entry: dict[str, Any]) -> np.ndarray:
     return color_mask(array, color, tolerance)
 
 
+def parse_guide_points(entry: dict[str, Any]) -> list[tuple[float, float]]:
+    points = entry.get("guide_points_px")
+    if not isinstance(points, list):
+        return []
+    parsed: list[tuple[float, float]] = []
+    for point in points:
+        if isinstance(point, dict):
+            x, y = point.get("x"), point.get("y")
+        elif isinstance(point, list) and len(point) == 2:
+            x, y = point
+        else:
+            continue
+        if (
+            isinstance(x, (int, float))
+            and isinstance(y, (int, float))
+            and math.isfinite(float(x))
+            and math.isfinite(float(y))
+        ):
+            parsed.append((float(x), float(y)))
+    return sorted(parsed)
+
+
+def guide_y_at(entry: dict[str, Any], pixel_x: float) -> float | None:
+    points = parse_guide_points(entry)
+    if len(points) < 2 or pixel_x < points[0][0] or pixel_x > points[-1][0]:
+        return None
+    x_values = np.asarray([point[0] for point in points], dtype=float)
+    y_values = np.asarray([point[1] for point in points], dtype=float)
+    if str(entry.get("guide_interpolation", "linear")) != "shape_preserving" or len(points) == 2:
+        return float(np.interp(pixel_x, x_values, y_values))
+    widths = np.diff(x_values)
+    deltas = np.diff(y_values) / widths
+    slopes = np.zeros_like(y_values)
+    for index in range(1, len(y_values) - 1):
+        if deltas[index - 1] * deltas[index] <= 0:
+            slopes[index] = 0.0
+        else:
+            left_weight = 2.0 * widths[index] + widths[index - 1]
+            right_weight = widths[index] + 2.0 * widths[index - 1]
+            slopes[index] = (left_weight + right_weight) / (
+                left_weight / deltas[index - 1] + right_weight / deltas[index]
+            )
+    slopes[0], slopes[-1] = deltas[0], deltas[-1]
+    interval = min(len(widths) - 1, max(0, int(np.searchsorted(x_values, pixel_x) - 1)))
+    t = (pixel_x - x_values[interval]) / widths[interval]
+    t2, t3 = t * t, t * t * t
+    return float(
+        (2 * t3 - 3 * t2 + 1) * y_values[interval]
+        + (t3 - 2 * t2 + t) * widths[interval] * slopes[interval]
+        + (-2 * t3 + 3 * t2) * y_values[interval + 1]
+        + (t3 - t2) * widths[interval] * slopes[interval + 1]
+    )
+
+
+def weighted_median(values: np.ndarray, weights: np.ndarray) -> float:
+    order = np.argsort(values)
+    sorted_values = values[order]
+    cumulative = np.cumsum(weights[order])
+    index = int(np.searchsorted(cumulative, cumulative[-1] * 0.5))
+    return float(sorted_values[min(index, len(sorted_values) - 1)])
+
+
+def apply_series_exclusions(
+    mask: np.ndarray,
+    entry: dict[str, Any],
+    plot_box: tuple[int, int, int, int],
+) -> tuple[np.ndarray, list[list[int]]]:
+    result = mask.copy()
+    left, top, right, bottom = plot_box
+    applied: list[list[int]] = []
+    for value in entry.get("exclude_boxes_px", []):
+        if not isinstance(value, list) or len(value) != 4:
+            continue
+        x0, y0, x1, y1 = [int(round(float(item))) for item in value]
+        x0, x1 = max(left, x0), min(right, x1)
+        y0, y1 = max(top, y0), min(bottom, y1)
+        if x0 > x1 or y0 > y1:
+            continue
+        result[y0 - top : y1 - top + 1, x0 - left : x1 - left + 1] = False
+        applied.append([x0, y0, x1, y1])
+    return result, applied
+
+
+def guide_x_bounds(entry: dict[str, Any], plot_box: tuple[int, int, int, int]) -> tuple[int, int]:
+    left, _, right, _ = plot_box
+    points = parse_guide_points(entry)
+    x_range = entry.get("x_pixel_range")
+    if isinstance(x_range, list) and len(x_range) == 2:
+        return (
+            max(left, int(math.ceil(float(x_range[0])))),
+            min(right, int(math.floor(float(x_range[1])))),
+        )
+    return (
+        max(left, int(math.ceil(points[0][0]))),
+        min(right, int(math.floor(points[-1][0]))),
+    )
+
+
+def cluster_pixel_rows(pixel_rows: np.ndarray) -> list[dict[str, float | int]]:
+    if pixel_rows.size == 0:
+        return []
+    values = np.sort(pixel_rows.astype(float))
+    split_points = np.flatnonzero(np.diff(values) > 1.01) + 1
+    clusters: list[dict[str, float | int]] = []
+    for cluster in np.split(values, split_points):
+        clusters.append(
+            {
+                "center": float(np.median(cluster)),
+                "minimum": float(np.min(cluster)),
+                "maximum": float(np.max(cluster)),
+                "support": int(cluster.size),
+            }
+        )
+    return clusters
+
+
+def extract_guided_group(
+    crop: np.ndarray,
+    box: tuple[int, int, int, int],
+    entries: list[dict[str, Any]],
+    x_map: AxisMap,
+    y_map: AxisMap,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """对同色系列执行排他式联合分配；缺失分支不借用同一像素。"""
+    left, top, right, _ = box
+    entry_masks: dict[str, np.ndarray] = {}
+    exclusions: dict[str, list[list[int]]] = {}
+    bounds: dict[str, tuple[int, int]] = {}
+    stats: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        series_id = str(entry["id"])
+        entry_masks[series_id], exclusions[series_id] = apply_series_exclusions(
+            series_mask(crop, entry), entry, box
+        )
+        bounds[series_id] = guide_x_bounds(entry, box)
+        stats[series_id] = {
+            "supported": 0,
+            "previous_x": None,
+            "previous_y": None,
+            "current_gap": 0,
+            "maximum_gap": 0,
+            "residuals": [],
+            "competitive": 0,
+            "fused_unassigned": 0,
+        }
+    start_x = min(value[0] for value in bounds.values())
+    end_x = max(value[1] for value in bounds.values())
+    rows: list[dict[str, Any]] = []
+    ordered_entries = sorted(
+        entries,
+        key=lambda item: 0 if str(item.get("line_semantics", "solid")) == "solid" else 1,
+    )
+    for pixel_x in range(start_x, end_x + 1):
+        active = [
+            entry
+            for entry in ordered_entries
+            if bounds[str(entry["id"])][0] <= pixel_x <= bounds[str(entry["id"])][1]
+            and guide_y_at(entry, pixel_x) is not None
+        ]
+        if not active:
+            continue
+        search_half_width = max(int(entry.get("search_half_width_px", 0)) for entry in active)
+        x0 = max(0, pixel_x - left - search_half_width)
+        x1 = min(crop.shape[1] - 1, pixel_x - left + search_half_width)
+        union_mask = np.zeros((crop.shape[0], x1 - x0 + 1), dtype=bool)
+        for entry in active:
+            union_mask |= entry_masks[str(entry["id"])][:, x0 : x1 + 1]
+        local_rows = np.where(union_mask)[0].astype(float) + top
+        clusters = cluster_pixel_rows(local_rows)
+        expectations = {str(entry["id"]): float(guide_y_at(entry, pixel_x)) for entry in active}
+        eligible: dict[str, list[int]] = {}
+        for entry in active:
+            series_id = str(entry["id"])
+            corridor = float(entry.get("guide_corridor_px", 7.0))
+            eligible[series_id] = [
+                index
+                for index, cluster in enumerate(clusters)
+                if abs(float(cluster["center"]) - expectations[series_id]) <= corridor
+            ]
+
+        best_cost = math.inf
+        best_assignment: dict[str, int | None] = {}
+
+        def search_assignment(
+            index: int,
+            used: set[int],
+            cost: float,
+            assignment: dict[str, int | None],
+        ) -> None:
+            nonlocal best_cost, best_assignment
+            if cost >= best_cost:
+                return
+            if index == len(active):
+                best_cost = cost
+                best_assignment = dict(assignment)
+                return
+            entry = active[index]
+            series_id = str(entry["id"])
+            corridor = float(entry.get("guide_corridor_px", 7.0))
+            semantics = str(entry.get("line_semantics", "solid"))
+            missing_factor = float(
+                entry.get("missing_penalty", 2.5 if semantics == "solid" else 0.8)
+            )
+            assignment[series_id] = None
+            search_assignment(index + 1, used, cost + missing_factor * corridor, assignment)
+            previous_y = stats[series_id]["previous_y"]
+            previous_x = stats[series_id]["previous_x"]
+            continuity_weight = float(entry.get("continuity_weight", 0.35))
+            track_gap = int(entry.get("max_track_gap_px", 40 if semantics == "dashed" else 4))
+            for cluster_index in eligible[series_id]:
+                if cluster_index in used:
+                    continue
+                center = float(clusters[cluster_index]["center"])
+                local_cost = abs(center - expectations[series_id])
+                if (
+                    previous_y is not None
+                    and previous_x is not None
+                    and pixel_x - int(previous_x) <= track_gap
+                ):
+                    local_cost += continuity_weight * abs(center - float(previous_y))
+                assignment[series_id] = cluster_index
+                search_assignment(
+                    index + 1,
+                    used | {cluster_index},
+                    cost + local_cost,
+                    assignment,
+                )
+            assignment.pop(series_id, None)
+
+        search_assignment(0, set(), 0.0, {})
+        cluster_competitors = {
+            index: [str(entry["id"]) for entry in active if index in eligible[str(entry["id"])]]
+            for index in range(len(clusters))
+        }
+        for entry in active:
+            series_id = str(entry["id"])
+            state = stats[series_id]
+            cluster_index = best_assignment.get(series_id)
+            if cluster_index is None:
+                state["previous_x"] = None
+                state["previous_y"] = None
+                state["current_gap"] += 1
+                state["maximum_gap"] = max(state["maximum_gap"], state["current_gap"])
+                if any(len(cluster_competitors[index]) > 1 for index in eligible[series_id]):
+                    state["fused_unassigned"] += 1
+                continue
+            cluster = clusters[cluster_index]
+            pixel_y = float(cluster["center"])
+            residual = abs(pixel_y - expectations[series_id])
+            competitors = cluster_competitors[cluster_index]
+            evidence_status = (
+                "model_assisted_exclusive_assignment"
+                if len(competitors) > 1
+                else "visible_pixel_support"
+            )
+            if len(competitors) > 1:
+                state["competitive"] += 1
+            rows.append(
+                {
+                    "series": series_id,
+                    "x": x_map.value(pixel_x),
+                    "y": y_map.value(pixel_y),
+                    "x_uncertainty": x_map.uncertainty(pixel_x, max(0.5, search_half_width)),
+                    "y_uncertainty": y_map.uncertainty(
+                        pixel_y,
+                        max(0.5, (float(cluster["maximum"]) - float(cluster["minimum"])) / 2.0),
+                    ),
+                    "pixel_x": pixel_x,
+                    "pixel_y": pixel_y,
+                    "pixel_half_height": max(
+                        0.5, (float(cluster["maximum"]) - float(cluster["minimum"])) / 2.0
+                    ),
+                    "support_pixels": int(cluster["support"]),
+                    "support_x_min": max(left, pixel_x - search_half_width),
+                    "support_x_max": min(right, pixel_x + search_half_width),
+                    "guide_residual_px": residual,
+                    "group_assignment_cost": best_cost,
+                    "competing_series": "|".join(competitors) if len(competitors) > 1 else "",
+                    "line_semantics": str(entry.get("line_semantics", "solid")),
+                    "evidence_status": evidence_status,
+                    "segment_break": state["previous_x"] is None,
+                    "status": "visible_candidate",
+                }
+            )
+            state["supported"] += 1
+            state["previous_x"] = pixel_x
+            state["previous_y"] = pixel_y
+            state["current_gap"] = 0
+            state["residuals"].append(residual)
+    diagnostics: list[dict[str, Any]] = []
+    for entry in entries:
+        series_id = str(entry["id"])
+        state = stats[series_id]
+        width = max(1, bounds[series_id][1] - bounds[series_id][0] + 1)
+        diagnostics.append(
+            {
+                "id": series_id,
+                "extraction_mode": "guided_group_path",
+                "line_semantics": str(entry.get("line_semantics", "solid")),
+                "supported_columns": state["supported"],
+                "coverage": state["supported"] / width,
+                "maximum_gap_columns": state["maximum_gap"],
+                "maximum_gap_fraction": state["maximum_gap"] / width,
+                "model_assisted_columns": state["competitive"],
+                "fused_unassigned_columns": state["fused_unassigned"],
+                "ambiguous_columns": 0,
+                "mean_guide_residual_px": (
+                    float(np.mean(state["residuals"])) if state["residuals"] else None
+                ),
+                "applied_exclusions_px": exclusions[series_id],
+            }
+        )
+    return rows, diagnostics
+
+
 def components(mask: np.ndarray) -> list[list[tuple[int, int]]]:
     height, width = mask.shape
     visited = np.zeros_like(mask, dtype=bool)
@@ -530,8 +1023,117 @@ def extract_line(
     crop = array[top : bottom + 1, left : right + 1]
     rows: list[dict[str, Any]] = []
     diagnostics: dict[str, Any] = {"series": []}
+    processed_entries: set[int] = set()
     for entry in series:
-        mask = series_mask(crop, entry)
+        if id(entry) in processed_entries:
+            continue
+        extraction_mode = str(entry.get("extraction_mode", "color_column_median"))
+        if extraction_mode == "guided_group_path":
+            group_id = str(entry.get("shared_color_group", entry.get("color")))
+            group_entries = [
+                peer
+                for peer in series
+                if id(peer) not in processed_entries
+                and str(peer.get("extraction_mode", "color_column_median"))
+                == "guided_group_path"
+                and str(peer.get("shared_color_group", peer.get("color"))) == group_id
+            ]
+            group_rows, group_diagnostics = extract_guided_group(
+                crop, box, group_entries, x_map, y_map
+            )
+            rows.extend(group_rows)
+            diagnostics["series"].extend(group_diagnostics)
+            processed_entries.update(id(peer) for peer in group_entries)
+            continue
+        mask, applied_exclusions = apply_series_exclusions(series_mask(crop, entry), entry, box)
+        if extraction_mode == "guided_path":
+            guide_points = parse_guide_points(entry)
+            corridor = float(entry.get("guide_corridor_px", 7.0))
+            x_range = entry.get("x_pixel_range")
+            if isinstance(x_range, list) and len(x_range) == 2:
+                start_x = max(left, int(math.ceil(float(x_range[0]))))
+                end_x = min(right, int(math.floor(float(x_range[1]))))
+            else:
+                start_x = max(left, int(math.ceil(guide_points[0][0])))
+                end_x = min(right, int(math.floor(guide_points[-1][0])))
+            peer_entries = [
+                peer
+                for peer in series
+                if peer is not entry
+                and str(peer.get("shared_color_group", peer.get("color")))
+                == str(entry.get("shared_color_group", entry.get("color")))
+                and str(peer.get("extraction_mode", "color_column_median")) == "guided_path"
+            ]
+            supported = 0
+            ambiguous = 0
+            previous_x: int | None = None
+            current_gap = 0
+            maximum_gap = 0
+            residuals: list[float] = []
+            for pixel_x in range(start_x, end_x + 1):
+                expected_y = guide_y_at(entry, pixel_x)
+                if expected_y is None:
+                    continue
+                local_ys = np.flatnonzero(mask[:, pixel_x - left]).astype(float) + top
+                distances = np.abs(local_ys - expected_y)
+                accepted = distances <= corridor
+                if not np.any(accepted):
+                    previous_x = None
+                    current_gap += 1
+                    maximum_gap = max(maximum_gap, current_gap)
+                    continue
+                current_gap = 0
+                candidate_ys = local_ys[accepted]
+                candidate_distances = distances[accepted]
+                weights = np.exp(-0.5 * np.square(candidate_distances / max(1.0, corridor / 3.0)))
+                pixel_y = weighted_median(candidate_ys, weights)
+                residual = abs(pixel_y - expected_y)
+                residuals.append(residual)
+                evidence_status = "visible_pixel_support"
+                for peer in peer_entries:
+                    peer_y = guide_y_at(peer, pixel_x)
+                    if peer_y is None:
+                        continue
+                    peer_corridor = float(peer.get("guide_corridor_px", corridor))
+                    if abs(peer_y - expected_y) <= corridor + peer_corridor and abs(pixel_y - peer_y) <= peer_corridor:
+                        evidence_status = "ambiguous_shared_colour"
+                        ambiguous += 1
+                        break
+                pixel_half_height = max(0.5, float(np.ptp(candidate_ys)) / 2.0)
+                rows.append(
+                    {
+                        "series": entry["id"],
+                        "x": x_map.value(pixel_x),
+                        "y": y_map.value(pixel_y),
+                        "x_uncertainty": x_map.uncertainty(pixel_x),
+                        "y_uncertainty": y_map.uncertainty(pixel_y, pixel_half_height),
+                        "pixel_x": pixel_x,
+                        "pixel_y": pixel_y,
+                        "pixel_half_height": pixel_half_height,
+                        "support_pixels": int(candidate_ys.size),
+                        "guide_residual_px": residual,
+                        "evidence_status": evidence_status,
+                        "segment_break": previous_x is None,
+                        "status": "visible_candidate",
+                    }
+                )
+                supported += 1
+                previous_x = pixel_x
+            width = max(1, end_x - start_x + 1)
+            diagnostics["series"].append(
+                {
+                    "id": entry["id"],
+                    "extraction_mode": extraction_mode,
+                    "supported_columns": supported,
+                    "coverage": supported / width,
+                    "maximum_gap_columns": maximum_gap,
+                    "maximum_gap_fraction": maximum_gap / width,
+                    "ambiguous_columns": ambiguous,
+                    "mean_guide_residual_px": float(np.mean(residuals)) if residuals else None,
+                    "applied_exclusions_px": applied_exclusions,
+                }
+            )
+            continue
         supported = 0
         previous_x: int | None = None
         current_gap = 0
@@ -565,14 +1167,17 @@ def extract_line(
             previous_x = pixel_x
         coverage = supported / max(1, mask.shape[1])
         diagnostics["series"].append(
-            {
-                "id": entry["id"],
-                "supported_columns": supported,
-                "coverage": coverage,
-                "maximum_gap_columns": maximum_gap,
-                "maximum_gap_fraction": maximum_gap / max(1, mask.shape[1]),
-            }
-        )
+                {
+                    "id": entry["id"],
+                    "extraction_mode": extraction_mode,
+                    "supported_columns": supported,
+                    "coverage": coverage,
+                    "maximum_gap_columns": maximum_gap,
+                    "maximum_gap_fraction": maximum_gap / max(1, mask.shape[1]),
+                    "ambiguous_columns": 0,
+                    "applied_exclusions_px": applied_exclusions,
+                }
+            )
     return rows, diagnostics
 
 
@@ -836,9 +1441,16 @@ def evaluate_quality_gates(
 
     chart_gates = configured.get("bar" if chart_type == "histogram" else chart_type, {})
     if chart_type == "line":
-        minimum_coverage = float(chart_gates.get("min_coverage", 0.5))
-        maximum_gap = chart_gates.get("max_gap_fraction")
         for series in diagnostics["series"]:
+            semantics = str(series.get("line_semantics", "solid"))
+            minimum_coverage = float(
+                chart_gates.get(
+                    f"min_coverage_{semantics}", chart_gates.get("min_coverage", 0.5)
+                )
+            )
+            maximum_gap = chart_gates.get(
+                f"max_gap_fraction_{semantics}", chart_gates.get("max_gap_fraction")
+            )
             checks.append(
                 {
                     "name": f"{series['id']}.coverage",
@@ -962,13 +1574,13 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
         "quality_gates": quality,
         "review_status": "not_run",
         "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
-        "required_next": "生成并完成人工复核后，才能创建正式 data.csv。",
+        "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
     }
     report_path = out_dir / "extraction-report.json"
     write_json(report_path, report)
     project_copy = out_dir / "project.json"
     if project_copy.resolve() != spec_path:
-        write_json(project_copy, spec)
+        write_json(project_copy, project_copy_with_rebased_paths(spec, spec_path, project_copy))
     manifest = load_manifest(out_dir)
     manifest.update(
         {
@@ -993,8 +1605,423 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
         manifest["artifacts"]["source_report"] = artifact_entry(source_report)
     write_json(out_dir / "manifest.json", manifest)
     if rows:
+        review_assess_command(out_dir)
         review_command(out_dir)
     return report
+
+
+def review_assess_command(project_dir: Path) -> dict[str, Any]:
+    """Fuse extraction evidence into an auditable risk score and anomaly shortlist."""
+    project_dir = project_dir.expanduser().resolve()
+    candidates_path = project_dir / "candidates.csv"
+    report_path = project_dir / "extraction-report.json"
+    if not candidates_path.is_file() or not report_path.is_file():
+        raise FigureError("缺少 candidates.csv 或 extraction-report.json，请先运行 extract")
+    rows = read_tabular_rows(candidates_path)
+    if not rows:
+        raise FigureError("没有可评估的候选值")
+    report = read_json(report_path)
+    candidate_hash = sha256_file(candidates_path)
+    manifest = load_manifest(project_dir)
+
+    critical_issues: list[str] = []
+    high_risk_issues: list[str] = []
+    warnings: list[str] = []
+
+    expected_project_id = str(manifest.get("project_id", ""))
+    expected_source_hash = str(manifest.get("source_sha256", ""))
+    candidate_project_paths = []
+    for path in (project_dir / "project.json", project_dir.parent / "project.json"):
+        resolved = path.resolve()
+        if resolved not in candidate_project_paths and resolved.is_file():
+            candidate_project_paths.append(resolved)
+    valid_projects: list[tuple[Path, dict[str, Any], str]] = []
+    invalid_project_reasons: list[str] = []
+    for path in candidate_project_paths:
+        try:
+            candidate_project = read_json(path)
+        except (OSError, json.JSONDecodeError) as exc:
+            invalid_project_reasons.append(f"{path}: JSON 无效（{exc}）")
+            continue
+        if candidate_project.get("schema") != SCHEMA:
+            invalid_project_reasons.append(f"{path}: schema 不匹配")
+            continue
+        if expected_project_id and str(candidate_project.get("project_id", "")) != expected_project_id:
+            invalid_project_reasons.append(f"{path}: project_id 不匹配")
+            continue
+        source = candidate_project.get("source", {})
+        if expected_source_hash and str(source.get("sha256", "")) != expected_source_hash:
+            invalid_project_reasons.append(f"{path}: source_sha256 不匹配")
+            continue
+        resolved_source = resolve_from(path, str(source.get("path", "")))
+        if not resolved_source.is_file():
+            invalid_project_reasons.append(f"{path}: 来源路径无效")
+            continue
+        if source.get("sha256") and sha256_file(resolved_source) != source.get("sha256"):
+            invalid_project_reasons.append(f"{path}: 来源文件哈希不一致")
+            continue
+        measurement_value = source.get("measurement_raster")
+        resolved_measurement = (
+            resolve_from(path, str(measurement_value)) if measurement_value else resolved_source
+        )
+        if not resolved_measurement.is_file():
+            invalid_project_reasons.append(f"{path}: 测量栅格路径无效")
+            continue
+        if source.get("measurement_sha256") and sha256_file(resolved_measurement) != source.get(
+            "measurement_sha256"
+        ):
+            invalid_project_reasons.append(f"{path}: 测量栅格哈希不一致")
+            continue
+        semantic_copy = json.loads(json.dumps(candidate_project, ensure_ascii=False))
+        semantic_copy["source"]["path"] = str(resolved_source)
+        if measurement_value:
+            semantic_copy["source"]["measurement_raster"] = str(resolved_measurement)
+        fingerprint = hashlib.sha256(
+            json.dumps(semantic_copy, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+        valid_projects.append((path, candidate_project, fingerprint))
+    semantic_fingerprints = {item[2] for item in valid_projects}
+    if not valid_projects:
+        critical_issues.append("同级或相邻目录中没有来源与哈希均有效的唯一 project.json")
+        project_path = project_dir / "project.json"
+        project: dict[str, Any] = {}
+    elif len(semantic_fingerprints) > 1:
+        critical_issues.append("同级或相邻目录中存在多个语义不同且有效的 project.json")
+        project_path, project, _ = valid_projects[0]
+    else:
+        preferred = next(
+            (item for item in valid_projects if item[0] == (project_dir / "project.json").resolve()),
+            valid_projects[0],
+        )
+        project_path, project, _ = preferred
+        if project_path != (project_dir / "project.json").resolve():
+            warnings.append("同级项目规格无效；已按来源哈希唯一匹配相邻目录中的有效规格")
+    if invalid_project_reasons:
+        warnings.append("已排除无效项目规格：" + "；".join(invalid_project_reasons))
+
+    manifest_candidate = manifest.get("artifacts", {}).get("candidates", {})
+    expected_candidate_hash = str(manifest_candidate.get("sha256", ""))
+    if expected_candidate_hash and expected_candidate_hash != candidate_hash:
+        critical_issues.append("manifest 中的候选哈希与当前 candidates.csv 不一致")
+    extraction_status = str(report.get("status", manifest.get("extraction_status", "not_run")))
+    if extraction_status == "failed":
+        critical_issues.append("自动提取质量门失败")
+    elif extraction_status == "partial":
+        high_risk_issues.append("自动提取质量门仅部分通过")
+
+    quality_checks = report.get("quality_gates", {}).get("checks", [])
+    failed_checks = [
+        check for check in quality_checks if isinstance(check, dict) and check.get("status") == "failed"
+    ]
+    if failed_checks:
+        high_risk_issues.append(f"{len(failed_checks)} 项自动质量检查未通过")
+
+    candidate_ids = [str(row.get("candidate_id", "")) for row in rows]
+    duplicate_ids = len(candidate_ids) - len(set(candidate_ids))
+    if not all(candidate_ids):
+        critical_issues.append("候选表包含空 candidate_id")
+    if duplicate_ids:
+        critical_issues.append(f"候选表包含 {duplicate_ids} 个重复 candidate_id")
+
+    evidence_counts: dict[str, int] = {}
+    series_rows: dict[str, list[dict[str, Any]]] = {}
+    anomaly_rows: list[dict[str, Any]] = []
+    anomaly_ids: set[str] = set()
+
+    def add_anomaly(
+        row: dict[str, Any], severity: str, anomaly_type: str, reason: str, value: Any = ""
+    ) -> None:
+        candidate_id = str(row.get("candidate_id", ""))
+        key = f"{candidate_id}:{anomaly_type}"
+        if key in anomaly_ids:
+            return
+        anomaly_ids.add(key)
+        anomaly_rows.append(
+            {
+                "candidate_id": candidate_id,
+                "series": str(row.get("series", "")),
+                "severity": severity,
+                "anomaly_type": anomaly_type,
+                "observed": value,
+                "reason": reason,
+                "recommended_action": "targeted_review" if severity == "high" else "batch_review",
+            }
+        )
+
+    numeric_fields = ("x", "y") if report.get("chart_type") in {"line", "scatter"} else ()
+    for row in rows:
+        series_rows.setdefault(str(row.get("series", "")), []).append(row)
+        evidence = str(row.get("evidence_status", row.get("status", "unknown")))
+        evidence_counts[evidence] = evidence_counts.get(evidence, 0) + 1
+        for field in numeric_fields:
+            try:
+                value = float(row[field])
+            except (KeyError, TypeError, ValueError):
+                add_anomaly(row, "high", "non_finite_coordinate", f"{field} 不是有限数值")
+                continue
+            if not math.isfinite(value):
+                add_anomaly(row, "high", "non_finite_coordinate", f"{field} 不是有限数值")
+        if evidence == "ambiguous_shared_colour":
+            add_anomaly(row, "high", "ambiguous_assignment", "同色证据无法唯一归属")
+        support_value = row.get("support_pixels")
+        if support_value not in {None, ""}:
+            try:
+                support = float(support_value)
+            except (TypeError, ValueError):
+                support = math.nan
+            if not math.isfinite(support) or support <= 0:
+                add_anomaly(row, "high", "invalid_pixel_support", "缺少有效像素支持", support_value)
+
+    for series, grouped_rows in series_rows.items():
+        residual_pairs: list[tuple[dict[str, Any], float]] = []
+        for row in grouped_rows:
+            value = row.get("guide_residual_px")
+            if value in {None, ""}:
+                continue
+            try:
+                residual = float(value)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(residual):
+                residual_pairs.append((row, residual))
+        if len(residual_pairs) < 8:
+            continue
+        values = np.asarray([value for _, value in residual_pairs], dtype=float)
+        median = float(np.median(values))
+        mad = float(np.median(np.abs(values - median)))
+        threshold = max(5.0, median + 6.0 * max(mad, 0.25))
+        for row, residual in residual_pairs:
+            if residual > threshold:
+                add_anomaly(
+                    row,
+                    "medium",
+                    "guide_residual_outlier",
+                    f"系列 {series} 的引导残差显著高于稳健阈值 {threshold:.2f}px",
+                    round(residual, 4),
+                )
+
+    model_assisted = evidence_counts.get("model_assisted_exclusive_assignment", 0)
+    ambiguous = evidence_counts.get("ambiguous_shared_colour", 0)
+    medium_anomalies = sum(item["severity"] == "medium" for item in anomaly_rows)
+    high_anomalies = sum(item["severity"] == "high" for item in anomaly_rows)
+    model_ratio = model_assisted / len(rows)
+    score = 100.0
+    score -= min(35.0, len(critical_issues) * 25.0)
+    score -= min(25.0, len(high_risk_issues) * 8.0 + high_anomalies * 1.5)
+    score -= min(12.0, model_ratio * 18.0)
+    score -= min(8.0, medium_anomalies / max(1, len(rows)) * 100.0)
+    calibration = report.get("calibration", {})
+    normalized_rmse_values = [
+        float(axis.get("normalized_rmse", 0.0))
+        for axis in calibration.values()
+        if isinstance(axis, dict)
+        and isinstance(axis.get("normalized_rmse"), (int, float))
+        and math.isfinite(float(axis.get("normalized_rmse")))
+    ]
+    score -= min(8.0, sum(normalized_rmse_values) * 1000.0)
+    score = round(max(0.0, min(100.0, score)), 1)
+
+    if critical_issues:
+        risk_level = "critical"
+        recommendation = "stop"
+    elif high_risk_issues or high_anomalies:
+        risk_level = "high"
+        recommendation = "review_anomaly_groups"
+    elif medium_anomalies:
+        risk_level = "medium"
+        recommendation = "review_anomaly_groups"
+    elif model_assisted or score < 90:
+        risk_level = "medium"
+        recommendation = "batch_confirm"
+    else:
+        risk_level = "low"
+        recommendation = "batch_confirm"
+    if model_assisted:
+        warnings.append(
+            f"{model_assisted} 个候选使用模型辅助排他分配，已按系列汇总，不要求逐点点击"
+        )
+
+    series_assessment: list[dict[str, Any]] = []
+    diagnostics = {
+        str(item.get("id", "")): item
+        for item in report.get("diagnostics", {}).get("series", [])
+        if isinstance(item, dict)
+    }
+    for series, grouped_rows in sorted(series_rows.items()):
+        diagnostic = diagnostics.get(series, {})
+        series_assessment.append(
+            {
+                "series": series,
+                "candidates": len(grouped_rows),
+                "coverage": diagnostic.get("coverage"),
+                "maximum_gap_fraction": diagnostic.get("maximum_gap_fraction"),
+                "mean_guide_residual_px": diagnostic.get("mean_guide_residual_px"),
+                "model_assisted": sum(
+                    str(row.get("evidence_status", ""))
+                    == "model_assisted_exclusive_assignment"
+                    for row in grouped_rows
+                ),
+                "flagged_anomalies": sum(item["series"] == series for item in anomaly_rows),
+            }
+        )
+
+    severity_order = {"high": 0, "medium": 1, "low": 2}
+    anomaly_rows.sort(
+        key=lambda item: (severity_order.get(str(item["severity"]), 9), str(item["series"]), str(item["candidate_id"]))
+    )
+    assessment = {
+        "schema": ASSESSMENT_SCHEMA,
+        "tool_version": VERSION,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "candidate_sha256": candidate_hash,
+        "project_id": project.get("project_id"),
+        "project_spec_path": str(project_path),
+        "source_sha256": project.get("source", {}).get("sha256"),
+        "candidate_count": len(rows),
+        "overall_score": score,
+        "risk_level": risk_level,
+        "recommended_action": recommendation,
+        "indicator_summary": {
+            "extraction_status": extraction_status,
+            "quality_checks_total": len(quality_checks),
+            "quality_checks_failed": len(failed_checks),
+            "model_assisted_candidates": model_assisted,
+            "model_assisted_ratio": round(model_ratio, 6),
+            "ambiguous_candidates": ambiguous,
+            "high_anomalies": high_anomalies,
+            "medium_anomalies": medium_anomalies,
+            "calibration_normalized_rmse": normalized_rmse_values,
+        },
+        "critical_issues": critical_issues,
+        "high_risk_issues": high_risk_issues,
+        "warnings": warnings,
+        "evidence_status_counts": evidence_counts,
+        "series_assessment": series_assessment,
+        "anomaly_groups": {
+            "ambiguous_assignment": sum(
+                item["anomaly_type"] == "ambiguous_assignment" for item in anomaly_rows
+            ),
+            "invalid_or_non_finite": sum(
+                item["anomaly_type"] in {"invalid_pixel_support", "non_finite_coordinate"}
+                for item in anomaly_rows
+            ),
+            "guide_residual_outlier": sum(
+                item["anomaly_type"] == "guide_residual_outlier" for item in anomaly_rows
+            ),
+            "model_assisted_assignment": model_assisted,
+        },
+        "top_anomalies": anomaly_rows[:20],
+        "review_policy": {
+            "default": "用户只需查看综合评分、系列摘要和异常组；无需逐点点击。",
+            "batch_confirmation_allowed": recommendation == "batch_confirm",
+            "formal_data_requires_confirmation": True,
+            "point_table_role": "仅用于异常深挖或用户主动抽查。",
+        },
+    }
+    assessment_path = project_dir / "review-assessment.json"
+    anomalies_path = project_dir / "review-anomalies.csv"
+    write_json(assessment_path, assessment)
+    write_csv(anomalies_path, anomaly_rows)
+    manifest["tool_version"] = VERSION
+    manifest["artifacts"]["review_assessment"] = artifact_entry(assessment_path)
+    manifest["artifacts"]["review_anomalies"] = artifact_entry(anomalies_path)
+    write_json(project_dir / "manifest.json", manifest)
+    return {
+        "status": "pass" if recommendation == "batch_confirm" else "attention_required",
+        "overall_score": score,
+        "risk_level": risk_level,
+        "recommended_action": recommendation,
+        "candidate_count": len(rows),
+        "anomaly_count": len(anomaly_rows),
+        "assessment": str(assessment_path),
+        "anomalies": str(anomalies_path),
+        "下一步": (
+            "向用户汇报综合评分和异常组；用户回复“下一步”或“继续”后执行 review-confirm。"
+            if recommendation == "batch_confirm"
+            else "只展示异常组并请求用户处理；不得批量确认。"
+        ),
+    }
+
+
+def review_confirm_command(
+    project_dir: Path, reviewed_by: str, confirmation: str
+) -> dict[str, Any]:
+    """Turn an explicit conversational approval into complete hash-bound decisions."""
+    project_dir = project_dir.expanduser().resolve()
+    reviewed_by = reviewed_by.strip()
+    confirmation = confirmation.strip()
+    if not reviewed_by:
+        raise FigureError("批量确认必须记录 reviewed_by")
+    if not confirmation:
+        raise FigureError("批量确认必须记录用户的对话确认语句")
+    assessment_path = project_dir / "review-assessment.json"
+    candidates_path = project_dir / "candidates.csv"
+    if not assessment_path.is_file() or not candidates_path.is_file():
+        raise FigureError("缺少 review-assessment.json 或 candidates.csv，请先运行 review-assess")
+    assessment = read_json(assessment_path)
+    if assessment.get("schema") != ASSESSMENT_SCHEMA:
+        raise FigureError(f"综合评估 schema 必须是 {ASSESSMENT_SCHEMA}")
+    candidate_hash = sha256_file(candidates_path)
+    if assessment.get("candidate_sha256") != candidate_hash:
+        raise FigureError("综合评估绑定的候选哈希与当前 candidates.csv 不一致")
+    if assessment.get("recommended_action") != "batch_confirm":
+        raise FigureError(
+            f"当前综合风险为 {assessment.get('risk_level')}，建议动作为 "
+            f"{assessment.get('recommended_action')}；不得一键批量确认"
+        )
+    anomalies_path = project_dir / "review-anomalies.csv"
+    anomaly_rows = read_tabular_rows(anomalies_path) if anomalies_path.is_file() else []
+    if anomaly_rows:
+        raise FigureError(
+            f"存在 {len(anomaly_rows)} 个异常候选，必须先在独立异常复核区逐项处理；"
+            "不得与普通候选一起批量确认"
+        )
+    rows = read_tabular_rows(candidates_path)
+    assessment_hash = sha256_file(assessment_path)
+    anomaly_groups = assessment.get("anomaly_groups", {})
+    acknowledged_anomaly_count = sum(
+        int(value)
+        for key, value in anomaly_groups.items()
+        if key != "model_assisted_assignment" and isinstance(value, int)
+    )
+    payload = {
+        "schema": REVIEW_SCHEMA,
+        "candidate_sha256": candidate_hash,
+        "project_id": assessment.get("project_id"),
+        "source_sha256": assessment.get("source_sha256"),
+        "reviewed_by": reviewed_by,
+        "reviewed_at": datetime.now(timezone.utc).isoformat(),
+        "review_method": "ai_assisted_batch_confirmation",
+        "assessment_sha256": assessment_hash,
+        "assessment_score": assessment.get("overall_score"),
+        "assessment_risk_level": assessment.get("risk_level"),
+        "conversation_confirmation": confirmation,
+        "anomaly_acknowledgement": {
+            "confirmed": True,
+            "candidate_count": acknowledged_anomaly_count,
+            "groups": anomaly_groups,
+            "confirmation": confirmation,
+        },
+        "decisions": [
+            {
+                "candidate_id": str(row["candidate_id"]),
+                "decision": "accepted",
+                "reason": "",
+            }
+            for row in rows
+        ],
+    }
+    result = save_review_decisions_command(project_dir, payload)
+    result.update(
+        {
+            "review_method": payload["review_method"],
+            "assessment_score": payload["assessment_score"],
+            "assessment_risk_level": payload["assessment_risk_level"],
+            "confirmation": confirmation,
+            "下一步": "Agent 应直接应用复核，并在其余质量门通过后完成重绘与验证。",
+        }
+    )
+    return result
 
 
 def review_command(project_dir: Path) -> dict[str, Any]:
@@ -1006,45 +2033,255 @@ def review_command(project_dir: Path) -> dict[str, Any]:
     rows = read_tabular_rows(candidates_path)
     if not rows:
         raise FigureError("没有可供复核的候选值")
+    project_path = project_dir / "project.json"
+    project = read_json(project_path) if project_path.is_file() else {}
+    assessment_path = project_dir / "review-assessment.json"
+    if not assessment_path.is_file():
+        review_assess_command(project_dir)
+    assessment = read_json(assessment_path)
+    anomalies_path = project_dir / "review-anomalies.csv"
+    anomaly_rows = read_tabular_rows(anomalies_path) if anomalies_path.is_file() else []
+    anomaly_by_id = {
+        str(item.get("candidate_id", "")): item
+        for item in anomaly_rows
+        if str(item.get("candidate_id", ""))
+    }
+    assessment_score = escape(str(assessment.get("overall_score", "—")))
+    assessment_risk = escape(str(assessment.get("risk_level", "unknown")))
+    assessment_action = escape(str(assessment.get("recommended_action", "unknown")))
+    assessment_anomalies = len(anomaly_rows)
+    assessment_hash = sha256_file(assessment_path)
+    current_manifest = load_manifest(project_dir)
+    formal_review_status = str(current_manifest.get("review_status", "not_run"))
+    applied_review = {}
+    applied_review_path = project_dir / "review-decisions.json"
+    if applied_review_path.is_file():
+        applied_review = read_json(applied_review_path)
+    applied_decision_by_id = {
+        str(item.get("candidate_id", "")): item
+        for item in applied_review.get("decisions", [])
+        if isinstance(item, dict) and str(item.get("candidate_id", ""))
+    }
+    reviewed_by_existing = escape(str(applied_review.get("reviewed_by", "")))
+    anomaly_groups_text = "；".join(
+        f"{escape(str(key))}={int(value)}"
+        for key, value in assessment.get("anomaly_groups", {}).items()
+        if isinstance(value, int) and value
+    ) or "无异常组"
+    if formal_review_status in {"accepted", "partial", "rejected"}:
+        assessment_confirmation = (
+            "<div class='assessment-confirm confirmed'>"
+            "<h3>异常候选正式复核记录</h3>"
+            f"<p><strong>异常分组：</strong>{anomaly_groups_text}</p>"
+            f"<strong>已完成正式确认：{escape(formal_review_status)}</strong>"
+            f"<span>下方已把 {assessment_anomalies} 个异常候选单独列出，并显示各自已应用的决定；"
+            f"复核人：{reviewed_by_existing or '已记录'}。为保护证据链，现有正式记录只读。</span>"
+            "</div>"
+        )
+    elif assessment_anomalies:
+        normal_count = len(rows) - assessment_anomalies
+        assessment_confirmation = (
+            "<div class='assessment-confirm attention'>"
+            "<h3>先复核异常候选</h3>"
+            f"<p><strong>{assessment_anomalies} 个异常候选</strong>已在下方独立列出；"
+            f"其余 {normal_count} 个普通候选位于单独的批量区。</p>"
+            "<strong>异常项未全部接受、拒绝、校正或重归属前，不能生成正式复核文件。</strong>"
+            "</div>"
+        )
+    elif assessment.get("recommended_action") == "batch_confirm":
+        assessment_confirmation = (
+            "<div class='assessment-confirm'>"
+            "<h3>普通候选批量确认</h3>"
+            "<p><strong>当前没有异常候选。</strong>可直接确认普通候选批次。</p>"
+            "<label class='assessment-reviewer'>复核人或可追溯记录："
+            "<input id='assessment-reviewed-by' required aria-required='true' placeholder='必填，例如：Dr.Jiang'></label>"
+            "<label class='assessment-ack'><input type='checkbox' id='confirm-assessment-anomalies'>"
+            "<span>我已查看综合评分并确认当前没有异常候选，同意批量接受普通候选；"
+            "这不表示逐点人工测量。</span></label>"
+            "<button type='button' id='confirm-assessment' disabled>确认普通候选批次并保存复核记录</button>"
+            "<strong id='assessment-confirm-status' class='status-warn' role='status'>请填写复核人并勾选批量确认。</strong>"
+            "</div>"
+        )
+    else:
+        assessment_confirmation = (
+            "<div class='assessment-confirm blocked'>"
+            "<strong>当前风险不允许批量确认。</strong>请先处理异常组或修复阻断问题。"
+            "</div>"
+        )
+    assessment_summary = (
+        "<section class='assessment-card'>"
+        "<h2>AI 综合评判</h2>"
+        f"<div class='assessment-score'>{assessment_score}<small>/100</small></div>"
+        f"<p><strong>风险等级：</strong>{assessment_risk}　"
+        f"<strong>建议动作：</strong>{assessment_action}　"
+        f"<strong>异常候选：</strong>{assessment_anomalies}</p>"
+        "<p>普通候选可批量确认；异常候选必须在独立区域查看局部证据并逐项决定，"
+        "两者不会混在同一个批次中。只有没有异常项时，<code>batch_confirm</code> 才能直接完成。</p>"
+        f"{assessment_confirmation}"
+        "</section>"
+    )
+    series_ids = [
+        str(item["id"])
+        for item in project.get("chart", {}).get("series", [])
+        if isinstance(item, dict) and item.get("id")
+    ]
+    if not series_ids:
+        series_ids = sorted({str(row.get("series", "")) for row in rows if row.get("series")})
     candidate_hash = sha256_file(candidates_path)
+    project_id = str(project.get("project_id", "")).strip()
+    source_sha256 = str(project.get("source", {}).get("sha256", "")).strip()
     template = {
         "schema": REVIEW_SCHEMA,
         "candidate_sha256": candidate_hash,
+        "review_method": "anomaly_first_split_review" if anomaly_rows else "manual_point_review",
+        "anomaly_review": {
+            "candidate_count": len(anomaly_rows),
+            "candidate_ids": sorted(anomaly_by_id),
+            "separated_from_normal_batch": True,
+        },
         "reviewed_by": "",
         "reviewed_at": "",
         "decisions": [
             {
                 "candidate_id": str(row["candidate_id"]),
-                "decision": "accepted",
-                "reason": "",
+                "decision": (
+                    str(applied_decision_by_id[str(row["candidate_id"])].get("decision", "pending"))
+                    if str(row["candidate_id"]) in applied_decision_by_id
+                    else "pending"
+                    if str(row["candidate_id"]) in anomaly_by_id
+                    else "accepted"
+                ),
+                "reason": str(
+                    applied_decision_by_id.get(str(row["candidate_id"]), {}).get("reason", "")
+                ),
             }
             for row in rows
         ],
     }
+    if project_id:
+        template["project_id"] = project_id
+    if source_sha256:
+        template["source_sha256"] = source_sha256
     template_path = project_dir / "review-template.json"
     write_json(template_path, template)
 
-    table_rows: list[str] = []
+    anomaly_table_rows: list[str] = []
+    normal_table_rows: list[str] = []
     for row in rows:
-        candidate_id = escape(str(row["candidate_id"]))
+        raw_candidate_id = str(row["candidate_id"])
+        candidate_id = escape(raw_candidate_id)
+        anomaly = anomaly_by_id.get(raw_candidate_id)
+        applied_decision = applied_decision_by_id.get(raw_candidate_id, {})
+        default_decision = str(
+            applied_decision.get("decision")
+            or ("pending" if anomaly is not None else "accepted")
+        )
+        selected_value = "" if default_decision == "pending" else default_decision
+        readonly = formal_review_status in {"accepted", "partial", "rejected"}
         series = escape(str(row.get("series", "")))
         x_value = escape(str(row.get("x", row.get("x_value", row.get("category_index", "")))))
         y_value = escape(str(row.get("y", row.get("value", ""))))
-        table_rows.append(
-            "<tr>"
-            f"<td><code>{candidate_id}</code></td>"
-            f"<td>{series}</td><td>{x_value}</td><td>{y_value}</td>"
-            f"<td><select data-decision='{candidate_id}'>"
-            "<option value='accepted'>接受</option>"
-            "<option value='rejected'>拒绝</option>"
-            "</select></td>"
-            f"<td><input data-reason='{candidate_id}' placeholder='必要时填写理由'></td>"
-            "</tr>"
+        evidence_status = escape(str(row.get("evidence_status", row.get("status", ""))))
+        target_series = str(applied_decision.get("target_series") or row.get("series", ""))
+        target_options = "".join(
+            f"<option value='{escape(value)}'{' selected' if value == target_series else ''}>{escape(value)}</option>"
+            for value in series_ids
         )
-    payload = json.dumps(
-        {"schema": REVIEW_SCHEMA, "candidate_sha256": candidate_hash},
-        ensure_ascii=False,
+        decision_options = "".join(
+            f"<option value='{value}'{' selected' if value == selected_value else ''}>{label}</option>"
+            for value, label in (
+                ("", "待决策"),
+                ("accepted", "接受"),
+                ("rejected", "拒绝"),
+                ("corrected", "校正坐标"),
+                ("reassigned", "重新归属"),
+            )
+        )
+        readonly_attr = " disabled data-readonly='true'" if readonly else ""
+        reason_readonly_attr = " disabled" if readonly else ""
+        corrected_x = escape(str(applied_decision.get("corrected_x", "")))
+        corrected_y = escape(str(applied_decision.get("corrected_y", "")))
+        reason = escape(str(applied_decision.get("reason", "")))
+        common_cells = (
+            f"<td><code>{candidate_id}</code></td>"
+            f"<td>{series}</td><td>{x_value}</td><td>{y_value}</td><td>{evidence_status}</td>"
+            f"<td><select data-decision='{candidate_id}' data-anomaly='{'true' if anomaly else 'false'}' "
+            f"data-evidence-status='{evidence_status}' data-current-series='{series}'{readonly_attr}>"
+            f"{decision_options}</select><span class='decision-state state-{escape(default_decision)}' "
+            f"data-decision-state='{candidate_id}'>{escape('待决策' if default_decision == 'pending' else {'accepted': '接受', 'rejected': '拒绝', 'corrected': '校正坐标', 'reassigned': '重新归属'}.get(default_decision, default_decision))}</span></td>"
+            f"<td><select data-target-series='{candidate_id}' disabled>{target_options}</select></td>"
+            f"<td><input data-corrected-x='{candidate_id}' inputmode='decimal' value='{corrected_x}' placeholder='{x_value}' disabled></td>"
+            f"<td><input data-corrected-y='{candidate_id}' inputmode='decimal' value='{corrected_y}' placeholder='{y_value}' disabled></td>"
+            f"<td><input data-reason='{candidate_id}' value='{reason}' placeholder='必要时填写理由'{reason_readonly_attr}></td>"
+        )
+        if anomaly is not None:
+            try:
+                crop_left = 110 - float(row.get("pixel_x", 0))
+                crop_top = 70 - float(row.get("pixel_y", 0))
+            except (TypeError, ValueError):
+                crop_left = 0.0
+                crop_top = 0.0
+            anomaly_detail = (
+                f"<strong>{escape(str(anomaly.get('anomaly_type', '异常')))}</strong><br>"
+                f"严重度：{escape(str(anomaly.get('severity', '')))}；"
+                f"观测指标：{escape(str(anomaly.get('observed', '')))}<br>"
+                f"{escape(str(anomaly.get('reason', '')))}"
+            )
+            crop = (
+                "<div class='evidence-crop' title='红色十字为异常候选像素位置'>"
+                f"<img src=\"overlay.png\" alt='异常候选 {candidate_id} 的局部证据' "
+                f"style='left:{crop_left:.1f}px;top:{crop_top:.1f}px'>"
+                "<span class='crop-crosshair' aria-hidden='true'></span></div>"
+            )
+            anomaly_table_rows.append(
+                f"<tr class='decision-{escape(default_decision)} anomaly-row'>"
+                f"<td>{crop}</td>{common_cells}<td class='anomaly-reason'>{anomaly_detail}</td></tr>"
+            )
+        else:
+            normal_table_rows.append(
+                f"<tr class='decision-{escape(default_decision)}'>{common_cells}</tr>"
+            )
+    payload_data = {
+        "schema": REVIEW_SCHEMA,
+        "candidate_sha256": candidate_hash,
+        "review_method": "anomaly_first_split_review" if anomaly_rows else "manual_point_review",
+        "anomaly_review": {
+            "candidate_count": len(anomaly_rows),
+            "candidate_ids": sorted(anomaly_by_id),
+            "separated_from_normal_batch": True,
+        },
+    }
+    if project_id:
+        payload_data["project_id"] = project_id
+    if source_sha256:
+        payload_data["source_sha256"] = source_sha256
+    payload = json.dumps(payload_data, ensure_ascii=False)
+    review_apply_prompt = (
+        "请使用 more-sci-figure skill 继续处理当前科研图表项目，并直接执行安全范围内的任务。"
+        "不要假定固定文件名或固定路径：先在当前对话附件、当前工作区以及用户明确指定的位置中，"
+        "定位 schema=more-sci-figure.review-decisions.v1 的人工复核 JSON；不得为寻找文件而扫描整个用户磁盘。"
+        "读取其中的 candidate_sha256，并只接受 SHA-256 完全一致的 candidates.csv；"
+        "再从该候选文件的同级或相邻项目目录定位 project.json。project_id 和 source_sha256 只能作为辅助线索。"
+        "如果复核 JSON、候选文件或项目规格没有唯一匹配，立即停止并请用户选择或附加文件，不得猜测。"
+        "本次只应用人工复核，不执行重绘或最终验证。核验候选覆盖完整、reviewed_by 非空后，"
+        "再仅把 accepted、corrected 和 reassigned 项写入正式 data.csv，并保留原值、原系列、理由和动作类型。"
+        "若任一复核门不满足，停止并明确报告，不得生成正式 data.csv 或提升 review_status。"
     )
+    pipeline_prompt = ""
+    if project_path.is_file():
+        pipeline_prompt = (
+            "请使用 more-sci-figure skill 继续当前科研图表项目，并直接完成安全范围内的完整后续流程。"
+            "不要假定固定文件名或固定路径：先在当前对话附件、当前工作区以及用户明确指定的位置中，"
+            "定位 schema=more-sci-figure.review-decisions.v1 的人工复核 JSON；不得为寻找文件而扫描整个用户磁盘。"
+            "读取其中的 candidate_sha256，并只接受 SHA-256 完全一致的 candidates.csv；"
+            "再从该候选文件的同级或相邻项目目录定位 project.json。project_id 和 source_sha256 只能作为辅助线索。"
+            "如果复核 JSON、候选文件或项目规格没有唯一匹配，立即停止并请用户选择或附加文件，不得猜测。"
+            "核验候选覆盖完整、reviewed_by 非空后，应用人工复核生成正式 data.csv，"
+            "再按匹配到的项目规格完成论文级 PNG/SVG/PDF 重绘和 validate。"
+            "保持 extraction_status、review_status、render_status、delivery_status 相互独立；"
+            "若哈希、复核覆盖或任何质量门不通过，立即停止并明确报告，不得伪造正式数据或抬升状态。"
+            "最后汇报接受、拒绝、校正、重归属数量，以及各状态和交付文件路径。"
+        )
     html = """<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1060,46 +2297,540 @@ h1 { margin-bottom: 8px; } .note { padding: 12px 16px; background: #fff8c5; bord
 img { max-width: none; image-rendering: auto; } table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { border-bottom: 1px solid #d8dee4; padding: 8px; text-align: left; }
 th { position: sticky; top: 0; background: #f6f8fa; } input, select { width: 100%; box-sizing: border-box; padding: 6px; }
-button { margin-top: 12px; padding: 9px 16px; border: 0; border-radius: 6px; background: #0969da; color: white; cursor: pointer; }
+tbody td { transition: background-color .18s ease; }
+tr.decision-pending td { background: #ffffff; }
+tr.decision-accepted td { background: #eaf8ef; }
+tr.decision-rejected td { background: #fff0f0; }
+tr.decision-corrected td { background: #fff8db; }
+tr.decision-reassigned td { background: #edf5ff; }
+tr.decision-accepted td:first-child { box-shadow: inset 4px 0 #16844b; }
+tr.decision-rejected td:first-child { box-shadow: inset 4px 0 #cf222e; }
+tr.decision-corrected td:first-child { box-shadow: inset 4px 0 #bf8700; }
+tr.decision-reassigned td:first-child { box-shadow: inset 4px 0 #0969da; }
+button { padding: 9px 16px; border: 0; border-radius: 6px; background: #0969da; color: white; cursor: pointer; }
+button.secondary { background: #16844b; } button.danger { background: #cf222e; }
+button:disabled { background: #8c959f; cursor: not-allowed; opacity: .72; }
+.controls { position: sticky; top: 0; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; background: white; border: 1px solid #d8dee4; border-radius: 8px; box-shadow: 0 3px 10px rgba(31, 35, 40, .08); }
+.reviewer { display: flex; align-items: center; gap: 8px; min-width: 340px; font-weight: 600; }
+.reviewer input { min-width: 230px; }
+.summary { color: #57606a; font-size: 13px; }
+.review-gates { display: grid; gap: 8px; margin: 10px 0; padding: 12px; border: 1px solid #d0d7de; border-radius: 8px; background: #fff; }
+.review-gates label { display: flex; align-items: flex-start; gap: 8px; }
+.review-gates input[type="checkbox"] { width: auto; margin-top: 3px; }
+.readiness { flex-basis: 100%; font-size: 13px; font-weight: 700; }
+.decision-state { display: inline-block; margin-top: 5px; padding: 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.state-pending { color: #57606a; background: #eaeef2; }
+.state-accepted { color: #116329; background: #aceebb; }
+.state-rejected { color: #a40e26; background: #ffcecb; }
+.state-corrected { color: #7d4e00; background: #f8df8b; }
+.state-reassigned { color: #0550ae; background: #b6d7ff; }
+.toast { position: fixed; top: 18px; left: 50%; z-index: 20; transform: translate(-50%, -16px); min-width: 280px; max-width: min(720px, calc(100vw - 32px)); padding: 12px 18px; border-radius: 8px; color: white; background: #24292f; box-shadow: 0 8px 24px rgba(31, 35, 40, .25); text-align: center; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.accepted { background: #16844b; } .toast.rejected { background: #cf222e; }
+.handoff-note { margin: 12px 0 0; padding: 10px 12px; border-left: 4px solid #0969da; background: #ddf4ff; font-size: 14px; }
+.export-result { margin: 12px 0; padding: 14px; border: 2px solid #0969da; border-radius: 8px; background: #f6fbff; }
+.export-result[hidden] { display: none; }
+.export-result h3 { margin: 0 0 10px; }
+.status-grid { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin-bottom: 10px; }
+.status-good { color: #116329; } .status-warn { color: #9a6700; } .status-error { color: #cf222e; }
+.export-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.compat-note { margin-bottom: 0; color: #57606a; font-size: 13px; }
+.assessment-card { margin: 16px 0; padding: 16px 18px; border: 1px solid #54aeff; border-radius: 10px; background: #ddf4ff; }
+.assessment-card h2 { margin: 0 0 8px; }
+.assessment-score { float: right; margin: -42px 0 8px 18px; color: #0969da; font-size: 32px; font-weight: 800; }
+.assessment-score small { font-size: 14px; font-weight: 600; }
+.assessment-confirm { clear: both; display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #54aeff; border-radius: 8px; background: #fff; }
+.assessment-confirm h3, .assessment-confirm p { margin: 0; }
+.assessment-confirm.confirmed { border-color: #16844b; background: #dafbe1; }
+.assessment-confirm.attention { border-color: #bf8700; background: #fff8c5; }
+.assessment-confirm.blocked { border-color: #cf222e; background: #ffebe9; }
+.assessment-reviewer { display: grid; grid-template-columns: max-content minmax(220px, 420px); align-items: center; gap: 10px; font-weight: 700; }
+.assessment-ack { display: flex; align-items: flex-start; gap: 8px; }
+.assessment-ack input[type="checkbox"] { width: auto; margin-top: 3px; }
+.anomaly-review { margin-top: 18px; padding: 18px; border: 2px solid #bf8700; border-radius: 10px; background: #fff; }
+.anomaly-review h2 { margin-top: 0; }
+.anomaly-count { display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; color: #7d4e00; background: #f8df8b; font-size: 14px; }
+.anomaly-table-wrap { max-height: 720px; overflow: auto; border: 1px solid #d0d7de; border-radius: 8px; }
+.anomaly-table { min-width: 1540px; }
+.anomaly-table th { top: 0; z-index: 2; }
+.anomaly-row td { vertical-align: top; }
+.anomaly-reason { min-width: 250px; max-width: 340px; }
+.evidence-crop { position: relative; width: 220px; height: 140px; overflow: hidden; border: 1px solid #8c959f; border-radius: 6px; background: #fff; }
+.evidence-crop img { position: absolute; max-width: none; }
+.crop-crosshair { position: absolute; left: 105px; top: 65px; width: 10px; height: 10px; border: 2px solid #cf222e; border-radius: 50%; box-shadow: 0 0 0 1px white; }
+.crop-crosshair::before, .crop-crosshair::after { content: ""; position: absolute; background: #cf222e; }
+.crop-crosshair::before { left: 4px; top: -8px; width: 2px; height: 24px; }
+.crop-crosshair::after { left: -8px; top: 4px; width: 24px; height: 2px; }
+.normal-review, .full-evidence { margin-top: 14px; }
+.normal-review > summary, .full-evidence > summary { padding: 12px 14px; border: 1px solid #d0d7de; border-radius: 8px; background: #f6f8fa; cursor: pointer; font-weight: 700; }
+.normal-review table { min-width: 1180px; }
+.normal-table-wrap { max-height: 620px; overflow: auto; margin-top: 10px; border: 1px solid #d0d7de; border-radius: 8px; }
+.empty-state { padding: 18px; color: #57606a; text-align: center; background: #f6f8fa; border-radius: 8px; }
+.command-card { margin: 14px 0; padding: 12px; border: 1px solid #d0d7de; border-radius: 8px; background: #f6f8fa; }
+pre { margin: 8px 0; padding: 12px; overflow: auto; border-radius: 6px; background: #24292f; color: #f0f6fc; white-space: pre-wrap; overflow-wrap: anywhere; }
+button.neutral { background: #57606a; }
 @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <h1>候选数据人工复核</h1>
-<p class="note">请按原始尺寸查看叠图。接受表示该候选确实对应可见图形标记；不要根据期望值或期望数量调节判断。</p>
-<label>复核人或复核记录：<input id="reviewed-by" placeholder="必填，例如：张三 / 项目组联合复核"></label>
-<div class="layout">
-  <section class="panel"><h2>原尺寸证据叠图</h2><img src="overlay.png" alt="候选值证据叠图"></section>
-  <section class="panel">
-    <h2>逐项决策</h2>
-    <table><thead><tr><th>候选编号</th><th>系列</th><th>X</th><th>Y/值</th><th>决策</th><th>理由</th></tr></thead>
-    <tbody>__TABLE_ROWS__</tbody></table>
-    <button id="export">导出 review-decisions.json</button>
-  </section>
-</div>
+<p class="note">默认采用 AI 综合评判与异常优先复核，不要求用户逐点点击。人工确认的是综合证据、风险分组和异常处置策略，而不是假装逐一测量了所有像素。</p>
+__ASSESSMENT_SUMMARY__
+<div id="decision-toast" class="toast" role="status" aria-live="polite"></div>
+<section class="anomaly-review">
+  <h2>异常候选独立复核 <span class="anomaly-count">__ANOMALY_COUNT__ 项</span></h2>
+  <p>这里只显示异常候选。每项提供原始分辨率局部证据、异常原因和独立决定；普通候选不会混入本表。</p>
+  <div class="controls">
+    <label class="reviewer">复核人或复核记录：<input id="reviewed-by" required aria-required="true" autocomplete="name" value="__REVIEWED_BY__" placeholder="必填，例如：张三 / 项目组联合复核" __FORM_DISABLED__></label>
+    <button type="button" id="accept-all-anomalies" class="secondary" __FORM_DISABLED__>接受全部异常项</button>
+    <button type="button" id="reject-all-anomalies" class="danger" __FORM_DISABLED__>拒绝全部异常项</button>
+    <button type="button" id="export" disabled>生成完整复核文件（下一步）</button>
+    <span id="decision-summary" class="summary"></span>
+    <span id="export-readiness" class="readiness status-warn" role="status">请先填写复核人并完成所有异常决策。</span>
+  </div>
+  <div class="anomaly-table-wrap">
+    <table class="anomaly-table"><thead><tr><th>局部证据</th><th>候选编号</th><th>系列</th><th>X</th><th>Y/值</th><th>证据状态</th><th>决策</th><th>目标系列</th><th>校正 X</th><th>校正 Y</th><th>理由</th><th>异常说明</th></tr></thead>
+    <tbody id="anomaly-decisions">__ANOMALY_TABLE_ROWS__</tbody></table>
+  </div>
+  __ANOMALY_EMPTY__
+</section>
+
+<details class="normal-review">
+  <summary>普通候选批量区：__NORMAL_COUNT__ 项（与异常候选分开）</summary>
+  <div class="panel">
+    <p>普通候选默认批量接受。如需抽查，可在此单独修改；这里不包含任何已标记异常候选。</p>
+    <div class="controls">
+      <button type="button" id="accept-all-normal" class="secondary" __FORM_DISABLED__>普通候选全部接受</button>
+      <button type="button" id="reject-all-normal" class="danger" __FORM_DISABLED__>普通候选全部拒绝</button>
+    </div>
+    <div class="normal-table-wrap"><table><thead><tr><th>候选编号</th><th>系列</th><th>X</th><th>Y/值</th><th>证据状态</th><th>决策</th><th>目标系列</th><th>校正 X</th><th>校正 Y</th><th>理由</th></tr></thead>
+    <tbody id="normal-decisions">__NORMAL_TABLE_ROWS__</tbody></table></div>
+  </div>
+</details>
+
+<details class="full-evidence">
+  <summary>查看完整证据叠图</summary>
+  <section class="panel"><img src="overlay.png" alt="候选值完整证据叠图"></section>
+</details>
+
+<section class="panel">
+    <p class="handoff-note"><strong>后续流程：</strong>① 完成决策　② 在页面生成复核 JSON　③ 由本地 skill 固定保存到当前项目目录的 <code>review-decisions.json</code>　④ 把页面提供的任务语句交给 Codex、Claude Code、Hermes 等 Agent 继续处理。用户无需选择保存路径；只有 Agent 成功应用复核后才会生成正式 <code>data.csv</code>。</p>
+    <div class="review-gates">
+      <label id="uncertain-gate" hidden><input type="checkbox" id="confirm-uncertain"><span id="uncertain-confirm-label">我已人工核对所有模型辅助分配候选。</span></label>
+      <label><input type="checkbox" id="confirm-export-scope"><span>我确认当前操作只生成复核 JSON，不会自动保存文件、生成 <code>data.csv</code>、重绘或推进交付状态。</span></label>
+    </div>
+    <section id="export-result" class="export-result" hidden aria-live="polite">
+      <h3>复核文件状态</h3>
+      <div class="status-grid">
+        <span>内容生成：</span><strong id="generated-status" class="status-warn">未生成</strong>
+        <span>本地保存：</span><strong id="save-status" class="status-warn">未保存</strong>
+        <span>正式应用：</span><strong class="status-warn">未应用；尚未生成 data.csv</strong>
+      </div>
+      <p id="export-detail"></p>
+      <div class="export-actions">
+        <button type="button" id="save-review-file">保存到当前项目目录</button>
+        <button type="button" id="copy-review-json" class="secondary">复制复核 JSON</button>
+      </div>
+      <p id="save-mode-note" class="compat-note">正式复核会话会把文件固定保存到当前项目目录并返回实际路径。直接打开 <code>file://review.html</code> 时为兼容模式，无法写入本地目录；请让 Agent 启动本地复核会话。复制成功不等于文件已保存。</p>
+      <section id="pipeline-option" class="command-card">
+        <h3>保存后推荐：交给 Agent 继续完整管线</h3>
+        <p>把下面任务语句发送给 Codex、Claude Code、Hermes 等 Agent。提示词不锁定机器路径；Agent 会用复核文件中的候选哈希进行唯一匹配，无法唯一匹配时必须询问用户。</p>
+        <pre><code id="pipeline-agent-prompt"></code></pre>
+        <button type="button" data-copy-target="pipeline-agent-prompt">复制完整管线 Agent 任务语句</button>
+      </section>
+      <section class="command-card">
+        <h3>保存后交给 Agent 仅应用复核</h3>
+        <p>该任务语句只要求生成正式 <code>data.csv</code>，不执行重绘或最终验证。</p>
+        <pre><code id="review-apply-agent-prompt"></code></pre>
+        <button type="button" data-copy-target="review-apply-agent-prompt">复制仅应用复核 Agent 任务语句</button>
+      </section>
+    </section>
+</section>
 <script>
 const base = __PAYLOAD__;
-document.getElementById("export").addEventListener("click", () => {
-  const reviewedBy = document.getElementById("reviewed-by").value.trim();
-  if (!reviewedBy) { alert("请先填写复核人或复核记录。"); return; }
-  const decisions = [...document.querySelectorAll("[data-decision]")].map(select => {
-    const candidateId = select.dataset.decision;
-    const reason = document.querySelector(`[data-reason="${candidateId}"]`).value.trim();
-    return { candidate_id: candidateId, decision: select.value, reason };
+const reviewApplyAgentPrompt = __REVIEW_APPLY_PROMPT__;
+const pipelineAgentPrompt = __PIPELINE_PROMPT__;
+const assessmentSha256 = __ASSESSMENT_SHA256__;
+const assessmentAnomalyCount = __ASSESSMENT_ANOMALY_COUNT__;
+const formalReviewStatus = __FORMAL_REVIEW_STATUS__;
+const reviewSessionToken = new URLSearchParams(window.location.search).get("token") || "";
+const directProjectSave = window.location.protocol === "http:" && window.location.hostname === "127.0.0.1" && Boolean(reviewSessionToken);
+const decisionSelects = [...document.querySelectorAll("[data-decision]")];
+const anomalySelects = decisionSelects.filter(select => select.dataset.anomaly === "true");
+const normalSelects = decisionSelects.filter(select => select.dataset.anomaly === "false");
+const summary = document.getElementById("decision-summary");
+const toast = document.getElementById("decision-toast");
+const exportResult = document.getElementById("export-result");
+const generatedStatus = document.getElementById("generated-status");
+const saveStatus = document.getElementById("save-status");
+const exportDetail = document.getElementById("export-detail");
+const saveReviewButton = document.getElementById("save-review-file");
+const copyReviewButton = document.getElementById("copy-review-json");
+const saveModeNote = document.getElementById("save-mode-note");
+const reviewerInput = document.getElementById("reviewed-by");
+const exportButton = document.getElementById("export");
+const exportReadiness = document.getElementById("export-readiness");
+const uncertainGate = document.getElementById("uncertain-gate");
+const uncertainConfirm = document.getElementById("confirm-uncertain");
+const uncertainConfirmLabel = document.getElementById("uncertain-confirm-label");
+const exportScopeConfirm = document.getElementById("confirm-export-scope");
+const decisionLabels = {"": "待决策", accepted: "接受", rejected: "拒绝", corrected: "校正坐标", reassigned: "重新归属"};
+let toastTimer;
+let preparedReviewJson = "";
+let reviewRevision = 0;
+function showToast(message, kind = "") {
+  toast.textContent = message;
+  toast.className = `toast show ${kind}`.trim();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.className = "toast"; }, 2600);
+}
+const assessmentConfirmButton = document.getElementById("confirm-assessment");
+const assessmentReviewer = document.getElementById("assessment-reviewed-by");
+const assessmentAck = document.getElementById("confirm-assessment-anomalies");
+const assessmentConfirmStatus = document.getElementById("assessment-confirm-status");
+function updateAssessmentConfirmation() {
+  if (!assessmentConfirmButton) return;
+  if (formalReviewStatus !== "not_run") {
+    assessmentConfirmButton.disabled = true;
+    return;
+  }
+  if (!directProjectSave) {
+    assessmentConfirmButton.disabled = true;
+    assessmentConfirmStatus.className = "status-warn";
+    assessmentConfirmStatus.textContent = "请让 Agent 启动本地复核会话；无需选择保存路径。";
+    return;
+  }
+  const ready = Boolean(assessmentReviewer.value.trim()) && assessmentAck.checked;
+  assessmentConfirmButton.disabled = !ready;
+  assessmentConfirmStatus.className = ready ? "status-good" : "status-warn";
+  assessmentConfirmStatus.textContent = ready ? "可以确认普通候选批次。" : "请填写复核人并勾选批量确认。";
+}
+if (assessmentConfirmButton) {
+  assessmentReviewer.addEventListener("input", updateAssessmentConfirmation);
+  assessmentAck.addEventListener("change", updateAssessmentConfirmation);
+  assessmentConfirmButton.addEventListener("click", async () => {
+    if (assessmentConfirmButton.disabled) return;
+    const confirmation = "页面确认：综合评估未发现异常候选，同意批量接受普通候选。";
+    assessmentConfirmButton.disabled = true;
+    assessmentConfirmStatus.className = "status-warn";
+    assessmentConfirmStatus.textContent = "正在生成并保存批量复核记录…";
+    try {
+      const response = await fetch("/api/review-confirm", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-Review-Token": reviewSessionToken},
+        body: JSON.stringify({reviewed_by: assessmentReviewer.value.trim(), confirmation, assessment_sha256: assessmentSha256})
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+      assessmentConfirmStatus.className = "status-good";
+      assessmentConfirmStatus.textContent = `普通候选批次已保存：${result.saved_path}`;
+      showToast("普通候选批次已确认并保存；尚未应用正式数据。", "accepted");
+    } catch (error) {
+      assessmentConfirmStatus.className = "status-error";
+      assessmentConfirmStatus.textContent = `确认失败：${error && error.message ? error.message : "未知错误"}`;
+      assessmentConfirmButton.disabled = false;
+      showToast("异常组确认失败，正式状态没有推进。", "rejected");
+    }
   });
+  updateAssessmentConfirmation();
+}
+function updateSummary() {
+  const anomalyPending = anomalySelects.filter(select => !select.value).length;
+  const normalPending = normalSelects.filter(select => !select.value).length;
+  const rejected = decisionSelects.filter(select => select.value === "rejected").length;
+  const accepted = decisionSelects.filter(select => ["accepted", "corrected", "reassigned"].includes(select.value)).length;
+  const corrected = decisionSelects.filter(select => select.value === "corrected").length;
+  const reassigned = decisionSelects.filter(select => select.value === "reassigned").length;
+  const uncertainAccepted = anomalySelects.filter(select =>
+    ["accepted", "corrected", "reassigned"].includes(select.value) && ["ambiguous_shared_colour", "model_assisted_exclusive_assignment"].includes(select.dataset.evidenceStatus)
+  ).length;
+  summary.textContent = `异常 ${anomalySelects.length} 项（待决策 ${anomalyPending}）· 普通 ${normalSelects.length} 项（待决策 ${normalPending}）· 接受 ${accepted} · 拒绝 ${rejected} · 校正 ${corrected} · 重归属 ${reassigned}`;
+  uncertainGate.hidden = uncertainAccepted === 0;
+  uncertainConfirmLabel.textContent = `我已人工核对 ${uncertainAccepted} 个模型辅助或同色歧义接受项。`;
+  updateExportReadiness();
+}
+function updateExportReadiness() {
+  const anomalyPending = anomalySelects.filter(select => !select.value).length;
+  const normalPending = normalSelects.filter(select => !select.value).length;
+  const uncertainAccepted = anomalySelects.filter(select =>
+    ["accepted", "corrected", "reassigned"].includes(select.value) && ["ambiguous_shared_colour", "model_assisted_exclusive_assignment"].includes(select.dataset.evidenceStatus)
+  ).length;
+  let message = "可以生成复核 JSON。";
+  let ready = true;
+  if (formalReviewStatus !== "not_run") {
+    message = "当前项目已有正式复核记录；为保护证据链，本页只读。";
+    ready = false;
+  } else if (!reviewerInput.value.trim()) {
+    message = "必须填写复核人或可追溯复核记录。";
+    ready = false;
+  } else if (anomalyPending > 0) {
+    message = `仍有 ${anomalyPending} 个异常候选待独立决策。`;
+    ready = false;
+  } else if (normalPending > 0) {
+    message = `普通候选批量区仍有 ${normalPending} 项待决策。`;
+    ready = false;
+  } else if (uncertainAccepted > 0 && !uncertainConfirm.checked) {
+    message = `必须确认已人工核对 ${uncertainAccepted} 个模型辅助或同色歧义接受项。`;
+    ready = false;
+  } else if (!exportScopeConfirm.checked) {
+    message = "必须确认本次操作只生成复核 JSON，不会自动推进正式状态。";
+    ready = false;
+  }
+  exportButton.disabled = !ready;
+  exportButton.setAttribute("aria-disabled", String(!ready));
+  exportReadiness.className = `readiness ${ready ? "status-good" : "status-warn"}`;
+  exportReadiness.textContent = message;
+}
+function invalidatePreparedReview() {
+  reviewRevision += 1;
+  if (!preparedReviewJson) return;
+  preparedReviewJson = "";
+  exportResult.hidden = true;
+  generatedStatus.className = "status-warn";
+  generatedStatus.textContent = "内容已变更，请重新生成";
+  saveStatus.className = "status-warn";
+  saveStatus.textContent = "未保存";
+}
+function resetApprovalGates() {
+  uncertainConfirm.checked = false;
+  exportScopeConfirm.checked = false;
+}
+function syncEditors(select, announce = false) {
+  const candidateId = select.dataset.decision;
+  const row = select.closest("tr");
+  const target = row.querySelector("[data-target-series]");
+  const correctedX = row.querySelector("[data-corrected-x]");
+  const correctedY = row.querySelector("[data-corrected-y]");
+  const state = row.querySelector("[data-decision-state]");
+  const value = select.value || "pending";
+  const readonly = select.dataset.readonly === "true";
+  if (readonly) {
+    target.disabled = true;
+    correctedX.disabled = true;
+    correctedY.disabled = true;
+    return;
+  }
+  target.disabled = select.value !== "reassigned";
+  correctedX.disabled = !["corrected", "reassigned"].includes(select.value);
+  correctedY.disabled = !["corrected", "reassigned"].includes(select.value);
+  row.className = `decision-${value}`;
+  state.className = `decision-state state-${value}`;
+  state.textContent = decisionLabels[select.value];
+  if (announce) showToast(`候选 ${candidateId} 已设置为：${decisionLabels[select.value]}`, value);
+}
+function setAllDecisions(selects, value, scopeLabel) {
+  invalidatePreparedReview();
+  resetApprovalGates();
+  selects.forEach(select => { select.value = value; syncEditors(select, false); });
+  updateSummary();
+  showToast(`已将${scopeLabel} ${selects.length} 项设置为：${decisionLabels[value]}`, value);
+}
+document.getElementById("accept-all-anomalies").addEventListener("click", () => setAllDecisions(anomalySelects, "accepted", "异常候选"));
+document.getElementById("reject-all-anomalies").addEventListener("click", () => setAllDecisions(anomalySelects, "rejected", "异常候选"));
+document.getElementById("accept-all-normal").addEventListener("click", () => setAllDecisions(normalSelects, "accepted", "普通候选"));
+document.getElementById("reject-all-normal").addEventListener("click", () => setAllDecisions(normalSelects, "rejected", "普通候选"));
+decisionSelects.forEach(select => select.addEventListener("change", () => {
+  invalidatePreparedReview();
+  resetApprovalGates();
+  syncEditors(select, true);
+  updateSummary();
+}));
+decisionSelects.forEach(select => syncEditors(select, false));
+reviewerInput.addEventListener("input", () => { invalidatePreparedReview(); updateExportReadiness(); });
+uncertainConfirm.addEventListener("change", updateExportReadiness);
+exportScopeConfirm.addEventListener("change", updateExportReadiness);
+document.addEventListener("input", event => {
+  if (event.target.matches("[data-reason], [data-corrected-x], [data-corrected-y]")) invalidatePreparedReview();
+});
+document.getElementById("review-apply-agent-prompt").textContent = reviewApplyAgentPrompt;
+document.getElementById("pipeline-agent-prompt").textContent = pipelineAgentPrompt;
+if (!pipelineAgentPrompt) document.getElementById("pipeline-option").hidden = true;
+if (!directProjectSave) {
+  saveReviewButton.disabled = true;
+  saveReviewButton.textContent = "需由 Agent 启动本地复核会话";
+  saveModeNote.className = "compat-note status-warn";
+}
+async function copyText(text) {
+  try {
+    if (!navigator.clipboard) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    const copied = document.execCommand("copy");
+    area.remove();
+    return copied;
+  }
+}
+document.querySelectorAll("[data-copy-target]").forEach(button => {
+  button.addEventListener("click", async () => {
+    const copied = await copyText(document.getElementById(button.dataset.copyTarget).textContent);
+    showToast(copied ? "Agent 任务语句已复制，请发送给 Codex 等 Agent。" : "复制失败，请手动选择任务语句。", copied ? "accepted" : "rejected");
+  });
+});
+copyReviewButton.addEventListener("click", async () => {
+  if (!preparedReviewJson) { showToast("请先生成复核文件内容。", "rejected"); return; }
+  const copied = await copyText(preparedReviewJson);
+  if (copied) {
+    saveStatus.className = "status-warn";
+    saveStatus.textContent = "已复制到剪贴板；尚未确认保存为文件";
+    showToast("复核 JSON 已复制，仅供排障；项目文件仍未保存。", "accepted");
+  } else {
+    saveStatus.className = "status-error";
+    saveStatus.textContent = "复制失败";
+    showToast("复核 JSON 复制失败。", "rejected");
+  }
+});
+saveReviewButton.addEventListener("click", async () => {
+  if (!preparedReviewJson) { showToast("请先生成复核文件内容。", "rejected"); return; }
+  if (!directProjectSave) {
+    saveStatus.className = "status-error";
+    saveStatus.textContent = "兼容模式不能写入项目目录";
+    showToast("请让 Agent 启动本地复核会话后再保存。", "rejected");
+    return;
+  }
+  try {
+    saveReviewButton.disabled = true;
+    saveStatus.className = "status-warn";
+    saveStatus.textContent = "正在写入当前项目目录";
+    const response = await fetch("/api/review-decisions", {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "X-Review-Token": reviewSessionToken},
+      body: preparedReviewJson
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+    saveStatus.className = "status-good";
+    saveStatus.textContent = `保存成功：${result.saved_path}`;
+    exportDetail.textContent = `复核文件已固定保存到：${result.saved_path}；SHA-256：${result.sha256}。现在可以复制 Agent 任务语句继续。`;
+    showToast("复核文件已保存到当前项目目录。", "accepted");
+  } catch (error) {
+    saveStatus.className = "status-error";
+    saveStatus.textContent = `保存失败：${error && error.message ? error.message : "未知错误"}`;
+    showToast("保存失败，项目状态没有推进。", "rejected");
+  } finally {
+    saveReviewButton.disabled = false;
+  }
+});
+updateSummary();
+exportButton.addEventListener("click", async () => {
+  if (exportButton.disabled) return;
+  const reviewedBy = reviewerInput.value.trim();
+  const decisions = [];
+  const generationRevision = reviewRevision;
+  exportButton.disabled = true;
+  exportResult.hidden = false;
+  generatedStatus.className = "status-warn";
+  generatedStatus.textContent = `正在生成 0/${decisionSelects.length}`;
+  saveStatus.className = "status-warn";
+  saveStatus.textContent = "尚未保存";
+  exportDetail.textContent = "正在分批校验并生成复核 JSON，请勿关闭页面。";
+  for (let index = 0; index < decisionSelects.length; index += 1) {
+    const select = decisionSelects[index];
+    if (index > 0 && index % 200 === 0) {
+      generatedStatus.textContent = `正在生成 ${index}/${decisionSelects.length}`;
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      if (reviewRevision !== generationRevision) {
+        generatedStatus.className = "status-error";
+        generatedStatus.textContent = "生成已停止";
+        exportDetail.textContent = "生成期间复核内容发生变化，请重新确认门控条件后再次生成。";
+        showToast("复核内容已变化，本次生成已停止。", "rejected");
+        updateExportReadiness();
+        return;
+      }
+    }
+    const candidateId = select.dataset.decision;
+    const row = select.closest("tr");
+    const reason = row.querySelector("[data-reason]").value.trim();
+    const targetSeries = row.querySelector("[data-target-series]").value;
+    const correctedX = row.querySelector("[data-corrected-x]").value.trim();
+    const correctedY = row.querySelector("[data-corrected-y]").value.trim();
+    if (["corrected", "reassigned"].includes(select.value) && !reason) {
+      preparedReviewJson = "";
+      exportResult.hidden = false;
+      generatedStatus.className = "status-error";
+      generatedStatus.textContent = "生成失败";
+      exportDetail.textContent = `${candidateId} 的校正或重新归属必须填写理由。`;
+      row.scrollIntoView({behavior: "smooth", block: "center"});
+      row.querySelector("[data-reason]").focus();
+      showToast("生成失败：校正或重新归属缺少理由。", "rejected");
+      updateExportReadiness();
+      return;
+    }
+    if (select.value === "corrected" && !correctedX && !correctedY) {
+      preparedReviewJson = "";
+      exportResult.hidden = false;
+      generatedStatus.className = "status-error";
+      generatedStatus.textContent = "生成失败";
+      exportDetail.textContent = `${candidateId} 选择了校正坐标，但没有填写校正值。`;
+      row.scrollIntoView({behavior: "smooth", block: "center"});
+      row.querySelector("[data-corrected-x]").focus();
+      showToast("生成失败：缺少校正坐标。", "rejected");
+      updateExportReadiness();
+      return;
+    }
+    if (select.value === "reassigned" && targetSeries === select.dataset.currentSeries) {
+      preparedReviewJson = "";
+      exportResult.hidden = false;
+      generatedStatus.className = "status-error";
+      generatedStatus.textContent = "生成失败";
+      exportDetail.textContent = `${candidateId} 选择了重新归属，但目标系列没有变化。`;
+      row.scrollIntoView({behavior: "smooth", block: "center"});
+      row.querySelector("[data-target-series]").focus();
+      showToast("生成失败：目标系列没有变化。", "rejected");
+      updateExportReadiness();
+      return;
+    }
+    const item = {candidate_id: candidateId, decision: select.value, reason};
+    if (select.value === "reassigned") item.target_series = targetSeries;
+    if (correctedX) item.corrected_x = Number(correctedX);
+    if (correctedY) item.corrected_y = Number(correctedY);
+    decisions.push(item);
+  }
   const output = {...base, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(), decisions};
-  const blob = new Blob([JSON.stringify(output, null, 2) + "\\n"], {type: "application/json"});
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "review-decisions.json";
-  link.click();
-  URL.revokeObjectURL(link.href);
+  preparedReviewJson = JSON.stringify(output, null, 2) + "\\n";
+  const byteCount = new TextEncoder().encode(preparedReviewJson).length;
+  generatedStatus.className = "status-good";
+  generatedStatus.textContent = "生成成功";
+  saveStatus.className = "status-warn";
+  saveStatus.textContent = "尚未保存";
+  exportDetail.textContent = `已生成 ${decisions.length} 项决定，共 ${byteCount.toLocaleString()} 字节。请保存到当前项目目录；看到实际保存路径后，再复制任务语句交给 Codex 等 Agent。`;
+  exportResult.hidden = false;
+  exportResult.scrollIntoView({behavior: "smooth", block: "nearest"});
+  showToast("复核 JSON 生成成功；尚未保存，请选择下一步。", "accepted");
+  updateExportReadiness();
 });
 </script>
 </body>
 </html>
 """
-    html = html.replace("__TABLE_ROWS__", "\n".join(table_rows)).replace("__PAYLOAD__", payload)
+    html = (
+        html.replace("__ANOMALY_TABLE_ROWS__", "\n".join(anomaly_table_rows))
+        .replace("__NORMAL_TABLE_ROWS__", "\n".join(normal_table_rows))
+        .replace("__ANOMALY_COUNT__", str(len(anomaly_table_rows)))
+        .replace("__NORMAL_COUNT__", str(len(normal_table_rows)))
+        .replace(
+            "__ANOMALY_EMPTY__",
+            "" if anomaly_table_rows else "<p class='empty-state'>综合评估未发现异常候选。</p>",
+        )
+        .replace("__REVIEWED_BY__", reviewed_by_existing)
+        .replace(
+            "__FORM_DISABLED__",
+            "disabled" if formal_review_status in {"accepted", "partial", "rejected"} else "",
+        )
+        .replace("__ASSESSMENT_SUMMARY__", assessment_summary)
+        .replace("__ASSESSMENT_SHA256__", json.dumps(assessment_hash))
+        .replace("__ASSESSMENT_ANOMALY_COUNT__", str(assessment_anomalies))
+        .replace("__FORMAL_REVIEW_STATUS__", json.dumps(formal_review_status))
+        .replace("__PAYLOAD__", payload)
+        .replace("__REVIEW_APPLY_PROMPT__", json.dumps(review_apply_prompt, ensure_ascii=False))
+        .replace("__PIPELINE_PROMPT__", json.dumps(pipeline_prompt, ensure_ascii=False))
+    )
     html_path = project_dir / "review.html"
     html_path.write_text(html, encoding="utf-8")
     manifest = load_manifest(project_dir)
@@ -1112,8 +2843,253 @@ document.getElementById("export").addEventListener("click", () => {
         "候选数量": len(rows),
         "复核页面": str(html_path),
         "复核模板": str(template_path),
-        "下一步": "在浏览器中打开 review.html，导出决策文件后运行 review-apply。",
+        "下一步": (
+            "在独立异常区完成每个异常候选的决定；普通候选保持在单独批量区。"
+            if assessment_anomalies and formal_review_status == "not_run"
+            else "当前已有正式复核记录；页面分别展示异常候选决定与普通候选批次。"
+            if formal_review_status in {"accepted", "partial", "rejected"}
+            else "异常清单为空，可由 Agent 批量确认普通候选。"
+        ),
     }
+
+
+def validate_review_payload_for_save(
+    project_dir: Path, payload: dict[str, Any]
+) -> dict[str, int]:
+    """Validate a complete review document without advancing formal workflow state."""
+    project_dir = project_dir.expanduser().resolve()
+    candidates_path = project_dir / "candidates.csv"
+    if not candidates_path.is_file():
+        raise FigureError("缺少 candidates.csv，请先运行 extract")
+    if payload.get("schema") != REVIEW_SCHEMA:
+        raise FigureError(f"复核文件 schema 必须是 {REVIEW_SCHEMA}")
+    if payload.get("candidate_sha256") != sha256_file(candidates_path):
+        raise FigureError("复核文件绑定的候选数据哈希与当前 candidates.csv 不一致")
+    if not str(payload.get("reviewed_by", "")).strip():
+        raise FigureError("复核文件必须填写 reviewed_by")
+
+    rows = read_tabular_rows(candidates_path)
+    row_by_id = {str(row["candidate_id"]): row for row in rows}
+    project_path = project_dir / "project.json"
+    project = read_json(project_path) if project_path.is_file() else {}
+    valid_series = {
+        str(item["id"])
+        for item in project.get("chart", {}).get("series", [])
+        if isinstance(item, dict) and item.get("id")
+    } or {str(row.get("series", "")) for row in rows}
+    decisions = payload.get("decisions")
+    if not isinstance(decisions, list):
+        raise FigureError("复核文件的 decisions 必须是数组")
+
+    decision_by_id: dict[str, dict[str, Any]] = {}
+    action_counts = {
+        "accepted": 0,
+        "rejected": 0,
+        "corrected": 0,
+        "reassigned": 0,
+    }
+    for item in decisions:
+        if not isinstance(item, dict):
+            raise FigureError("每条复核决定必须是对象")
+        candidate_id = str(item.get("candidate_id", ""))
+        decision = item.get("decision")
+        if candidate_id not in row_by_id:
+            raise FigureError(f"复核文件包含未知候选编号：{candidate_id}")
+        if candidate_id in decision_by_id:
+            raise FigureError(f"复核文件重复包含候选编号：{candidate_id}")
+        if decision not in action_counts:
+            detail = "仍为 pending（待决策）" if decision == "pending" else f"值为 {decision!r}"
+            raise FigureError(
+                f"{candidate_id} 的 decision {detail}；必须完成 accepted、rejected、corrected 或 reassigned 决策"
+            )
+        reason = str(item.get("reason", "")).strip()
+        corrected_values: dict[str, float] = {}
+        for key in ("corrected_x", "corrected_y"):
+            if item.get(key) is None or item.get(key) == "":
+                continue
+            try:
+                corrected = float(item[key])
+            except (TypeError, ValueError) as exc:
+                raise FigureError(f"{candidate_id} 的 {key} 必须是有限数值") from exc
+            if not math.isfinite(corrected):
+                raise FigureError(f"{candidate_id} 的 {key} 必须是有限数值")
+            corrected_values[key] = corrected
+        if decision == "corrected" and not corrected_values:
+            raise FigureError(f"{candidate_id} 选择 corrected 时至少需要 corrected_x 或 corrected_y")
+        if decision == "reassigned":
+            target_series = str(item.get("target_series", ""))
+            if target_series not in valid_series:
+                raise FigureError(f"{candidate_id} 的 target_series 不属于项目系列")
+            if target_series == str(row_by_id[candidate_id].get("series", "")):
+                raise FigureError(f"{candidate_id} 的 target_series 必须不同于原系列")
+        if decision in {"corrected", "reassigned"} and not reason:
+            raise FigureError(f"{candidate_id} 的校正或重新归属必须填写 reason")
+        if decision in {"accepted", "rejected"} and corrected_values:
+            raise FigureError(f"{candidate_id} 包含校正值时 decision 必须是 corrected 或 reassigned")
+        decision_by_id[candidate_id] = item
+        action_counts[str(decision)] += 1
+    missing = sorted(set(row_by_id) - set(decision_by_id))
+    if missing:
+        raise FigureError(f"复核文件未覆盖全部候选值，缺少 {len(missing)} 项")
+    return action_counts
+
+
+def save_review_decisions_command(
+    project_dir: Path, payload: dict[str, Any]
+) -> dict[str, Any]:
+    """Save to the project's fixed review path without applying the decisions."""
+    project_dir = project_dir.expanduser().resolve()
+    counts = validate_review_payload_for_save(project_dir, payload)
+    target = project_dir / "review-decisions.json"
+    manifest = load_manifest(project_dir)
+    formal_review_status = manifest.get("review_status", "not_run")
+    if formal_review_status in {"accepted", "partial", "rejected"} or (
+        project_dir / "data.csv"
+    ).is_file():
+        raise FigureError(
+            "当前项目已有正式应用的复核结果或 data.csv；为保护证据链，不能从复核页面覆盖。"
+            "请让 Agent 创建新的项目修订后再复核"
+        )
+    write_json(target, payload)
+    return {
+        "status": "pass",
+        "save_status": "saved",
+        "saved_path": str(target),
+        "sha256": sha256_file(target),
+        "review_status": formal_review_status,
+        "applied": False,
+        "counts": counts,
+    }
+
+
+def review_serve_command(project_dir: Path, port: int = 0) -> dict[str, Any]:
+    """Serve one token-protected loopback review session with a fixed save target."""
+    project_dir = project_dir.expanduser().resolve()
+    if not 0 <= port <= 65535:
+        raise FigureError("端口必须位于 0 到 65535 之间；0 表示自动选择")
+    html_path = project_dir / "review.html"
+    overlay_path = project_dir / "overlay.png"
+    candidates_path = project_dir / "candidates.csv"
+    if not candidates_path.is_file() or not overlay_path.is_file():
+        raise FigureError("缺少 candidates.csv 或 overlay.png，请先运行 extract")
+    review_command(project_dir)
+
+    token = secrets.token_urlsafe(32)
+    maximum_payload_bytes = 16 * 1024 * 1024
+
+    class ReviewHandler(BaseHTTPRequestHandler):
+        server_version = "MoreSciFigureReview/0.3.1"
+
+        def send_bytes(self, status: int, body: bytes, content_type: str) -> None:
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def send_json(self, status: int, payload: dict[str, Any]) -> None:
+            body = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+            self.send_bytes(status, body, "application/json; charset=utf-8")
+
+        def query_token_is_valid(self) -> bool:
+            supplied = parse_qs(urlparse(self.path).query).get("token", [""])[0]
+            return bool(supplied) and secrets.compare_digest(supplied, token)
+
+        def header_token_is_valid(self) -> bool:
+            supplied = self.headers.get("X-Review-Token", "")
+            return bool(supplied) and secrets.compare_digest(supplied, token)
+
+        def do_GET(self) -> None:  # noqa: N802 - stdlib handler contract
+            parsed = urlparse(self.path)
+            if parsed.path in {"/", "/review.html"}:
+                if not self.query_token_is_valid():
+                    self.send_json(403, {"status": "failed", "error": "复核会话令牌无效"})
+                    return
+                page = html_path.read_text(encoding="utf-8").replace(
+                    'src="overlay.png"', f'src="overlay.png?token={token}"'
+                )
+                self.send_bytes(200, page.encode("utf-8"), "text/html; charset=utf-8")
+                return
+            if parsed.path == "/overlay.png":
+                if not self.query_token_is_valid():
+                    self.send_json(403, {"status": "failed", "error": "复核会话令牌无效"})
+                    return
+                self.send_bytes(200, overlay_path.read_bytes(), "image/png")
+                return
+            self.send_json(404, {"status": "failed", "error": "资源不存在"})
+
+        def do_POST(self) -> None:  # noqa: N802 - stdlib handler contract
+            endpoint = urlparse(self.path).path
+            if endpoint not in {"/api/review-decisions", "/api/review-confirm"}:
+                self.send_json(404, {"status": "failed", "error": "接口不存在"})
+                return
+            if not self.header_token_is_valid():
+                self.send_json(403, {"status": "failed", "error": "复核会话令牌无效"})
+                return
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                self.send_json(400, {"status": "failed", "error": "Content-Length 无效"})
+                return
+            if length <= 0 or length > maximum_payload_bytes:
+                self.send_json(413, {"status": "failed", "error": "复核文件为空或超过 16 MiB"})
+                return
+            try:
+                payload = json.loads(self.rfile.read(length).decode("utf-8"))
+                if not isinstance(payload, dict):
+                    raise FigureError("复核文件必须是 JSON 对象")
+                if endpoint == "/api/review-confirm":
+                    assessment_path = project_dir / "review-assessment.json"
+                    if not assessment_path.is_file():
+                        raise FigureError("缺少 review-assessment.json，请先重新生成综合评估")
+                    supplied_assessment_hash = str(payload.get("assessment_sha256", ""))
+                    current_assessment_hash = sha256_file(assessment_path)
+                    if not secrets.compare_digest(
+                        supplied_assessment_hash, current_assessment_hash
+                    ):
+                        raise FigureError("综合评估哈希已变化，请刷新页面后重新确认")
+                    result = review_confirm_command(
+                        project_dir,
+                        str(payload.get("reviewed_by", "")),
+                        str(payload.get("confirmation", "")),
+                    )
+                else:
+                    result = save_review_decisions_command(project_dir, payload)
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                self.send_json(400, {"status": "failed", "error": f"复核 JSON 无效：{exc}"})
+                return
+            except (FigureError, OSError) as exc:
+                self.send_json(400, {"status": "failed", "error": str(exc)})
+                return
+            self.send_json(200, result)
+
+        def log_message(self, format: str, *args: Any) -> None:
+            return
+
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", port), ReviewHandler)
+    except OSError as exc:
+        raise FigureError(f"无法启动本地复核会话：{exc}") from exc
+    actual_port = int(server.server_address[1])
+    url = f"http://127.0.0.1:{actual_port}/review.html?token={token}"
+    serving = {
+        "status": "serving",
+        "url": url,
+        "project_dir": str(project_dir),
+        "fixed_save_path": str(project_dir / "review-decisions.json"),
+        "说明": "仅监听本机回环地址；用户无需且不能在页面选择保存目录。按 Ctrl-C 停止。",
+    }
+    print(json.dumps(serving, ensure_ascii=False, indent=2, sort_keys=True), flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return {"status": "stopped", "fixed_save_path": serving["fixed_save_path"]}
 
 
 def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, Any]:
@@ -1132,6 +3108,13 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
         raise FigureError("复核文件必须填写 reviewed_by")
     rows = read_tabular_rows(candidates_path)
     row_by_id = {str(row["candidate_id"]): row for row in rows}
+    project_path = project_dir / "project.json"
+    project = read_json(project_path) if project_path.is_file() else {}
+    valid_series = {
+        str(item["id"])
+        for item in project.get("chart", {}).get("series", [])
+        if isinstance(item, dict) and item.get("id")
+    } or {str(row.get("series", "")) for row in rows}
     decisions = payload.get("decisions")
     if not isinstance(decisions, list):
         raise FigureError("复核文件的 decisions 必须是数组")
@@ -1145,20 +3128,65 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
             raise FigureError(f"复核文件包含未知候选编号：{candidate_id}")
         if candidate_id in decision_by_id:
             raise FigureError(f"复核文件重复包含候选编号：{candidate_id}")
-        if decision not in {"accepted", "rejected"}:
-            raise FigureError(f"{candidate_id} 的 decision 必须是 accepted 或 rejected")
+        if decision not in {"accepted", "rejected", "corrected", "reassigned"}:
+            detail = "仍为 pending（待决策）" if decision == "pending" else f"值为 {decision!r}"
+            raise FigureError(
+                f"{candidate_id} 的 decision {detail}；必须完成 accepted、rejected、corrected 或 reassigned 决策"
+            )
+        reason = str(item.get("reason", "")).strip()
+        corrected_values: dict[str, float] = {}
+        for key in ("corrected_x", "corrected_y"):
+            if item.get(key) is None or item.get(key) == "":
+                continue
+            try:
+                corrected = float(item[key])
+            except (TypeError, ValueError) as exc:
+                raise FigureError(f"{candidate_id} 的 {key} 必须是有限数值") from exc
+            if not math.isfinite(corrected):
+                raise FigureError(f"{candidate_id} 的 {key} 必须是有限数值")
+            corrected_values[key] = corrected
+        if decision == "corrected" and not corrected_values:
+            raise FigureError(f"{candidate_id} 选择 corrected 时至少需要 corrected_x 或 corrected_y")
+        if decision == "reassigned":
+            target_series = str(item.get("target_series", ""))
+            if target_series not in valid_series:
+                raise FigureError(f"{candidate_id} 的 target_series 不属于项目系列")
+            if target_series == str(row_by_id[candidate_id].get("series", "")):
+                raise FigureError(f"{candidate_id} 的 target_series 必须不同于原系列")
+        if decision in {"corrected", "reassigned"} and not reason:
+            raise FigureError(f"{candidate_id} 的校正或重新归属必须填写 reason")
+        if decision in {"accepted", "rejected"} and corrected_values:
+            raise FigureError(f"{candidate_id} 包含校正值时 decision 必须是 corrected 或 reassigned")
         decision_by_id[candidate_id] = item
     missing = sorted(set(row_by_id) - set(decision_by_id))
     if missing:
         raise FigureError(f"复核文件未覆盖全部候选值，缺少 {len(missing)} 项")
 
     accepted_rows: list[dict[str, Any]] = []
+    corrected_count = 0
+    reassigned_count = 0
     for candidate_id, row in row_by_id.items():
         decision = decision_by_id[candidate_id]
-        if decision["decision"] == "accepted":
+        action = str(decision["decision"])
+        if action != "rejected":
             accepted = dict(row)
+            if action == "reassigned":
+                accepted["original_series"] = accepted.get("series", "")
+                accepted["series"] = str(decision["target_series"])
+                reassigned_count += 1
+            x_key = "x" if "x" in accepted else "x_value" if "x_value" in accepted else "category_index"
+            y_key = "y" if "y" in accepted else "value"
+            if decision.get("corrected_x") not in {None, ""}:
+                accepted[f"original_{x_key}"] = accepted.get(x_key, "")
+                accepted[x_key] = float(decision["corrected_x"])
+            if decision.get("corrected_y") not in {None, ""}:
+                accepted[f"original_{y_key}"] = accepted.get(y_key, "")
+                accepted[y_key] = float(decision["corrected_y"])
+            if action == "corrected" or decision.get("corrected_x") not in {None, ""} or decision.get("corrected_y") not in {None, ""}:
+                corrected_count += 1
             accepted["reviewed_by"] = reviewed_by
-            accepted["review_decision"] = "accepted"
+            accepted["review_decision"] = action
+            accepted["review_reason"] = str(decision.get("reason", ""))
             accepted_rows.append(accepted)
     accepted_count = len(accepted_rows)
     rejected_count = len(rows) - accepted_count
@@ -1180,9 +3208,24 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
             "total": len(rows),
             "accepted": accepted_count,
             "rejected": rejected_count,
+            "corrected": corrected_count,
+            "reassigned": reassigned_count,
             "review_status": review_status,
         },
     }
+    for key in (
+        "project_id",
+        "source_sha256",
+        "review_method",
+        "assessment_sha256",
+        "assessment_score",
+        "assessment_risk_level",
+        "conversation_confirmation",
+        "anomaly_acknowledgement",
+        "anomaly_review",
+    ):
+        if payload.get(key) is not None:
+            normalized[key] = payload[key]
     applied_path = project_dir / "review-decisions.json"
     write_json(applied_path, normalized)
     data_path = project_dir / "data.csv"
@@ -1206,6 +3249,8 @@ def review_apply_command(project_dir: Path, decisions_path: Path) -> dict[str, A
         "review_status": review_status,
         "accepted": accepted_count,
         "rejected": rejected_count,
+        "corrected": corrected_count,
+        "reassigned": reassigned_count,
         "data": str(data_path),
     }
 
@@ -1255,7 +3300,233 @@ def series_colors(spec: dict[str, Any]) -> dict[str, str]:
     return {str(item["id"]): str(item["color"]) for item in spec.get("chart", {}).get("series", [])}
 
 
-def render_command(spec_path: Path, data_path: Path, out_dir: Path) -> dict[str, Any]:
+def smooth_curve_points(
+    x: np.ndarray,
+    y: np.ndarray,
+    *,
+    samples_per_interval: int = 4,
+    smoothing_window: int = 7,
+) -> tuple[np.ndarray, np.ndarray]:
+    """生成不越界的形状保持显示几何；只用于重绘，不回写观测数据。"""
+    x_array = np.asarray(x, dtype=float)
+    y_array = np.asarray(y, dtype=float)
+    if x_array.size < 2 or x_array.size != y_array.size or np.any(np.diff(x_array) <= 0):
+        return x_array, y_array
+    window = max(1, int(smoothing_window))
+    if window > 1:
+        if window % 2 == 0:
+            window += 1
+        window = min(window, x_array.size if x_array.size % 2 == 1 else x_array.size - 1)
+    if window > 1:
+        radius = window // 2
+        padded = np.pad(y_array, (radius, radius), mode="reflect")
+        filtered = np.convolve(padded, np.full(window, 1.0 / window), mode="valid")
+        filtered[0], filtered[-1] = y_array[0], y_array[-1]
+    else:
+        filtered = y_array.copy()
+    widths = np.diff(x_array)
+    deltas = np.diff(filtered) / widths
+    slopes = np.zeros_like(filtered)
+    if filtered.size == 2:
+        slopes[:] = deltas[0]
+    else:
+        for index in range(1, filtered.size - 1):
+            if deltas[index - 1] * deltas[index] <= 0:
+                slopes[index] = 0.0
+            else:
+                left_weight = 2.0 * widths[index] + widths[index - 1]
+                right_weight = widths[index] + 2.0 * widths[index - 1]
+                slopes[index] = (left_weight + right_weight) / (
+                    left_weight / deltas[index - 1] + right_weight / deltas[index]
+                )
+        slopes[0], slopes[-1] = deltas[0], deltas[-1]
+    samples = max(1, int(samples_per_interval))
+    dense_x_parts: list[np.ndarray] = []
+    dense_y_parts: list[np.ndarray] = []
+    local = np.linspace(0.0, 1.0, samples, endpoint=False)
+    for index, width in enumerate(widths):
+        t, t2, t3 = local, local * local, local * local * local
+        dense_x_parts.append(x_array[index] + width * t)
+        dense_y_parts.append(
+            (2 * t3 - 3 * t2 + 1) * filtered[index]
+            + (t3 - 2 * t2 + t) * width * slopes[index]
+            + (-2 * t3 + 3 * t2) * filtered[index + 1]
+            + (t3 - t2) * width * slopes[index + 1]
+        )
+    return (
+        np.concatenate([*dense_x_parts, x_array[-1:]]),
+        np.concatenate([*dense_y_parts, filtered[-1:]]),
+    )
+
+
+def display_segments(
+    group_rows: list[dict[str, Any]],
+    x_key: str,
+    y_key: str,
+    *,
+    mode: str,
+    smoothing_window: int,
+    samples_per_interval: int,
+    max_bridge_gap_px: float,
+    outlier_window: int = 1,
+    max_outlier_pixel_residual: float | None = None,
+    knot_stride: int = 1,
+) -> list[tuple[np.ndarray, np.ndarray, int, int, int]]:
+    ordered = sorted(
+        group_rows,
+        key=lambda row: numeric(row, "pixel_x") if row.get("pixel_x") not in {None, ""} else numeric(row, x_key),
+    )
+    raw_segments: list[list[dict[str, Any]]] = []
+    current: list[dict[str, Any]] = []
+    previous_pixel_x: float | None = None
+    for row in ordered:
+        pixel_value = row.get("pixel_x")
+        pixel_x = float(pixel_value) if pixel_value not in {None, ""} else None
+        bridgeable = (
+            current
+            and truthy(row.get("segment_break", False))
+            and max_bridge_gap_px > 0
+            and pixel_x is not None
+            and previous_pixel_x is not None
+            and pixel_x - previous_pixel_x <= max_bridge_gap_px
+        )
+        if current and truthy(row.get("segment_break", False)) and not bridgeable:
+            raw_segments.append(current)
+            current = []
+        current.append(row)
+        if pixel_x is not None:
+            previous_pixel_x = pixel_x
+    if current:
+        raw_segments.append(current)
+    result: list[tuple[np.ndarray, np.ndarray, int, int, int]] = []
+    for segment in raw_segments:
+        source_count = len(segment)
+        filtered_segment = list(segment)
+        window = max(1, int(outlier_window))
+        if (
+            max_outlier_pixel_residual is not None
+            and window > 1
+            and len(filtered_segment) >= 3
+            and all(row.get("pixel_y") not in {None, ""} for row in filtered_segment)
+        ):
+            if window % 2 == 0:
+                window += 1
+            window = min(
+                window,
+                len(filtered_segment)
+                if len(filtered_segment) % 2 == 1
+                else len(filtered_segment) - 1,
+            )
+            pixel_y = np.asarray([numeric(row, "pixel_y") for row in filtered_segment])
+            radius = window // 2
+            padded = np.pad(pixel_y, (radius, radius), mode="edge")
+            baseline = np.asarray(
+                [np.median(padded[index : index + window]) for index in range(len(pixel_y))]
+            )
+            keep = np.abs(pixel_y - baseline) <= float(max_outlier_pixel_residual)
+            if int(np.count_nonzero(keep)) >= 2:
+                filtered_segment = [
+                    row for row, retained in zip(filtered_segment, keep, strict=True) if retained
+                ]
+        stride = max(1, int(knot_stride))
+        if stride > 1 and len(filtered_segment) > 2:
+            indices = list(range(0, len(filtered_segment), stride))
+            if indices[-1] != len(filtered_segment) - 1:
+                indices.append(len(filtered_segment) - 1)
+            filtered_segment = [filtered_segment[index] for index in indices]
+        retained_count = len(filtered_segment)
+        xs = np.asarray([numeric(row, x_key) for row in filtered_segment], dtype=float)
+        ys = np.asarray([numeric(row, y_key) for row in filtered_segment], dtype=float)
+        unique_x, indices = np.unique(xs, return_index=True)
+        xs, ys = unique_x, ys[indices]
+        if mode == "shape_preserving" and xs.size >= 2:
+            dense_x, dense_y = smooth_curve_points(
+                xs,
+                ys,
+                samples_per_interval=samples_per_interval,
+                smoothing_window=smoothing_window,
+            )
+        else:
+            dense_x, dense_y = xs, ys
+        result.append(
+            (
+                dense_x,
+                dense_y,
+                source_count,
+                retained_count,
+                max(0, len(dense_x) - retained_count),
+            )
+        )
+    return result
+
+
+def guide_constrained_display_geometry(
+    entry: dict[str, Any],
+    group_rows: list[dict[str, Any]],
+    chart: dict[str, Any],
+    *,
+    maximum_residual_px: float,
+    residual_smoothing_window: int,
+) -> tuple[np.ndarray, np.ndarray, int, int, int]:
+    """用已声明引导路径生成派生几何，并仅以可见像素残差作平滑校正。"""
+    plot_box = tuple(int(round(value)) for value in chart["plot_box"])
+    start_x, end_x = guide_x_bounds(entry, plot_box)
+    pixel_x = np.arange(start_x, end_x + 1, dtype=float)
+    guide_y = np.asarray([float(guide_y_at(entry, value)) for value in pixel_x])
+    supported = [
+        row
+        for row in group_rows
+        if row.get("pixel_x") not in {None, ""} and row.get("pixel_y") not in {None, ""}
+    ]
+    residual_x: list[float] = []
+    residual_y: list[float] = []
+    for row in supported:
+        x_value = numeric(row, "pixel_x")
+        expected = guide_y_at(entry, x_value)
+        if expected is None:
+            continue
+        residual = numeric(row, "pixel_y") - expected
+        if abs(residual) <= maximum_residual_px:
+            residual_x.append(x_value)
+            residual_y.append(residual)
+    retained = len(residual_x)
+    if retained:
+        x_array = np.asarray(residual_x, dtype=float)
+        y_array = np.asarray(residual_y, dtype=float)
+        unique_x = np.unique(x_array)
+        unique_residual = np.asarray(
+            [float(np.median(y_array[x_array == value])) for value in unique_x]
+        )
+        correction = np.interp(pixel_x, unique_x, unique_residual)
+        window = max(1, int(residual_smoothing_window))
+        if window > 1:
+            if window % 2 == 0:
+                window += 1
+            window = min(window, len(correction) if len(correction) % 2 == 1 else len(correction) - 1)
+            if window > 1:
+                radius = window // 2
+                padded = np.pad(correction, (radius, radius), mode="edge")
+                correction = np.convolve(padded, np.full(window, 1.0 / window), mode="valid")
+        display_pixel_y = guide_y + correction
+    else:
+        display_pixel_y = guide_y
+    x_map = AxisMap(chart["x_axis"])
+    y_map = AxisMap(chart["y_axis"])
+    display_x = np.asarray([x_map.value(value) for value in pixel_x])
+    display_y = np.asarray([y_map.value(value) for value in display_pixel_y])
+    source_count = len(group_rows)
+    return display_x, display_y, source_count, retained, len(display_x)
+
+
+def render_command(
+    spec_path: Path,
+    data_path: Path,
+    out_dir: Path,
+    *,
+    artifact_basename: str = "render",
+    update_manifest: bool = True,
+    input_status: str = "accepted_or_supplied",
+) -> dict[str, Any]:
     cache_root = Path(os.environ.get("TMPDIR", "/tmp")) / "more-sci-figure-mpl"
     cache_root.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("MPLCONFIGDIR", str(cache_root))
@@ -1283,6 +3554,13 @@ def render_command(spec_path: Path, data_path: Path, out_dir: Path) -> dict[str,
     rows = read_tabular_rows(data_path)
     if not rows:
         raise FigureError("没有可用于重绘的数据行")
+    if update_manifest and any(
+        row.get("candidate_id")
+        and row.get("review_decision") not in {"accepted", "corrected", "reassigned"}
+        and str(row.get("status", "")).lower() in {"visible", "visible_candidate", "candidate"}
+        for row in rows
+    ):
+        raise FigureError("正式 render 拒绝未复核候选；请先 review-apply，或使用 preview")
     render = spec.get("render", {})
     plot_type = render.get("plot_type") or spec.get("chart", {}).get("type")
     if plot_type not in SUPPORTED_CHARTS:
@@ -1295,35 +3573,143 @@ def render_command(spec_path: Path, data_path: Path, out_dir: Path) -> dict[str,
         group = str(row.get(str(group_key), "series")) if group_key else "series"
         groups.setdefault(group, []).append(row)
     colors = series_colors(spec)
-    fig, axis = plt.subplots(figsize=(7.2, 4.8), dpi=160, constrained_layout=True)
+    canvas = render.get("canvas_px")
+    output_dpi = int(render.get("dpi", 160))
+    if isinstance(canvas, list) and len(canvas) == 2:
+        canvas_width, canvas_height = int(canvas[0]), int(canvas[1])
+        fig = plt.figure(figsize=(canvas_width / output_dpi, canvas_height / output_dpi), dpi=output_dpi)
+        axes_box = render.get("axes_box_px")
+        if isinstance(axes_box, list) and len(axes_box) == 4:
+            left_px, top_px, right_px, bottom_px = [float(value) for value in axes_box]
+            axis = fig.add_axes(
+                [
+                    left_px / canvas_width,
+                    (canvas_height - bottom_px) / canvas_height,
+                    (right_px - left_px) / canvas_width,
+                    (bottom_px - top_px) / canvas_height,
+                ]
+            )
+        else:
+            axis = fig.add_subplot(111)
+    else:
+        canvas_width = canvas_height = None
+        fig, axis = plt.subplots(figsize=(7.2, 4.8), dpi=output_dpi, constrained_layout=True)
     fallback = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9"]
     rendered_segments: dict[str, int] = {}
+    geometry_sources: dict[str, str] = {}
+    display_geometry_rows: list[dict[str, Any]] = []
+    display_policy = render.get("display_geometry", {}) if isinstance(render.get("display_geometry", {}), dict) else {}
+    display_mode = str(display_policy.get("mode", "none"))
+    smoothing_window = int(display_policy.get("smoothing_window", 7))
+    samples_per_interval = int(display_policy.get("samples_per_interval", 4))
+    outlier_window = int(display_policy.get("outlier_window", 1))
+    maximum_outlier_residual = display_policy.get("max_outlier_pixel_residual")
+    knot_stride = int(display_policy.get("knot_stride", 1))
+    styles = render.get("series_styles", {}) if isinstance(render.get("series_styles", {}), dict) else {}
+    chart = spec.get("chart", {})
+    series_specs = {
+        str(item["id"]): item
+        for item in chart.get("series", [])
+        if isinstance(item, dict) and item.get("id")
+    }
     if plot_type in {"line", "scatter"}:
         for index, (group, group_rows) in enumerate(groups.items()):
-            color = colors.get(group, fallback[index % len(fallback)])
+            style = styles.get(group, {}) if isinstance(styles.get(group, {}), dict) else {}
+            color = str(style.get("color", colors.get(group, fallback[index % len(fallback)])))
+            label = str(style.get("label", group))
             if plot_type == "line":
-                segments: list[list[dict[str, Any]]] = []
-                current: list[dict[str, Any]] = []
-                for row in group_rows:
-                    if current and truthy(row.get("segment_break", False)):
-                        segments.append(current)
-                        current = []
-                    current.append(row)
-                if current:
-                    segments.append(current)
+                max_bridge_gap_px = float(style.get("max_bridge_gap_px", display_policy.get("max_bridge_gap_px", 0.0)))
+                geometry_source = str(style.get("geometry_source", "observations"))
+                if geometry_source == "guide_constrained" and group in series_specs:
+                    if len(parse_guide_points(series_specs[group])) < 2:
+                        raise FigureError(
+                            f"系列 {group} 使用 guide_constrained 时至少需要两个 guide_points_px"
+                        )
+                    segments = [
+                        guide_constrained_display_geometry(
+                            series_specs[group],
+                            group_rows,
+                            chart,
+                            maximum_residual_px=float(
+                                style.get("guide_constraint_max_residual_px", 5.0)
+                            ),
+                            residual_smoothing_window=int(
+                                style.get("guide_residual_smoothing_window", 21)
+                            ),
+                        )
+                    ]
+                    geometry_provenance = "derived_guide_constrained_geometry"
+                else:
+                    segments = display_segments(
+                        group_rows,
+                        x_key,
+                        y_key,
+                        mode=display_mode,
+                        smoothing_window=smoothing_window,
+                        samples_per_interval=samples_per_interval,
+                        max_bridge_gap_px=max_bridge_gap_px,
+                        outlier_window=outlier_window,
+                        max_outlier_pixel_residual=(
+                            float(maximum_outlier_residual)
+                            if maximum_outlier_residual is not None
+                            else None
+                        ),
+                        knot_stride=knot_stride,
+                    )
+                    geometry_provenance = (
+                        "derived_display_geometry"
+                        if display_mode == "shape_preserving"
+                        else "accepted_observation_geometry"
+                    )
+                geometry_sources[group] = geometry_provenance
                 rendered_segments[group] = len(segments)
-                for segment_index, segment in enumerate(segments):
+                for segment_index, (
+                    segment_x,
+                    segment_y,
+                    observed_count,
+                    retained_count,
+                    derived_count,
+                ) in enumerate(segments):
                     axis.plot(
-                        [numeric(row, x_key) for row in segment],
-                        [numeric(row, y_key) for row in segment],
+                        segment_x,
+                        segment_y,
                         color=color,
-                        linewidth=1.8,
-                        label=group if segment_index == 0 else None,
+                        linewidth=float(style.get("linewidth", 1.8)),
+                        linestyle=str(style.get("line_style", "-")),
+                        label=label if segment_index == 0 else None,
+                    )
+                    for x_value, y_value in zip(segment_x, segment_y):
+                        display_geometry_rows.append(
+                            {
+                                "series": group,
+                                "segment": segment_index,
+                                "x": float(x_value),
+                                "y": float(y_value),
+                                "provenance": geometry_provenance,
+                                "observed_anchor_count": observed_count,
+                                "display_anchor_count": retained_count,
+                                "discarded_or_thinned_count": observed_count - retained_count,
+                                "derived_point_count": derived_count,
+                            }
+                        )
+                marker = style.get("marker")
+                if marker:
+                    marker_every = max(1, int(style.get("marker_every", max(1, len(group_rows) // 16))))
+                    marker_rows = sorted(group_rows, key=lambda row: numeric(row, x_key))[::marker_every]
+                    axis.plot(
+                        [numeric(row, x_key) for row in marker_rows],
+                        [numeric(row, y_key) for row in marker_rows],
+                        linestyle="none",
+                        marker=str(marker),
+                        markersize=float(style.get("marker_size", 5.0)),
+                        markerfacecolor=str(style.get("marker_facecolor", "white")),
+                        markeredgecolor=color,
+                        markeredgewidth=float(style.get("marker_edgewidth", 1.0)),
                     )
             else:
                 xs = [numeric(row, x_key) for row in group_rows]
                 ys = [numeric(row, y_key) for row in group_rows]
-                axis.scatter(xs, ys, color=color, s=24, label=group)
+                axis.scatter(xs, ys, color=color, s=24, label=label)
     else:
         category_values = sorted({numeric(row, x_key) for row in rows})
         group_count = len(groups)
@@ -1340,36 +3726,97 @@ def render_command(spec_path: Path, data_path: Path, out_dir: Path) -> dict[str,
                 label=group,
             )
         axis.set_xticks(category_values)
-    chart = spec.get("chart", {})
     x_scale = str(render.get("x_scale") or chart.get("x_axis", {}).get("scale", "linear"))
     y_scale = str(render.get("y_scale") or chart.get("y_axis", {}).get("scale", "linear"))
     axis.set_xscale("log" if x_scale == "log10" else "linear")
     axis.set_yscale("log" if y_scale == "log10" else "linear")
-    axis.set_xlabel(str(render.get("x_label", "")))
-    axis.set_ylabel(str(render.get("y_label", "")))
+    if isinstance(render.get("x_limits"), list) and len(render["x_limits"]) == 2:
+        axis.set_xlim(float(render["x_limits"][0]), float(render["x_limits"][1]))
+    if isinstance(render.get("y_limits"), list) and len(render["y_limits"]) == 2:
+        axis.set_ylim(float(render["y_limits"][0]), float(render["y_limits"][1]))
+    if isinstance(render.get("x_ticks"), list):
+        axis.set_xticks([float(value) for value in render["x_ticks"]])
+    if isinstance(render.get("y_ticks"), list):
+        axis.set_yticks([float(value) for value in render["y_ticks"]])
+    axis.set_xlabel(str(render.get("x_label", "")), fontsize=float(render.get("label_fontsize", 12)))
+    axis.set_ylabel(str(render.get("y_label", "")), fontsize=float(render.get("label_fontsize", 12)))
     axis.set_title(str(render.get("title", "")))
-    axis.spines["top"].set_visible(False)
-    axis.spines["right"].set_visible(False)
-    axis.grid(axis="y", color="#d9d9d9", linewidth=0.6, alpha=0.6)
+    if not bool(render.get("boxed_axes", False)):
+        axis.spines["top"].set_visible(False)
+        axis.spines["right"].set_visible(False)
+    grid = render.get("grid", "y")
+    if grid in {"x", "y", "both"}:
+        axis.grid(axis=grid, color="#d9d9d9", linewidth=0.6, alpha=0.6)
+    else:
+        axis.grid(False)
+    axis.tick_params(
+        direction=str(render.get("tick_direction", "out")),
+        labelsize=float(render.get("tick_fontsize", 10)),
+    )
     if len(groups) > 1 or (group_key and next(iter(groups)) != "series"):
-        axis.legend(frameon=False)
+        legend = render.get("legend", {}) if isinstance(render.get("legend", {}), dict) else {}
+        axis.legend(
+            frameon=bool(legend.get("frameon", False)),
+            ncol=int(legend.get("ncol", 1)),
+            loc=str(legend.get("loc", "best")),
+            bbox_to_anchor=tuple(legend["bbox_to_anchor"]) if isinstance(legend.get("bbox_to_anchor"), list) else None,
+            fontsize=float(legend.get("fontsize", 10)),
+        )
+    if not update_manifest:
+        fig.text(
+            0.995,
+            0.006,
+            "CANDIDATE PREVIEW · NOT REVIEWED",
+            ha="right",
+            va="bottom",
+            fontsize=6,
+            color="#8b1a1a",
+            alpha=0.8,
+        )
     outputs: dict[str, dict[str, Any]] = {}
     for suffix in ("png", "svg", "pdf"):
-        path = out_dir / f"render.{suffix}"
-        fig.savefig(path, facecolor="white")
+        path = out_dir / f"{artifact_basename}.{suffix}"
+        fig.savefig(path, facecolor="white", dpi=output_dpi)
         outputs[suffix] = artifact_entry(path)
+    display_geometry_path: Path | None = None
+    if display_geometry_rows:
+        geometry_name = (
+            "display-geometry.csv"
+            if artifact_basename == "render"
+            else f"{artifact_basename}-display-geometry.csv"
+        )
+        display_geometry_path = out_dir / geometry_name
+        write_csv(display_geometry_path, display_geometry_rows)
     plt.close(fig)
+    report_name = (
+        "render-report.json"
+        if artifact_basename == "render"
+        else f"{artifact_basename}-report.json"
+    )
     report = {
         "schema": "more-sci-figure.render-report.v1",
         "status": "pass",
+        "formal_render": update_manifest,
+        "input_status": input_status,
         "plot_type": plot_type,
         "rows": len(rows),
         "mapping": {"x": x_key, "y": y_key, "group": group_key},
         "axis_scales": {"x": x_scale, "y": y_scale},
         "rendered_segments": rendered_segments,
+        "geometry_sources": geometry_sources,
+        "display_geometry": {
+            "mode": display_mode,
+            "rows": len(display_geometry_rows),
+            "path": str(display_geometry_path) if display_geometry_path else None,
+            "provenance": "derived display geometry never overwrites data.csv",
+        },
+        "project_spec": artifact_entry(spec_path),
+        "canvas_px": [canvas_width, canvas_height] if canvas_width and canvas_height else None,
         "outputs": outputs,
     }
-    write_json(out_dir / "render-report.json", report)
+    write_json(out_dir / report_name, report)
+    if not update_manifest:
+        return report
     root = out_dir.parent if out_dir.name == "render" else out_dir
     manifest = load_manifest(root)
     if manifest.get("extraction_status") == "not_run":
@@ -1389,11 +3836,33 @@ def render_command(spec_path: Path, data_path: Path, out_dir: Path) -> dict[str,
         )
     manifest["render_status"] = "pass"
     manifest["tool_version"] = VERSION
-    manifest["artifacts"]["render_report"] = artifact_entry(out_dir / "render-report.json")
+    previous_project_spec = manifest.get("artifacts", {}).get("project_spec")
+    if previous_project_spec and previous_project_spec.get("sha256") != sha256_file(spec_path):
+        manifest["artifacts"]["extraction_project_spec"] = previous_project_spec
+    manifest["project_spec"] = artifact_entry(spec_path)
+    manifest["artifacts"]["project_spec"] = artifact_entry(spec_path)
+    manifest["artifacts"]["render_report"] = artifact_entry(out_dir / report_name)
+    if display_geometry_path is not None:
+        manifest["artifacts"]["display_geometry"] = artifact_entry(display_geometry_path)
     for suffix, entry in outputs.items():
         manifest["artifacts"][f"render_{suffix}"] = entry
     write_json(root / "manifest.json", manifest)
     return report
+
+
+def preview_command(spec_path: Path, candidates_path: Path, out_dir: Path) -> dict[str, Any]:
+    """渲染带水印的候选预览；不生成 data.csv，也不推进正式交付状态。"""
+    rows = read_tabular_rows(candidates_path.expanduser().resolve())
+    if not rows or any("candidate_id" not in row for row in rows):
+        raise FigureError("preview 只接受 extract 产生且包含 candidate_id 的候选表")
+    return render_command(
+        spec_path,
+        candidates_path,
+        out_dir,
+        artifact_basename="candidate-preview",
+        update_manifest=False,
+        input_status="unreviewed_candidates",
+    )
 
 
 def validate_command(project_dir: Path, reference: Path | None = None) -> dict[str, Any]:
@@ -1404,8 +3873,20 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
     if not manifest_path.exists():
         raise FigureError(f"找不到 manifest.json：{manifest_path}")
     manifest = read_json(manifest_path)
+    recorded_project_path = str(
+        manifest.get("artifacts", {}).get("project_spec", {}).get("path", "")
+    )
+    project_path = project_dir / "project.json"
+    if recorded_project_path:
+        recorded_candidate = Path(recorded_project_path).expanduser()
+        if recorded_candidate.is_absolute() and recorded_candidate.is_file():
+            project_path = recorded_candidate.resolve()
+        elif recorded_candidate.is_file():
+            project_path = recorded_candidate.resolve()
+        elif (project_dir / recorded_candidate).is_file():
+            project_path = (project_dir / recorded_candidate).resolve()
     required = {
-        "project_spec": project_dir / "project.json",
+        "project_spec": project_path,
         "data": project_dir / "data.csv",
         "render_png": project_dir / "render" / "render.png",
         "render_svg": project_dir / "render" / "render.svg",
@@ -1457,7 +3938,6 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
                     absolute = np.abs(ref_array - render_array)
                     mae = float(np.mean(absolute) / 255.0)
                     plot_mae: float | None = None
-                    project_path = project_dir / "project.json"
                     if project_path.is_file():
                         project = read_json(project_path)
                         box = project.get("chart", {}).get("plot_box")
@@ -1540,13 +4020,27 @@ def pipeline_command(
 ) -> dict[str, Any]:
     extraction = extract_command(spec_path, out_dir)
     if review_decisions is None:
+        assessment = read_json(out_dir / "review-assessment.json")
+        recommendation = str(assessment.get("recommended_action", "stop"))
         return {
             "extraction": extraction["status"],
-            "review": "awaiting_review",
+            "review": (
+                "awaiting_confirmation"
+                if recommendation == "batch_confirm"
+                else "attention_required"
+            ),
             "render": "not_run",
             "delivery": "not_run",
-            "复核页面": str(out_dir / "review.html"),
-            "下一步": "完成人工复核并使用 --review-decisions 再次运行 pipeline，或分别运行 review-apply、render、validate。",
+            "综合评分": assessment.get("overall_score"),
+            "风险等级": assessment.get("risk_level"),
+            "异常组": assessment.get("anomaly_groups"),
+            "建议动作": recommendation,
+            "综合评估": str(out_dir / "review-assessment.json"),
+            "下一步": (
+                "向用户汇报综合评判；用户回复“下一步/继续”后运行 review-confirm，再继续正式流程。"
+                if recommendation == "batch_confirm"
+                else "只处理异常组或停止；不得批量确认。"
+            ),
         }
     review = review_apply_command(out_dir, review_decisions)
     if review["review_status"] == "rejected":
@@ -1589,6 +4083,26 @@ def build_parser() -> argparse.ArgumentParser:
     review_parser = subparsers.add_parser("review", help="重新生成本地人工复核页面")
     review_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
 
+    assess_parser = subparsers.add_parser(
+        "review-assess", help="综合评估全部候选并输出评分、系列摘要和异常组"
+    )
+    assess_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
+
+    confirm_parser = subparsers.add_parser(
+        "review-confirm", help="把用户对话确认转换为覆盖全部候选的批量复核记录"
+    )
+    confirm_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
+    confirm_parser.add_argument("--reviewed-by", required=True, help="复核人或可追溯身份")
+    confirm_parser.add_argument("--confirmation", required=True, help="用户的原始确认语句")
+
+    serve_parser = subparsers.add_parser(
+        "review-serve", help="启动仅本机复核会话并固定保存到当前项目目录"
+    )
+    serve_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
+    serve_parser.add_argument(
+        "--port", type=int, default=0, help="本机端口；0 表示自动选择可用端口"
+    )
+
     apply_parser = subparsers.add_parser("review-apply", help="应用人工复核决定并生成正式 data.csv")
     apply_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
     apply_parser.add_argument("--decisions", required=True, type=Path, help="复核决定 JSON")
@@ -1597,6 +4111,15 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser.add_argument("--spec", required=True, type=Path, help="项目规格")
     render_parser.add_argument("--data", required=True, type=Path, help="正式数据或外部数据")
     render_parser.add_argument("--out-dir", required=True, type=Path, help="重绘输出目录")
+
+    preview_parser = subparsers.add_parser(
+        "preview", help="把未复核候选值绘制为带水印预览，不推进正式状态"
+    )
+    preview_parser.add_argument("--spec", required=True, type=Path, help="项目规格")
+    preview_parser.add_argument(
+        "--candidates", required=True, type=Path, help="extract 产生的 candidates.csv"
+    )
+    preview_parser.add_argument("--out-dir", required=True, type=Path, help="候选预览输出目录")
 
     validate_parser = subparsers.add_parser("validate", help="验证交付物、哈希、状态和可选图像残差")
     validate_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
@@ -1608,15 +4131,19 @@ def build_parser() -> argparse.ArgumentParser:
     pipeline_parser.add_argument(
         "--review-decisions",
         type=Path,
-        help="人工复核决定；缺省时管线停在 awaiting_review",
+        help="人工复核决定；缺省时管线输出综合评分并停在 awaiting_confirmation",
     )
     for current in (
         parser,
         inspect_parser,
         extract_parser,
         review_parser,
+        assess_parser,
+        confirm_parser,
+        serve_parser,
         apply_parser,
         render_parser,
+        preview_parser,
         validate_parser,
         pipeline_parser,
     ):
@@ -1638,10 +4165,20 @@ def main(argv: list[str] | None = None) -> int:
             result = extract_command(args.spec, args.out_dir)
         elif args.command == "review":
             result = review_command(args.project_dir)
+        elif args.command == "review-assess":
+            result = review_assess_command(args.project_dir)
+        elif args.command == "review-confirm":
+            result = review_confirm_command(
+                args.project_dir, args.reviewed_by, args.confirmation
+            )
+        elif args.command == "review-serve":
+            result = review_serve_command(args.project_dir, args.port)
         elif args.command == "review-apply":
             result = review_apply_command(args.project_dir, args.decisions)
         elif args.command == "render":
             result = render_command(args.spec, args.data, args.out_dir)
+        elif args.command == "preview":
+            result = preview_command(args.spec, args.candidates, args.out_dir)
         elif args.command == "validate":
             result = validate_command(args.project_dir, args.reference)
         else:

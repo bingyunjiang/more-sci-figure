@@ -13,8 +13,8 @@
 # More Sci Figure
 
 本地优先、证据可追溯的科研图表数据提取、人工复核、论文级重绘与交付验证工具。
-版本：v0.2.0
-**关键词：** 科研图表数字化 · 曲线/散点/柱图提取 · 人工复核 · 论文级重绘 · PNG/SVG/PDF · 哈希证据链 · 本地优先
+版本：v0.3.1
+**关键词：** 科研图表数字化 · 同色曲线分离 · 引导路径 · 曲线/散点/柱图提取 · 人工复核 · 候选预览 · 论文级重绘 · PNG/SVG/PDF · 哈希证据链 · 本地优先
 
 > 核心原则：算法检测到的只是候选值。只有经过哈希绑定的人工复核，候选值才能进入正式 `data.csv`。
 
@@ -59,9 +59,9 @@
 
 算法结果先写入 `candidates.csv`。复核决定必须覆盖全部候选编号并绑定候选文件 SHA-256；只有明确接受的记录会进入 `data.csv`。
 
-### 3. 本地人工复核页
+### 3. AI 综合评判与异常优先
 
-`extract` 自动生成 `review.html`。页面同时展示原尺寸证据叠图和逐候选决策表，可导出 `review-decisions.json`，整个过程不需要外部服务器。
+`extract` 自动融合来源完整性、候选哈希、坐标标定残差、质量门、逐系列覆盖率、最大缺口、引导残差、像素支持和模型辅助比例，生成 `review-assessment.json` 与 `review-anomalies.csv`。普通候选进入独立批量区；异常候选进入单独复核区，逐项显示原始分辨率局部证据、坐标、异常原因，并允许接受、拒绝、校正或重归属。异常项未处理完时不能生成完整复核文件，也不会和普通候选一起被一键接受。只有异常清单为空时，用户才可回复“下一步/继续”直接批量确认。
 
 ### 4. 数据辅助质量判断
 
@@ -74,13 +74,17 @@
 - 像素量化与可评估标定残差形成的局部不确定度；
 - 全图及绘图区残差和残差热图。
 
-这些指标用于辅助复核，不替代科学判断。
+这些指标形成可重复的本地综合评估，帮助用户把精力集中在异常组；AI 解释不替代原始像素证据或来源哈希。
 
 ### 5. 缺口和坐标尺度保持一致
 
-曲线重绘遵守 `segment_break`，不会跨过缺失区域连线。`linear` 与 `log10` 坐标变换会同时用于标定和重绘。
+观测数据始终保留 `segment_break`。项目可以为连续曲线声明有上限的显示补线、形状保持几何，或使用 `geometry_source=guide_constrained` 从已声明引导路径和可见像素残差生成连续展示。所有派生点只写入 `render/display-geometry.csv`，不会回写 `data.csv`。`linear` 与 `log10` 坐标变换会同时用于标定和重绘。
 
-### 6. 多格式与矢量导出
+### 6. 同色系列与图内图例
+
+`guided_path` 使用人工确认的稀疏引导点限定搜索走廊，但只接受走廊内真实存在的源像素。`guided_group_path` 进一步对同色系列执行排他式联合分配：实线与虚线分别声明语义，同一个像素簇不能同时归入两个系列；无法唯一判断的分配标记为模型辅助证据。每个系列可声明局部 `exclude_boxes_px`，避免过去用一个大图例框误删真实曲线。
+
+### 7. 多格式与矢量导出
 
 - 图源：PNG、JPEG、TIFF、BMP、WebP、PDF；
 - 外部数据：CSV、TSV、JSON、XLSX、XLSM；
@@ -120,16 +124,37 @@ python3 scripts/more_sci_figure.py extract \
   --out-dir evidence
 ```
 
-此时会生成 `candidates.csv` 和 `review.html`，但不会生成正式 `data.csv`。
+此时会生成 `candidates.csv`、`review-assessment.json`、`review-anomalies.csv` 和可选深挖用的 `review.html`，但不会生成正式 `data.csv`。
 
-### 第三步：人工复核
+可选：生成不改变正式状态的水印预览：
 
-打开 `evidence/review.html`，完成决策并导出 `review-decisions.json`：
+```bash
+python3 scripts/more_sci_figure.py preview \
+  --spec evidence/project.json \
+  --candidates evidence/candidates.csv \
+  --out-dir evidence/candidate-preview
+```
+
+### 第三步：查看综合评判并回复“下一步”
+
+Agent 自动读取综合评分、风险等级、逐系列指标和异常组。默认不打开逐点复核页。风险允许时，用户只需回复“下一步”或“继续”；Agent 内部执行：
+
+```bash
+python3 scripts/more_sci_figure.py review-assess \
+  --project-dir evidence
+
+python3 scripts/more_sci_figure.py review-confirm \
+  --project-dir evidence \
+  --reviewed-by "可追溯用户身份" \
+  --confirmation "用户原始确认语句"
+```
+
+`critical` 风险强制停止；`high` 风险只要求处理异常区；`low/medium` 只允许批量处理普通候选。任何异常候选都必须在独立表中获得明确决定。保存成功或失败均显示明确状态与实际路径；随后仍需通过 `review-apply` 的哈希和覆盖检查。
 
 ```bash
 python3 scripts/more_sci_figure.py review-apply \
   --project-dir evidence \
-  --decisions review-decisions.json
+  --decisions evidence/review-decisions.json
 ```
 
 ### 第四步：重绘并验证
@@ -153,13 +178,13 @@ python3 scripts/more_sci_figure.py validate \
 
 1. `inspect` 保留并锁定来源，生成 `source-report.json` 和待补全的 `project.json`。
 2. 人工确认图表类型、绘图区、坐标尺度、系列颜色以及每个数值轴至少两个有效锚点。
-3. `extract` 仅生成 `candidates.csv`、证据叠图、质量报告和 `review.html`，不会生成正式数据。
-4. 在 `review.html` 中逐项接受或拒绝候选值，导出覆盖全部候选且绑定当前候选哈希的 `review-decisions.json`。
+3. `extract` 生成候选、证据叠图、质量报告、AI 综合评估和异常清单，不会生成正式数据。
+4. Agent 汇报综合评分、风险等级、系列指标和异常组；风险允许时，用户回复“下一步/继续”即可生成哈希绑定的批量确认。只有异常深挖才使用逐点页面。
 5. `review-apply` 校验哈希和决策覆盖率，仅把接受项写入正式 `data.csv`。
-6. `render` 从声明数据统一导出 PNG、SVG 和 PDF，不擅自补充误差条、显著性、拟合或平滑。
+6. `render` 从声明数据统一导出 PNG、SVG 和 PDF；可选展示几何单独记录，不覆盖正式观测值。
 7. `validate` 检查来源与交付物哈希、清单、状态、产物完整性，并可计算参考图残差与残差热图。
 
-`pipeline` 第一次运行会停在人工复核门：
+`pipeline` 第一次运行会输出综合评分、风险等级和异常组，并停在对话确认门：
 
 ```bash
 python3 scripts/more_sci_figure.py pipeline \
@@ -167,13 +192,13 @@ python3 scripts/more_sci_figure.py pipeline \
   --out-dir evidence
 ```
 
-完成人工复核后继续：
+用户回复“下一步/继续”、Agent 生成批量复核记录后继续：
 
 ```bash
 python3 scripts/more_sci_figure.py pipeline \
   --spec evidence/project.json \
   --out-dir evidence \
-  --review-decisions review-decisions.json
+  --review-decisions evidence/review-decisions.json
 ```
 
 ## CLI 命令
@@ -182,9 +207,13 @@ python3 scripts/more_sci_figure.py pipeline \
 | --- | --- | --- |
 | `inspect` | 来源、哈希、PDF 页面 | 检查输入并生成项目模板 |
 | `extract` | 标定、候选值、证据叠图 | 提取可见候选值并生成复核页 |
+| `review-assess` | AI 综合评分、异常组 | 融合质量指标并生成对话式评判摘要 |
+| `review-confirm` | 下一步、批量确认 | 把用户对话确认转为覆盖全部候选的审计记录 |
 | `review` | 本地页面、逐项决策 | 重新生成 `review.html` |
+| `review-serve` | 固定路径、本机回环 | 启动复核会话并把决定固定保存到当前项目目录 |
 | `review-apply` | 哈希绑定、正式数据 | 应用复核决定并生成 `data.csv` |
 | `render` | 重绘、矢量、中文字体 | 导出 PNG、SVG 和 PDF |
+| `preview` | 未复核、水印、候选轨迹 | 预览 `candidates.csv`，不生成正式数据或推进状态 |
 | `validate` | 完整性、状态、残差 | 验证交付物和可选参考图 |
 | `pipeline` | 门控管线 | 按顺序执行并在复核点暂停 |
 
@@ -205,8 +234,15 @@ evidence/
 ├── candidates.csv
 ├── overlay.png
 ├── extraction-report.json
+├── review-assessment.json
+├── review-anomalies.csv
 ├── review.html
 ├── review-template.json
+├── candidate-preview/
+│   ├── candidate-preview.png
+│   ├── candidate-preview.svg
+│   ├── candidate-preview.pdf
+│   └── candidate-preview-report.json
 ├── review-decisions.json
 ├── data.csv
 ├── manifest.json
@@ -215,6 +251,7 @@ evidence/
     ├── render.png
     ├── render.svg
     ├── render.pdf
+    ├── display-geometry.csv
     └── render-report.json
 ```
 
@@ -233,6 +270,7 @@ evidence/
 从 [assets/project-template.json](assets/project-template.json) 开始。正式 Schema：
 
 - [schemas/project.schema.json](schemas/project.schema.json)
+- [schemas/review-assessment.schema.json](schemas/review-assessment.schema.json)
 - [schemas/review-decisions.schema.json](schemas/review-decisions.schema.json)
 
 质量门示例：
@@ -257,6 +295,24 @@ evidence/
 ```
 
 `null` 表示不设置该自动阈值。阈值应由图像分辨率、用途和研究要求决定，不能把示例值当作跨项目通用标准。
+
+同色系列的最小声明示例：
+
+```json
+{
+  "id": "model-red",
+  "color": "#ff0000",
+  "extraction_mode": "guided_group_path",
+  "shared_color_group": "red",
+  "guide_interpolation": "shape_preserving",
+  "line_semantics": "solid",
+  "guide_corridor_px": 7,
+  "guide_points_px": [[120, 500], [260, 240], [420, 110]],
+  "exclude_boxes_px": [[210, 400, 275, 425]]
+}
+```
+
+同一 `guided_group_path` 颜色组至少需要两个系列。引导点限定查找范围，不直接成为候选数值；没有源像素支持的列仍保持缺口。实线和虚线可使用不同覆盖率与最大缺口质量门。
 
 ## 证据边界与拒绝条件
 
@@ -300,7 +356,19 @@ python3 scripts/release_acceptance.py
 
 按发布日期倒序排列：
 
-- **v0.2.0 · 2026-07-25（当前版本）**
+- **v0.3.1 · 2026-07-26（当前版本）**
+  - 默认复核改为 AI 综合评分、异常分组和对话式批量确认，逐点页面降级为异常深挖工具。
+  - 增加 `review-assess`、`review-confirm`、评估哈希与用户原始确认语句审计。
+  - 将异常候选与普通批量候选彻底分区；异常项逐项显示局部原图、定位标记、原因及接受/拒绝/校正/重归属决定，未决异常阻止正式复核文件生成。
+  - 本地复核保存增加明确的成功/失败提示、固定项目路径、复核人必填和综合评估哈希校验。
+- **v0.3.0 · 2026-07-26**
+  - 增加同色曲线 `guided_path`、逐系列局部排除框和共享颜色歧义标记。
+  - 增加 `guided_group_path` 排他式全局分配、形状保持引导和实线/虚线语义质量门。
+  - 人工复核增加坐标校正与系列重新归属，并保留修改前血缘。
+  - 增加带水印 `preview`，未复核候选不能更新清单或生成正式数据。
+  - 增加固定画布、逐系列线型/标记和独立 `display-geometry.csv`。
+  - 增加同色实/虚线、图内图例、受限补线和固定画布回归测试。
+- **v0.2.0 · 2026-07-25**
   - 建立 `candidates.csv → review-decisions.json → data.csv` 的人工复核闭环。
   - 增加候选哈希绑定、本地中文复核页面、项目级质量门和四类独立状态。
   - 增加不确定度辅助字段、Lab 颜色距离、形状诊断、绘图区残差和热图。
@@ -313,9 +381,9 @@ python3 scripts/release_acceptance.py
 
 ## 路线图
 
-- **v0.3.0（计划）**
+- **v0.3.1 持续增强（不升版本）**
   - 建立带来源、授权和标注协议的真实图表基准集。
-  - 增加排除区域、图例区域和可审计 OCR 候选。
+  - 增加可审计 OCR 候选和半自动图例定位。
   - 增加更丰富的逐系列残差和误检/漏检指标。
   - 在真实基准证据充分后扩展更多图表类型。
 

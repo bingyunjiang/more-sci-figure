@@ -19,6 +19,8 @@
 - `quality_gates`：按项目声明的自动质量门；
 - `render`：数据列映射、标签、标题和可选坐标尺度。
 
+曲线系列还可声明 `extraction_mode=guided_path`、`shared_color_group`、引导点、搜索走廊和局部排除框。重绘可声明固定画布、逐系列样式与派生展示几何。
+
 ## 坐标标定
 
 使用全部锚点对像素到变换后数值进行最小二乘拟合：
@@ -35,15 +37,29 @@
 ```text
 candidates.csv
       │
+      ├── SHA-256 ──> review-assessment.json ──> review-anomalies.csv
+      │                              │
+      │                              └──> 用户对话批量确认
+      │
       ├── SHA-256 ──> review-decisions.json
       │                         │
       └─────────────────────────┴──> data.csv
 ```
 
 - `candidates.csv` 可以包含自动质量门未完全通过的可见候选；
+- `review-assessment.json` 融合可重复的证据指标，给出综合评分、风险等级、系列摘要、异常组和建议动作；不得把评分冒充新的像素证据；
+- `review-anomalies.csv` 只承载异常深挖清单，不要求用户逐点复核全部候选；
 - `review-decisions.json` 必须覆盖全部候选编号并绑定候选文件哈希；
 - `data.csv` 只能包含人工明确接受的记录；
 - 外部官方数据可以核对 `data.csv`，但不能覆盖图像提取证据。
+
+复核保存位置由项目上下文决定，不由用户在页面选择：`review-serve` 只监听本机回环地址，校验完整复核载荷后固定原子写入 `<project-dir>/review-decisions.json`。保存动作本身不生成 `data.csv`，也不改变正式复核、重绘或交付状态；页面必须回显实际路径与文件 SHA-256。
+
+复核动作允许 `accepted`、`rejected`、`corrected` 和 `reassigned`。坐标校正至少提供一个有限校正值；重新归属必须指向项目中的另一系列；两者都必须填写理由。正式记录使用 `original_*` 字段保留修改前血缘。
+
+只有 `review-anomalies.csv` 为空且 `review-assessment.json` 给出 `recommended_action=batch_confirm` 时，用户的“下一步”“继续”或页面确认才可批量接受全部普通候选。存在异常时，页面必须把异常候选与普通候选分表展示，为每个异常提供局部像素证据、原因和独立决定；普通候选可预置为批量接受，但任一异常未决定都必须阻止生成复核文件。`high` 只允许处理异常区；`critical` 必须停止。
+
+`preview` 只读取 `candidates.csv` 并输出带有 `CANDIDATE PREVIEW · NOT REVIEWED` 水印的预览。它不得生成 `data.csv`、不得修改项目 `manifest.json`，也不得把 `render_status` 标为通过。
 
 ## 交付物血缘
 
@@ -56,6 +72,7 @@ candidates.csv
   → candidates.csv
   → 人工复核记录
   → data.csv
+  → 可选 display-geometry.csv（派生展示几何）
   → 声明的数据映射
   → PNG/SVG/PDF
   → 结构与视觉验证

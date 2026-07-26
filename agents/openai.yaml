@@ -1,7 +1,7 @@
 interface:
   display_name: "More Sci Figure"
-  short_description: "科研图表数据提取、论文级重绘、矢量导出与可复核证据验证工作流"
-  default_prompt: "请使用 $more-sci-figure 提取或重绘此科研图表，并生成可审计的候选值、人工复核记录、正式数据与验证交付物。"
+  short_description: "支持同色曲线分离的科研图表提取、复核、重绘与证据验证工作流"
+  default_prompt: "请使用 $more-sci-figure 提取或重绘此科研图表；先用本地证据生成 AI 综合评分、系列指标和异常组。普通候选可批量处理；异常候选必须在独立区域查看局部证据并逐项复核。只有异常清单为空时才允许用‘下一步/继续’批量确认；高危问题必须停止。"
 
 policy:
   allow_implicit_invocation: true

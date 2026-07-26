@@ -29,6 +29,23 @@
 
 同色图例、注释或坐标元素进入绘图区时，应收紧绘图区、声明排除区域或拒绝提取。
 
+同色实线、虚线或标记曲线可使用 `guided_path`：
+
+- 每条系列声明至少两个 `guide_points_px` 和正数 `guide_corridor_px`；
+- 引导点只限定像素搜索走廊，不直接转换成数值；
+- 只有走廊内真实存在的目标色像素才能生成候选；
+- 图内图例使用逐系列、局部 `exclude_boxes_px`，不得用覆盖数据区的大框粗暴删除；
+- 同一 `shared_color_group` 的走廊重叠且像素归属不唯一时，候选标记为 `ambiguous_shared_colour`；
+- 无像素支持的列继续记录为缺口，不得用引导轨迹填充。
+
+同一颜色包含两个或更多物理系列时，优先使用 `guided_group_path`：
+
+- 同一颜色组联合求解，每个像素簇在同一列最多分配给一个系列；
+- `line_semantics=solid` 使用较高缺失代价保持连续追踪，`dashed` 允许规律空档；
+- `guide_interpolation=shape_preserving` 降低折线引导造成的人工拐点；
+- 多个系列竞争同一像素簇时，已分配候选标记 `model_assisted_exclusive_assignment`，未分配分支保持缺失；
+- 自动质量门可以分别声明 `min_coverage_solid`、`min_coverage_dashed`、`max_gap_fraction_solid` 和 `max_gap_fraction_dashed`。
+
 ### 散点
 
 适用于紧凑、实心、可以分离的连通组件。使用面积、填充率和长宽比辅助筛查。粘连、空心、气泡尺寸、遮挡或过度拉长的标记应拒绝或标为未解决。
@@ -51,10 +68,17 @@
 
 ## 人工证据复核
 
-以原始尺寸打开 `review.html` 或 `overlay.png`：
+默认先由 `review-assess` 综合检查来源/候选哈希、标定、质量门、逐系列覆盖率与缺口、引导残差、像素支持、模型辅助比例及异常点。Agent 只向用户展示综合评分、风险等级、系列摘要和异常组，不要求逐点点击全部候选。
+
+- `low/medium + batch_confirm`：仅在异常清单为空时允许对话式批量确认；
+- 存在异常候选：普通候选进入独立批量区，异常候选必须查看局部证据并逐项接受、拒绝、校正或重归属，不能与普通候选一起全选；
+- `high`：只处理独立异常区；
+- `critical/stop`：拒绝批量确认；
+- 用户主动抽查或需要校正/重归属时，才由 Agent 启动 `review-serve`，以原始尺寸查看页面中的 `overlay.png`：
 
 - 曲线：确认每个轨迹点位于可见线条上，缺口仍为缺口；
+- 同色曲线：优先检查 `ambiguous_shared_colour`，确认候选属于正确物理系列；
 - 散点：确认每个复核环以一个可见标记为中心；
 - 柱图：确认每个矩形覆盖一根数据柱，而非图例或文字。
 
-复核决定必须覆盖全部候选值并绑定 `candidates.csv` 的 SHA-256。不得用期望数量或期望数值反向调节检测参数。
+复核决定必须覆盖全部候选值并绑定 `candidates.csv` 的 SHA-256。对话式批量确认还必须绑定 `review-assessment.json` 的 SHA-256，并记录用户原始确认语句。页面不提供保存路径选择器；通过服务端校验后固定保存为当前项目目录的 `review-decisions.json`，并回显实际路径和哈希。直接打开 `file://review.html` 仅用于只读兼容。不得用期望数量或期望数值反向调节检测参数。
