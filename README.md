@@ -24,6 +24,7 @@
 | 关键词 | 链接 |
 | --- | --- |
 | 宣传素材 | [横版宣传海报](#横版宣传海报) |
+| 正式案例 | [Fig. 9 原图与正式重绘](#正式案例fig-9-原图与正式重绘) |
 | 功能总览 | [功能总览](#功能总览) |
 | 详细操作图 | [标准工作流与人工门控](#标准工作流与人工门控) |
 | 快速使用 | [快速开始](#快速开始) |
@@ -49,6 +50,16 @@
 - [海报生成脚本](scripts/generate_promo_poster.py)：从项目内真实素材确定性重建，不依赖在线图片服务。
 
 两版均采用明亮高对比设计和放大的关键信息；朋友圈版在顶部概括图源锁定、多类型数据提取、七维评分与异常优先复核、三格式交付四项能力，并保留作者 `Dr. Jiang Bingyun`、GitHub 地址、候选状态和科研证据边界。
+
+## 正式案例：Fig. 9 原图与正式重绘
+
+[![Jiang 和 Tian 2021 Fig. 9：论文原图与正式数据重绘对照](assets/case-figure9-original-vs-redraw.png)](assets/case-figure9-original-vs-redraw.svg)
+
+左右两栏等宽并列，图像均按原始宽高比完整嵌入、不裁切：左侧是从论文锁定的 Fig. 9 原图，右侧是 `candidates.csv → review-decisions.json → data.csv` 后生成的正式重绘。该案例包含 6 个系列、`1429` 行正式数据；四阶段状态为 `extraction pass / review accepted / render pass / delivery pass`。
+
+- **重绘交付评分：`100/100`。** 评价文件与哈希完整性、数据到图形可追溯性、PNG/SVG/PDF 格式完整性及重绘规格符合度；不等同于科研真值准确率或视觉审美评分。
+- **提取评估：`99.4/100`，最低维度 `96.0/100`。** 用于论文定量数据的操作门控，复核状态为 `accepted`。
+- [可编辑 SVG](assets/case-figure9-original-vs-redraw.svg) · [审计 sidecar](assets/case-figure9-original-vs-redraw.json) · [正式 data.csv](examples/full-workflow-20260726/figure9-marker-v3/data.csv) · [生成脚本](scripts/build_case_showcase.py)
 
 ## 功能总览
 

@@ -1,0 +1,77 @@
+{
+  "formal_rows": 1429,
+  "layout": {
+    "canvas": [
+      2400,
+      1350
+    ],
+    "embedded_geometry": {
+      "original": {
+        "height": 653,
+        "source_height": 546,
+        "source_width": 843,
+        "width": 1008,
+        "x": 132,
+        "y": 413
+      },
+      "redraw": {
+        "height": 670,
+        "source_height": 768,
+        "source_width": 1152,
+        "width": 1005,
+        "x": 1261,
+        "y": 405
+      }
+    },
+    "image_fit": "contain_no_crop",
+    "mode": "symmetric_side_by_side",
+    "panel_width": 1080
+  },
+  "outputs": {
+    "png": {
+      "path": "assets/case-figure9-original-vs-redraw.png",
+      "sha256": "712d1faba7d459f4f8a366355c22f9f9d72e9f029b313ac71fc955cc65230837"
+    },
+    "svg": {
+      "path": "assets/case-figure9-original-vs-redraw.svg",
+      "sha256": "a5fd147008770a77b66adeba077bbbbbdfeca058d4b7489bf1fe68475fe1ceeb"
+    }
+  },
+  "schema": "more-sci-figure.case-showcase.v1",
+  "score_scope": "交付评分评价文件、哈希、格式、数据映射和规格执行；不等同于科研数据准确率或视觉审美评分。",
+  "scores": {
+    "delivery_minimum_dimension_score": 100.0,
+    "delivery_profile": "publication",
+    "delivery_score": 100.0,
+    "delivery_status": "pass",
+    "extraction_minimum_dimension_score": 96.0,
+    "extraction_profile": "publication",
+    "extraction_score": 99.4,
+    "extraction_status": "pass",
+    "qualification_note": "此分数评价文件、哈希、格式、数据映射和规格执行；参考图像素残差仅用于定位差异，不等同于科研数据准确率或视觉审美评分。",
+    "render_status": "pass",
+    "review_status": "accepted"
+  },
+  "sources": {
+    "extraction_report": {
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/review-assessment.json",
+      "sha256": "cc34d5027a62c7271be6f50580f8ae9831fb3a8b5b23e2d5f5d6f0cf49a2d617"
+    },
+    "formal_data_report": {
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
+      "sha256": "4f4ef10710bb516514bf3d513f282257f7231d2a320be6d9bbcd51681d22fca6"
+    },
+    "original": {
+      "path": "examples/full-workflow-20260726/figure9-marker-v2/source-image.jpeg",
+      "sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341"
+    },
+    "redraw": {
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/render/render.png",
+      "sha256": "eaf88e225110c2548a2c0e465942d9fe2dd4599898b93a9f6b41190a0eb11623"
+    },
+    "validation_report": {
+      "path": "examples/full-workflow-20260726/figure9-marker-v3/validation-report.json",
+      "sha256": "39ba3c127741f0ad173d8f3721387c776bba3602f84288d2dee27aa0456cc48b"
+    }
+  }
+}

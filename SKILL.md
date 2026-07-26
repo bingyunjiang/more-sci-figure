@@ -161,7 +161,25 @@ python scripts/more_sci_figure.py validate \
 
 `validation-report.json` 还包含独立的重绘技术交付评分：交付物与哈希完整性 30%、三格式完整性 20%、数据到图形可追溯性 25%、重绘规格符合度 25%。它不抬升 `extraction_status` 或 `review_status`，参考图像素残差也只作诊断，不冒充数据准确率或视觉审美评分。
 
-### 7. 门控管线
+### 7. 生成原图/正式重绘案例图
+
+只有 `validation-report.json` 已确认 `review_status=accepted`、`render_status=pass` 和 `delivery_status=pass` 时，才可把重绘标成正式案例。使用 skill 内的确定性生成器，不得用生成式图像工具重画、修饰或补全科学图形：
+
+```bash
+python scripts/build_case_showcase.py \
+  --original evidence/source-image.png \
+  --redraw evidence/render/render.png \
+  --validation-report evidence/validation-report.json \
+  --extraction-report evidence/review-assessment.json \
+  --formal-data-report evidence/formal-data-report.json \
+  --out-dir assets \
+  --stem case-original-vs-redraw \
+  --title "Paper · Fig. 1"
+```
+
+生成器将原图与重绘图以左右等宽、等比完整嵌入且不裁切的方式输出 PNG/SVG，并写出绑定来源、验证报告、评分和输出哈希的 JSON sidecar。图中必须把“提取评估”和“重绘交付评分”分开标注；交付评分只评价文件、哈希、格式、数据映射与规格执行，不得写成科研真值准确率或视觉审美评分。未复核候选只能标注为候选，不能使用 `FORMAL · ACCEPTED`。
+
+### 8. 门控管线
 
 项目规格完整且已完成提取前规格确认后才能使用 `pipeline`。第一次运行会输出综合评分与异常组，并停在候选值对话确认门：
 

@@ -54,6 +54,10 @@ def main() -> int:
         "schemas/validation-report.schema.json",
         "scripts/more_sci_figure.py",
         "scripts/generate_promo_poster.py",
+        "scripts/build_case_showcase.py",
+        "assets/case-figure9-original-vs-redraw.png",
+        "assets/case-figure9-original-vs-redraw.svg",
+        "assets/case-figure9-original-vs-redraw.json",
     ]
     structure = {
         "status": "pass" if all((ROOT / path).is_file() for path in required) else "failed",
