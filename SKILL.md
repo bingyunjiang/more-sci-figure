@@ -77,6 +77,15 @@ python scripts/more_sci_figure.py preview \
 
 `project.assessment.acceptance_profile` 定义用途门槛：`exploratory` 为总分 85/单项 75，`engineering` 为 90/85（默认），`publication` 为 95/90。来源与哈希、自动质量门、候选编号完整性和未决高危异常是不可补偿硬门。分数是 v0.3.1 的保守操作基线，不是统计准确率；论文用途尤其不得把高分当作真值验证。
 
+不达标时必须先由 Agent 工作，不得立即把全部候选交给用户：
+
+- 自动执行锚点留一扰动稳定性，至少三个锚点时逐次移除一个锚点重新拟合；
+- 计算每个候选相对所属系列跨度的归一化不确定度；
+- 将高不确定候选合并为连续区间，完整写入 `review-uncertainty.csv`，页面最多展示 12 个最高风险代表区间；
+- 读取 `acceptance.responsibility`，先完成 `agent_next`；只有 `user_required_now=true` 时才请求用户操作；
+- 用户不负责运行命令、选择保存路径、调整提取参数或逐点复核普通候选；
+- 不得为提高分数自动放宽颜色阈值、抹去 `segment_break` 或把派生几何写回候选。
+
 综合评估使用可重复的本地证据指标，Agent 负责压缩与解释结果。它不会把 AI 判断冒充新的像素证据：来源哈希、候选哈希、质量门和异常记录仍保留。风险处理规则：
 
 - `low` 或 `medium` 且没有异常候选、`recommended_action=batch_confirm`：普通候选可以通过“下一步”“继续”或本地页面批量确认；
@@ -166,6 +175,7 @@ python scripts/more_sci_figure.py pipeline \
 - `review.html`：本地人工复核页面；异常候选独立于普通候选批量区，并提供局部像素证据；
 - `review-assessment.json`：AI 综合评分、风险等级、系列指标和异常组；
 - `review-anomalies.csv`：仅供异常深挖的候选清单；
+- `review-uncertainty.csv`：候选级归一化不确定度、连续区间编号和 Agent 优先处理标记；
 - `candidate-preview/`：可选的未复核水印预览，不属于正式交付；
 - `review-decisions.json`：与候选哈希绑定的人工决定；
 - `data.csv`：仅包含人工接受值；

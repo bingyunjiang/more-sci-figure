@@ -56,6 +56,35 @@ class AxisMapTests(unittest.TestCase):
         )
         self.assertGreater(mapping.uncertainty(50), 0)
 
+    def test_anchor_jackknife_reports_stable_and_unstable_calibration(self) -> None:
+        stable_axis = {
+            "scale": "linear",
+            "anchors": [
+                {"pixel": 0, "value": 0},
+                {"pixel": 50, "value": 5},
+                {"pixel": 100, "value": 10},
+            ],
+        }
+        stable, local = msf.anchor_jackknife_stability(
+            stable_axis, [0, 25, 50, 75, 100]
+        )
+        self.assertEqual("measured", stable["status"])
+        self.assertEqual(100.0, stable["score"])
+        self.assertEqual(5, len(local))
+
+        unstable_axis = {
+            "scale": "linear",
+            "anchors": [
+                {"pixel": 0, "value": 0},
+                {"pixel": 50, "value": 7},
+                {"pixel": 100, "value": 10},
+            ],
+        }
+        unstable, _ = msf.anchor_jackknife_stability(
+            unstable_axis, [0, 25, 50, 75, 100]
+        )
+        self.assertLess(float(unstable["score"]), 85.0)
+
 
 class WorkflowTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -163,6 +192,9 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("当前最低维度", review_html)
         self.assertIn("下一步指令", review_html)
         self.assertIn("坐标标定质量", review_html)
+        self.assertIn("Agent 负责", review_html)
+        self.assertIn("用户只需", review_html)
+        self.assertIn("高不确定区间（Agent 先处理）", review_html)
         self.assertIn("普通候选可批量确认", review_html)
         self.assertIn("异常候选独立复核", review_html)
         self.assertIn("普通候选批量区", review_html)
@@ -254,6 +286,18 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual("batch_confirm", assessment["recommended_action"])
         assessment_payload = msf.read_json(output / "review-assessment.json")
         self.assertEqual(7, len(assessment_payload["scorecard"]["dimensions"]))
+        self.assertTrue((output / "review-uncertainty.csv").is_file())
+        self.assertEqual(
+            "agent_first_then_targeted_user_judgment",
+            assessment_payload["acceptance"]["responsibility"]["workflow_order"],
+        )
+        self.assertTrue(
+            assessment_payload["acceptance"]["responsibility"]["user_required_now"]
+        )
+        stability = assessment_payload["scorecard"]["dimensions"][
+            "uncertainty_stability"
+        ]["metrics"]["perturbation_stability"]
+        self.assertEqual("not_evaluable", stability["status"])
         self.assertEqual("engineering", assessment_payload["acceptance"]["profile"])
         self.assertEqual(90.0, assessment_payload["acceptance"]["thresholds"]["overall_score"])
         self.assertEqual(
@@ -390,6 +434,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertFalse(assessment["acceptance"]["dimension_floor_pass"])
         self.assertEqual("not_qualified", assessment["acceptance"]["decision"])
         self.assertEqual("re_extract", assessment["recommended_action"])
+        self.assertFalse(assessment["acceptance"]["responsibility"]["user_required_now"])
+        self.assertTrue(assessment["acceptance"]["responsibility"]["agent_next"])
         review_page = msf.review_command(output)
         self.assertIn("重新提取", review_page["下一步"])
         self.assertNotIn("批量确认", review_page["下一步"])
@@ -1109,6 +1155,12 @@ class WorkflowTests(unittest.TestCase):
         candidates = msf.read_tabular_rows(evidence / "candidates.csv")
         angle_zero = min(candidates, key=lambda row: abs(float(row["x"])))
         self.assertAlmostEqual(70.0, float(angle_zero["y"]), delta=2.0)
+        assessment = msf.read_json(evidence / "review-assessment.json")
+        stability = assessment["scorecard"]["dimensions"]["uncertainty_stability"][
+            "metrics"
+        ]["perturbation_stability"]
+        self.assertEqual("measured", stability["status"])
+        self.assertGreaterEqual(float(stability["score"]), 99.0)
         preview = msf.preview_command(
             evidence / "project.json",
             evidence / "candidates.csv",

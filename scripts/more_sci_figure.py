@@ -822,6 +822,69 @@ class AxisMap:
         }
 
 
+def anchor_jackknife_stability(
+    axis: dict[str, Any], pixels: list[float]
+) -> tuple[dict[str, Any], list[float]]:
+    """Measure calibration sensitivity by refitting after leaving out each anchor."""
+    anchors = axis.get("anchors", [])
+    if not isinstance(anchors, list) or len(anchors) < 3 or not pixels:
+        return (
+            {
+                "status": "not_evaluable",
+                "method": "leave_one_anchor_out",
+                "anchor_count": len(anchors) if isinstance(anchors, list) else 0,
+                "reason": "至少需要三个锚点和一个候选像素。",
+                "normalized_shift_p95": None,
+                "normalized_shift_max": None,
+                "score": None,
+            },
+            [],
+        )
+    baseline = AxisMap(axis)
+    baseline_values = np.asarray([baseline.value(pixel) for pixel in pixels], dtype=float)
+    span = float(np.ptp(baseline_values))
+    if not math.isfinite(span) or span <= 0:
+        return (
+            {
+                "status": "not_evaluable",
+                "method": "leave_one_anchor_out",
+                "anchor_count": len(anchors),
+                "reason": "候选值跨度退化，无法归一化锚点扰动。",
+                "normalized_shift_p95": None,
+                "normalized_shift_max": None,
+                "score": None,
+            },
+            [],
+        )
+    shifts: list[np.ndarray] = []
+    for omitted_index in range(len(anchors)):
+        reduced_axis = dict(axis)
+        reduced_axis["anchors"] = [
+            item for index, item in enumerate(anchors) if index != omitted_index
+        ]
+        reduced = AxisMap(reduced_axis)
+        perturbed = np.asarray([reduced.value(pixel) for pixel in pixels], dtype=float)
+        shifts.append(np.abs(perturbed - baseline_values) / span)
+    per_candidate = np.max(np.vstack(shifts), axis=0)
+    normalized_shift_p95 = float(np.percentile(per_candidate, 95))
+    normalized_shift_max = float(np.max(per_candidate))
+    score = round(max(0.0, min(100.0, 100.0 - normalized_shift_p95 * 1000.0)), 1)
+    return (
+        {
+            "status": "measured",
+            "method": "leave_one_anchor_out",
+            "anchor_count": len(anchors),
+            "trials": len(anchors),
+            "candidate_count": len(pixels),
+            "normalized_shift_p95": normalized_shift_p95,
+            "normalized_shift_max": normalized_shift_max,
+            "score": score,
+            "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。",
+        },
+        [float(value) for value in per_candidate],
+    )
+
+
 def circular_difference_degrees(left: float, right: float) -> float:
     return float((float(left) - float(right) + 180.0) % 360.0 - 180.0)
 
@@ -2437,27 +2500,43 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     mean_series_score = float(np.mean(series_scores)) if series_scores else 0.0
     series_quality_score = bounded_score((worst_series_score + mean_series_score) / 2.0)
 
+    profile_name = str(
+        project.get("assessment", {}).get("acceptance_profile", "engineering")
+        if isinstance(project.get("assessment", {}), dict)
+        else "engineering"
+    )
+    profile = ACCEPTANCE_PROFILES.get(profile_name, ACCEPTANCE_PROFILES["engineering"])
+
     normalized_uncertainties: list[float] = []
-    for value_key, uncertainty_key in (
-        ("x", "x_uncertainty"),
-        ("y", "y_uncertainty"),
-        ("value", "value_uncertainty"),
-    ):
-        numeric_values: list[float] = []
-        uncertainty_values: list[float] = []
-        for row in rows:
-            try:
-                numeric_value = float(row[value_key])
-                uncertainty_value = float(row[uncertainty_key])
-            except (KeyError, TypeError, ValueError):
+    candidate_normalized_uncertainty: dict[str, float] = {}
+    for series, grouped_rows in series_rows.items():
+        for value_key, uncertainty_key in (
+            ("x", "x_uncertainty"),
+            ("y", "y_uncertainty"),
+            ("value", "value_uncertainty"),
+        ):
+            valid_rows: list[tuple[dict[str, Any], float, float]] = []
+            for row in grouped_rows:
+                try:
+                    numeric_value = float(row[value_key])
+                    uncertainty_value = abs(float(row[uncertainty_key]))
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if math.isfinite(numeric_value) and math.isfinite(uncertainty_value):
+                    valid_rows.append((row, numeric_value, uncertainty_value))
+            if not valid_rows:
                 continue
-            if math.isfinite(numeric_value) and math.isfinite(uncertainty_value):
-                numeric_values.append(numeric_value)
-                uncertainty_values.append(abs(uncertainty_value))
-        if numeric_values:
-            span = max(numeric_values) - min(numeric_values)
-            if span > 0:
-                normalized_uncertainties.extend(value / span for value in uncertainty_values)
+            span = max(item[1] for item in valid_rows) - min(item[1] for item in valid_rows)
+            if span <= 0:
+                continue
+            for row, _, uncertainty_value in valid_rows:
+                normalized = uncertainty_value / span
+                normalized_uncertainties.append(normalized)
+                candidate_id = str(row.get("candidate_id", ""))
+                candidate_normalized_uncertainty[candidate_id] = max(
+                    normalized,
+                    candidate_normalized_uncertainty.get(candidate_id, 0.0),
+                )
     uncertainty_p95 = (
         float(np.percentile(np.asarray(normalized_uncertainties), 95))
         if normalized_uncertainties
@@ -2482,16 +2561,129 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         if guide_residuals and plot_height > 0
         else None
     )
-    uncertainty_components = [
+    uncertainty_proxy_components = [
         bounded_score(100.0 - value * 500.0)
         for value in (uncertainty_p95, guide_residual_p95_fraction)
         if value is not None
     ]
-    uncertainty_score = (
-        bounded_score(float(np.mean(uncertainty_components)))
-        if uncertainty_components
+    uncertainty_proxy_score = (
+        bounded_score(float(np.mean(uncertainty_proxy_components)))
+        if uncertainty_proxy_components
         else 85.0
     )
+
+    stability_axes: list[dict[str, Any]] = []
+    stability_scores: list[float] = []
+    chart = project.get("chart", {}) if isinstance(project, dict) else {}
+    stability_inputs: list[tuple[str, dict[str, Any], str]] = []
+    if chart_type == "polar_line":
+        radius_axis = chart.get("polar", {}).get("radius_axis", {})
+        if isinstance(radius_axis, dict):
+            stability_inputs.append(("radius_axis", radius_axis, "pixel_radius"))
+    else:
+        for axis_name, pixel_key in (("x_axis", "pixel_x"), ("y_axis", "pixel_y")):
+            axis = chart.get(axis_name, {})
+            if isinstance(axis, dict):
+                stability_inputs.append((axis_name, axis, pixel_key))
+    for axis_name, axis, pixel_key in stability_inputs:
+        axis_rows: list[dict[str, Any]] = []
+        pixels: list[float] = []
+        for row in rows:
+            try:
+                pixel = float(row[pixel_key])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if math.isfinite(pixel):
+                axis_rows.append(row)
+                pixels.append(pixel)
+        stability_report, local_shifts = anchor_jackknife_stability(axis, pixels)
+        stability_report["axis"] = axis_name
+        stability_axes.append(stability_report)
+        if isinstance(stability_report.get("score"), (int, float)):
+            stability_scores.append(float(stability_report["score"]))
+        for row, shift in zip(axis_rows, local_shifts):
+            candidate_id = str(row.get("candidate_id", ""))
+            candidate_normalized_uncertainty[candidate_id] = max(
+                shift,
+                candidate_normalized_uncertainty.get(candidate_id, 0.0),
+            )
+    perturbation_score = min(stability_scores) if stability_scores else None
+    perturbation_stability = {
+        "status": "measured" if stability_scores else "not_evaluable",
+        "method": "leave_one_anchor_out",
+        "axes": stability_axes,
+        "score": bounded_score(perturbation_score) if perturbation_score is not None else None,
+        "说明": (
+            "已自动完成锚点留一扰动；该检查不改写候选数据。"
+            if stability_scores
+            else "锚点不足，无法自动完成锚点留一扰动；不得把缺失检查视为通过。"
+        ),
+    }
+    uncertainty_score = (
+        bounded_score(min(uncertainty_proxy_score, perturbation_score))
+        if perturbation_score is not None
+        else uncertainty_proxy_score
+    )
+
+    uncertainty_threshold = max(
+        0.0, (100.0 - float(profile["minimum_dimension_score"])) / 500.0
+    )
+    uncertainty_candidates: list[dict[str, Any]] = []
+    uncertainty_groups: list[dict[str, Any]] = []
+    for series, grouped_rows in sorted(series_rows.items()):
+        selected: list[tuple[int, dict[str, Any], float]] = []
+        for index, row in enumerate(grouped_rows):
+            candidate_id = str(row.get("candidate_id", ""))
+            normalized = candidate_normalized_uncertainty.get(candidate_id)
+            if normalized is not None and normalized > uncertainty_threshold:
+                selected.append((index, row, normalized))
+        clusters: list[list[tuple[int, dict[str, Any], float]]] = []
+        merge_gap = max(2, int(math.ceil(len(grouped_rows) * 0.02)))
+        for item in selected:
+            if not clusters or item[0] - clusters[-1][-1][0] > merge_gap:
+                clusters.append([item])
+            else:
+                clusters[-1].append(item)
+        for cluster_index, cluster in enumerate(clusters, start=1):
+            representative = max(cluster, key=lambda item: item[2])
+            group_id = f"{series}-uncertainty-{cluster_index:03d}"
+            group = {
+                "group_id": group_id,
+                "series": series,
+                "candidate_count": len(cluster),
+                "start_candidate_id": str(cluster[0][1].get("candidate_id", "")),
+                "end_candidate_id": str(cluster[-1][1].get("candidate_id", "")),
+                "representative_candidate_id": str(
+                    representative[1].get("candidate_id", "")
+                ),
+                "x_start": cluster[0][1].get("x", cluster[0][1].get("category")),
+                "x_end": cluster[-1][1].get("x", cluster[-1][1].get("category")),
+                "peak_normalized_uncertainty": round(representative[2], 8),
+                "mean_normalized_uncertainty": round(
+                    float(np.mean([item[2] for item in cluster])), 8
+                ),
+                "threshold": round(uncertainty_threshold, 8),
+                "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+                "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+            }
+            uncertainty_groups.append(group)
+            for _, row, normalized in cluster:
+                uncertainty_candidates.append(
+                    {
+                        "group_id": group_id,
+                        "candidate_id": str(row.get("candidate_id", "")),
+                        "series": series,
+                        "x": row.get("x", row.get("category")),
+                        "y": row.get("y", row.get("value")),
+                        "normalized_uncertainty": round(normalized, 8),
+                        "threshold": round(uncertainty_threshold, 8),
+                        "review_role": "agent_first_user_only_if_unresolved",
+                    }
+                )
+    uncertainty_groups.sort(
+        key=lambda item: float(item["peak_normalized_uncertainty"]), reverse=True
+    )
+    priority_uncertainty_groups = uncertainty_groups[:12]
 
     anomaly_rate = len(unresolved_anomaly_ids) / len(rows)
     anomaly_health_score = bounded_score(
@@ -2554,7 +2746,11 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
             "metrics": {
                 "normalized_uncertainty_p95": uncertainty_p95,
                 "guide_residual_p95_fraction": guide_residual_p95_fraction,
-                "perturbation_stability": "not_run",
+                "uncertainty_proxy_score": uncertainty_proxy_score,
+                "perturbation_stability": perturbation_stability,
+                "high_uncertainty_candidate_count": len(uncertainty_candidates),
+                "high_uncertainty_group_count": len(uncertainty_groups),
+                "operational_threshold": uncertainty_threshold,
             },
         },
         "anomaly_health": {
@@ -2586,12 +2782,6 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     )
     minimum_dimension_score = min(float(item["score"]) for item in dimensions.values())
 
-    profile_name = str(
-        project.get("assessment", {}).get("acceptance_profile", "engineering")
-        if isinstance(project.get("assessment", {}), dict)
-        else "engineering"
-    )
-    profile = ACCEPTANCE_PROFILES.get(profile_name, ACCEPTANCE_PROFILES["engineering"])
     hard_gates = {
         "source_and_hash_integrity": not critical_issues,
         "automatic_quality_gates": extraction_status == "pass" and not failed_checks,
@@ -2610,12 +2800,32 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         dimensions,
         key=lambda key: float(dimensions[key]["score"]),
     )
+    if (
+        perturbation_score is not None
+        and perturbation_score >= float(profile["minimum_dimension_score"])
+        and uncertainty_proxy_score < float(profile["minimum_dimension_score"])
+    ):
+        uncertainty_repair_instruction = (
+            f"锚点留一稳定性已达标（{bounded_score(perturbation_score)} 分），"
+            f"主要问题是像素/局部测量不确定度；Agent 先检查 {len(priority_uncertainty_groups)} "
+            "个最高风险代表区间并寻找更高分辨率或矢量图源，不要求用户调整锚点。"
+        )
+    elif perturbation_score is not None:
+        uncertainty_repair_instruction = (
+            f"锚点留一稳定性仅 {bounded_score(perturbation_score)} 分；"
+            "Agent 先核对刻度锚点并用独立刻度重拟合，再比较候选偏移。"
+        )
+    else:
+        uncertainty_repair_instruction = (
+            "当前锚点不足以执行留一稳定性；Agent 先从原图定位额外独立刻度，"
+            "只有刻度含义无法唯一确定时才请用户确认。"
+        )
     repair_instructions = {
         "provenance_integrity": "重新锁定来源、项目规格和候选哈希后再评估。",
         "calibration_quality": "补充或核对坐标锚点，优先使用至少三个独立刻度后重新提取。",
         "pixel_evidence": "调整系列颜色容差、排除框或像素分离设置后重新提取。",
         "series_separation_continuity": "检查最差曲线的引导走廊、系列归属、覆盖率和真实缺口后重新提取。",
-        "uncertainty_stability": "优先使用更高分辨率图源、补充标定锚点并降低引导残差后重新提取。",
+        "uncertainty_stability": uncertainty_repair_instruction,
         "anomaly_health": "先处理独立异常组；若异常集中成片，再调整提取参数。",
         "quality_gate_compliance": "查看失败的项目质量门，修复对应覆盖率、缺口或组件条件后重新提取。",
     }
@@ -2660,6 +2870,59 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         decision = "accepted"
         next_instruction = "提取、复核和重绘均已通过；执行最终交付验证或接受当前版本。"
 
+    responsibility = {
+        "workflow_order": "agent_first_then_targeted_user_judgment",
+        "agent_completed": [
+            "七维质量评估",
+            (
+                "锚点留一扰动稳定性检查"
+                if perturbation_stability["status"] == "measured"
+                else "记录锚点扰动不可评估及原因"
+            ),
+            f"定位 {len(uncertainty_candidates)} 个高不确定候选并合并为 {len(uncertainty_groups)} 个区间",
+        ],
+        "agent_next": [],
+        "user_required_now": False,
+        "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+        "user_tasks": [],
+        "user_not_required": [
+            "运行命令",
+            "选择保存路径",
+            "调整算法参数",
+            "逐点复核全部普通候选",
+        ],
+    }
+    if decision == "blocked":
+        responsibility["agent_next"] = ["在项目范围内核对来源、规格和哈希，明确唯一阻断项。"]
+        responsibility["user_tasks"] = ["仅在来源或项目规格无法唯一确定时选择正确文件。"]
+    elif decision == "not_qualified":
+        responsibility["agent_next"] = [
+            repair_instructions[worst_dimension_key],
+            "保留当前候选作为基线，比较重提取前后的最低维度和局部不确定区间。",
+        ]
+        responsibility["user_tasks"] = [
+            "如有更高分辨率原图、矢量 PDF 或作者原始数据则提供。",
+            "若自动改进仍不达标，只判断高不确定区间是否影响科研结论，或降低用途等级/拒绝使用。",
+        ]
+    elif decision == "targeted_review_required":
+        responsibility["agent_next"] = [
+            "只展示异常候选及其原始分辨率局部证据，普通候选保持批量区。"
+        ]
+        responsibility["user_required_now"] = True
+        responsibility["user_tasks"] = [
+            "仅对独立异常项选择接受、拒绝、校正或重归属。"
+        ]
+    elif decision == "eligible_for_user_confirmation":
+        responsibility["agent_next"] = ["汇报用途阈值、硬门、最低维度和局限。"]
+        responsibility["user_required_now"] = True
+        responsibility["user_tasks"] = ["确认是否按当前用途批量接受普通候选。"]
+    elif decision == "review_record_ready":
+        responsibility["agent_next"] = ["校验复核哈希与覆盖并应用，生成正式 data.csv。"]
+    elif decision == "extraction_accepted":
+        responsibility["agent_next"] = ["生成 PNG/SVG/PDF 并执行 validate。"]
+    else:
+        responsibility["agent_next"] = ["完成最终交付验证并汇报路径。"]
+
     acceptance = {
         "profile": profile_name,
         "profile_label": profile["label"],
@@ -2676,6 +2939,7 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         "unresolved_anomaly_ids": unresolved_anomaly_ids,
         "decision": decision,
         "next_instruction": next_instruction,
+        "responsibility": responsibility,
         "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
     }
 
@@ -2706,6 +2970,18 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
             "worst_series_score": bounded_score(worst_series_score),
         },
         "acceptance": acceptance,
+        "uncertainty_review": {
+            "candidate_count": len(uncertainty_candidates),
+            "group_count": len(uncertainty_groups),
+            "groups": uncertainty_groups,
+            "priority_group_count": len(priority_uncertainty_groups),
+            "priority_groups": priority_uncertainty_groups,
+            "default_owner": "agent",
+            "user_review_policy": (
+                "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，"
+                "不得要求逐点复核全部高不确定候选。"
+            ),
+        },
         "indicator_summary": {
             "extraction_status": extraction_status,
             "quality_checks_total": len(quality_checks),
@@ -2745,11 +3021,14 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     }
     assessment_path = project_dir / "review-assessment.json"
     anomalies_path = project_dir / "review-anomalies.csv"
+    uncertainty_path = project_dir / "review-uncertainty.csv"
     write_json(assessment_path, assessment)
     write_csv(anomalies_path, anomaly_rows)
+    write_csv(uncertainty_path, uncertainty_candidates)
     manifest["tool_version"] = VERSION
     manifest["artifacts"]["review_assessment"] = artifact_entry(assessment_path)
     manifest["artifacts"]["review_anomalies"] = artifact_entry(anomalies_path)
+    manifest["artifacts"]["review_uncertainty"] = artifact_entry(uncertainty_path)
     write_json(project_dir / "manifest.json", manifest)
     return {
         "status": (
@@ -2762,11 +3041,17 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         "recommended_action": recommendation,
         "candidate_count": len(rows),
         "anomaly_count": len(anomaly_rows),
+        "uncertainty_candidate_count": len(uncertainty_candidates),
+        "uncertainty_group_count": len(uncertainty_groups),
         "acceptance_decision": decision,
         "acceptance_profile": profile_name,
         "minimum_dimension_score": round(minimum_dimension_score, 1),
         "assessment": str(assessment_path),
         "anomalies": str(anomalies_path),
+        "uncertainty": str(uncertainty_path),
+        "user_required_now": responsibility["user_required_now"],
+        "agent_next": responsibility["agent_next"],
+        "user_tasks": responsibility["user_tasks"],
         "下一步": next_instruction,
     }
 
@@ -2948,6 +3233,59 @@ def review_command(project_dir: Path) -> dict[str, Any]:
     worst_dimension_label = escape(
         str(worst_dimension.get("label", worst_dimension_key or "—"))
     )
+    responsibility = acceptance.get("responsibility", {})
+
+    def list_html(items: Any) -> str:
+        if not isinstance(items, list) or not items:
+            return "<li>无</li>"
+        return "".join(f"<li>{escape(str(item))}</li>" for item in items)
+
+    responsibility_html = (
+        "<div class='responsibility-grid'>"
+        "<div><h3>Agent 负责</h3>"
+        f"<p><strong>已完成</strong></p><ul>{list_html(responsibility.get('agent_completed'))}</ul>"
+        f"<p><strong>接下来</strong></p><ul>{list_html(responsibility.get('agent_next'))}</ul></div>"
+        "<div><h3>用户只需</h3>"
+        f"<p class='{'status-warn' if responsibility.get('user_required_now') else 'status-good'}'>"
+        f"{'现在需要参与' if responsibility.get('user_required_now') else '现在无需逐点参与'}</p>"
+        f"<ul>{list_html(responsibility.get('user_tasks'))}</ul>"
+        f"<p><strong>触发条件：</strong>{escape(str(responsibility.get('user_trigger', '仅在自动处理无法解决时。')))}</p>"
+        "</div></div>"
+    )
+    uncertainty_review = assessment.get("uncertainty_review", {})
+    uncertainty_groups = (
+        uncertainty_review.get("priority_groups", uncertainty_review.get("groups", []))
+        if isinstance(uncertainty_review, dict)
+        else []
+    )
+    uncertainty_group_rows = "".join(
+        "<tr>"
+        f"<td>{escape(str(item.get('group_id', '—')))}</td>"
+        f"<td>{escape(str(item.get('series', '—')))}</td>"
+        f"<td>{escape(str(item.get('candidate_count', '—')))}</td>"
+        f"<td>{escape(str(item.get('x_start', '—')))} ～ {escape(str(item.get('x_end', '—')))}</td>"
+        f"<td>{float(item.get('peak_normalized_uncertainty', 0.0)) * 100:.2f}%</td>"
+        "</tr>"
+        for item in uncertainty_groups[:12]
+        if isinstance(item, dict)
+    )
+    uncertainty_html = (
+        "<div class='uncertainty-summary'>"
+        "<h3>高不确定区间（Agent 先处理）</h3>"
+        f"<p>已将 {escape(str(uncertainty_review.get('candidate_count', 0)))} 个候选合并为 "
+        f"{escape(str(uncertainty_review.get('group_count', 0)))} 个连续区间，页面只展示其中 "
+        f"{escape(str(uncertainty_review.get('priority_group_count', len(uncertainty_groups))))} "
+        "个最高风险代表区间，不要求用户逐点核对；完整清单保存在 "
+        "<code>review-uncertainty.csv</code>。</p>"
+        + (
+            "<table class='dimension-table'><thead><tr><th>区间</th><th>系列</th>"
+            "<th>候选数</th><th>x 范围</th><th>峰值</th></tr></thead>"
+            f"<tbody>{uncertainty_group_rows}</tbody></table>"
+            if uncertainty_group_rows
+            else "<p class='status-good'>当前用途阈值下没有需要定位的高不确定区间。</p>"
+        )
+        + "</div>"
+    )
     scorecard_html = (
         "<div class='scorecard-grid'>"
         "<div class='acceptance-result'>"
@@ -2965,6 +3303,8 @@ def review_command(project_dir: Path) -> dict[str, Any]:
         "<thead><tr><th>细化指标</th><th>得分</th><th>权重</th><th>判定</th></tr></thead>"
         f"<tbody>{dimension_rows}</tbody></table></div>"
         "</div>"
+        f"{responsibility_html}"
+        f"{uncertainty_html}"
     )
     assessment_hash = sha256_file(assessment_path)
     current_manifest = load_manifest(project_dir)
@@ -3271,6 +3611,11 @@ button:disabled { background: #8c959f; cursor: not-allowed; opacity: .72; }
 .acceptance-result p { margin: 4px 0 0; padding: 9px; border-left: 4px solid #0969da; background: #ddf4ff; }
 .dimension-table { font-size: 13px; }
 .dimension-table th { position: static; }
+.responsibility-grid { clear: both; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.responsibility-grid > div, .uncertainty-summary { padding: 14px; border: 1px solid #8c959f; border-radius: 8px; background: #fff; }
+.responsibility-grid h3, .uncertainty-summary h3 { margin-top: 0; }
+.responsibility-grid ul { margin: 6px 0 12px; padding-left: 20px; }
+.uncertainty-summary { clear: both; overflow-x: auto; }
 .assessment-confirm { clear: both; display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #54aeff; border-radius: 8px; background: #fff; }
 .assessment-confirm h3, .assessment-confirm p { margin: 0; }
 .assessment-confirm.confirmed { border-color: #16844b; background: #dafbe1; }
@@ -3302,7 +3647,7 @@ button:disabled { background: #8c959f; cursor: not-allowed; opacity: .72; }
 pre { margin: 8px 0; padding: 12px; overflow: auto; border-radius: 6px; background: #24292f; color: #f0f6fc; white-space: pre-wrap; overflow-wrap: anywhere; }
 button.neutral { background: #57606a; }
 @media (max-width: 980px) {
-  .layout, .scorecard-grid { grid-template-columns: 1fr; }
+  .layout, .scorecard-grid, .responsibility-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -5214,6 +5559,7 @@ def pipeline_command(
             "最低维度分": assessment.get("minimum_dimension_score"),
             "判定": acceptance.get("decision"),
             "硬门通过": acceptance.get("hard_gates_pass"),
+            "责任分工": acceptance.get("responsibility"),
             "风险等级": assessment.get("risk_level"),
             "异常组": assessment.get("anomaly_groups"),
             "建议动作": recommendation,

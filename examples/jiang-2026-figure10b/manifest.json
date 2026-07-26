@@ -26,19 +26,24 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "review_assessment": {
-      "bytes": 5290,
+      "bytes": 21075,
       "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-assessment.json",
-      "sha256": "acefbb3023c792e517a85bd514e2539fbc5fa88c8dfa064d16ac39e0adb45a1f"
+      "sha256": "0d8c0567631f4f392930ac965e5e0da6af74dcce00880ac77e8623b7691de850"
     },
     "review_html": {
-      "bytes": 546672,
+      "bytes": 549990,
       "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review.html",
-      "sha256": "777b8ba60cb954d0164ded6923b763621225681b33afefb6c9449c9d2df9f498"
+      "sha256": "eb6e33c3000ca3045963868d8d38e85b11b76a3d2a453596cbc9989aa9adfd05"
     },
     "review_template": {
       "bytes": 50190,
       "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-template.json",
       "sha256": "edbd0a8b49bed56bf2e7d9ec3349b86c001bb88f8d9f0a3527ea672b81987473"
+    },
+    "review_uncertainty": {
+      "bytes": 19607,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-uncertainty.csv",
+      "sha256": "7b4e2d45dc3c286c711f15637a1e111d714d074c6d3da76fa431b55dacc8d6e6"
     },
     "source_report": {
       "bytes": 2052,

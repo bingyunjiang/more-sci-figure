@@ -14,6 +14,7 @@
     "recommended_action",
     "scorecard",
     "acceptance",
+    "uncertainty_review",
     "indicator_summary",
     "series_assessment",
     "anomaly_groups",
@@ -65,6 +66,7 @@
         "technical_eligibility",
         "decision",
         "next_instruction",
+        "responsibility",
         "qualification_note"
       ],
       "properties": {
@@ -105,7 +107,57 @@
           ]
         },
         "next_instruction": {"type": "string", "minLength": 1},
+        "responsibility": {
+          "type": "object",
+          "required": [
+            "workflow_order",
+            "agent_completed",
+            "agent_next",
+            "user_required_now",
+            "user_trigger",
+            "user_tasks",
+            "user_not_required"
+          ],
+          "properties": {
+            "workflow_order": {
+              "const": "agent_first_then_targeted_user_judgment"
+            },
+            "agent_completed": {"type": "array", "items": {"type": "string"}},
+            "agent_next": {"type": "array", "items": {"type": "string"}},
+            "user_required_now": {"type": "boolean"},
+            "user_trigger": {"type": "string", "minLength": 1},
+            "user_tasks": {"type": "array", "items": {"type": "string"}},
+            "user_not_required": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        },
         "qualification_note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "uncertainty_review": {
+      "type": "object",
+      "required": [
+        "candidate_count",
+        "group_count",
+        "groups",
+        "priority_group_count",
+        "priority_groups",
+        "default_owner",
+        "user_review_policy"
+      ],
+      "properties": {
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "group_count": {"type": "integer", "minimum": 0},
+        "groups": {"type": "array", "items": {"type": "object"}},
+        "priority_group_count": {"type": "integer", "minimum": 0, "maximum": 12},
+        "priority_groups": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {"type": "object"}
+        },
+        "default_owner": {"const": "agent"},
+        "user_review_policy": {"type": "string", "minLength": 1}
       },
       "additionalProperties": true
     },

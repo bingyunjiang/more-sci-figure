@@ -50,6 +50,7 @@ candidates.csv
 - `candidates.csv` 可以包含自动质量门未完全通过的可见候选；
 - `review-assessment.json` 融合七个可重复证据维度，给出综合评分、最低维度、硬门、用途阈值、系列摘要、异常组、判定和下一步指令；不得把评分冒充新的像素证据；
 - `review-anomalies.csv` 只承载异常深挖清单，不要求用户逐点复核全部候选；
+- `review-uncertainty.csv` 保存候选级归一化不确定度与连续区间编号；默认由 Agent 先处理，不自动转成逐点人工决定；
 - `review-decisions.json` 必须覆盖全部候选编号并绑定候选文件哈希；
 - `data.csv` 只能包含人工明确接受的记录；
 - 外部官方数据可以核对 `data.csv`，但不能覆盖图像提取证据。
@@ -80,6 +81,8 @@ candidates.csv
 ```
 
 `manifest.json` 记录工具版本、项目规格、来源哈希、各阶段状态和交付物哈希。
+
+`review-assessment.json.acceptance.responsibility` 固定 Agent/用户责任边界。高不确定区间可以触发重新提取或用途判断，但不得单独抬升或降低四类正式状态。
 
 ## 状态模型
 
