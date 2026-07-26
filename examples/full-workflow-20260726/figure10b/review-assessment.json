@@ -1,0 +1,503 @@
+{
+  "acceptance": {
+    "decision": "not_qualified",
+    "dimension_floor_pass": false,
+    "hard_gates": {
+      "automatic_quality_gates": true,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": true,
+    "next_instruction": "暂不接受：锚点留一稳定性已达标（98.3 分），主要问题是像素/局部测量不确定度；Agent 先检查 9 个最高风险代表区间并寻找更高分辨率或矢量图源，不要求用户调整锚点。",
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "responsibility": {
+      "agent_completed": [
+        "七维质量评估",
+        "锚点留一扰动稳定性检查",
+        "定位 203 个高不确定候选并合并为 9 个区间"
+      ],
+      "agent_next": [
+        "锚点留一稳定性已达标（98.3 分），主要问题是像素/局部测量不确定度；Agent 先检查 9 个最高风险代表区间并寻找更高分辨率或矢量图源，不要求用户调整锚点。",
+        "保留当前候选作为基线，比较重提取前后的最低维度和局部不确定区间。"
+      ],
+      "user_not_required": [
+        "运行命令",
+        "选择保存路径",
+        "调整算法参数",
+        "逐点复核全部普通候选"
+      ],
+      "user_required_now": false,
+      "user_tasks": [
+        "如有更高分辨率原图、矢量 PDF 或作者原始数据则提供。",
+        "若自动改进仍不达标，只判断高不确定区间是否影响科研结论，或降低用途等级/拒绝使用。"
+      ],
+      "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+      "workflow_order": "agent_first_then_targeted_user_judgment"
+    },
+    "score_threshold_pass": true,
+    "technical_eligibility": false,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "unresolved_anomaly_count": 0,
+    "unresolved_anomaly_ids": []
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 0,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 0
+  },
+  "candidate_count": 360,
+  "candidate_sha256": "31c31e573c2023a054e07a72fcbf3dc3415a09ce8e616f6382db5ed5f73b99e4",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "visible_pixel_support": 360
+  },
+  "generated_at": "2026-07-26T07:29:53.027138+00:00",
+  "high_risk_issues": [],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      0.0,
+      0.0014554477365308631
+    ],
+    "extraction_status": "pass",
+    "high_anomalies": 0,
+    "medium_anomalies": 0,
+    "model_assisted_candidates": 0,
+    "model_assisted_ratio": 0.0,
+    "quality_checks_failed": 0,
+    "quality_checks_total": 6
+  },
+  "minimum_dimension_score": 74.3,
+  "overall_score": 96.1,
+  "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b/project.json",
+  "recommended_action": "re_extract",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "medium",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.0,
+          "total_high_anomalies": 0,
+          "total_medium_anomalies": 0,
+          "unresolved_high_anomalies": 0,
+          "unresolved_medium_anomalies": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 4,
+              "axis": "angle_axis",
+              "normalized_rmse": 0.0,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 7,
+              "axis": "radius_axis",
+              "normalized_rmse": 0.0014554477365308631,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.0,
+          "support_evaluable": true,
+          "valid_support_ratio": 1.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 0,
+          "checks_total": 6
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 100.0,
+          "worst_series_score": 100.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": null,
+          "high_uncertainty_candidate_count": 203,
+          "high_uncertainty_group_count": 9,
+          "normalized_uncertainty_p95": 0.0514092265019659,
+          "operational_threshold": 0.02,
+          "perturbation_stability": {
+            "axes": [
+              {
+                "anchor_count": 7,
+                "axis": "radius_axis",
+                "candidate_count": 360,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.001725808792711172,
+                "normalized_shift_p95": 0.001669569772628052,
+                "score": 98.3,
+                "status": "measured",
+                "trials": 7,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              }
+            ],
+            "method": "leave_one_anchor_out",
+            "score": 98.3,
+            "status": "measured",
+            "说明": "已自动完成锚点留一扰动；该检查不改写候选数据。"
+          },
+          "uncertainty_proxy_score": 74.3
+        },
+        "score": 74.3,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "uncertainty_stability",
+    "worst_series_score": 100.0
+  },
+  "series_assessment": [
+    {
+      "candidates": 360,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "sound-pressure-level-directivity",
+      "series_quality_score": 100.0
+    }
+  ],
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "tool_version": "0.3.1",
+  "top_anomalies": [],
+  "uncertainty_review": {
+    "candidate_count": 203,
+    "default_owner": "agent",
+    "group_count": 9,
+    "groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 73,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000311",
+        "group_id": "sound-pressure-level-directivity-uncertainty-008",
+        "mean_normalized_uncertainty": 0.05328458,
+        "peak_normalized_uncertainty": 0.1163812,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000279",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000231",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "310.0",
+        "x_start": "230.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 21,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000162",
+        "group_id": "sound-pressure-level-directivity-uncertainty-005",
+        "mean_normalized_uncertainty": 0.0320667,
+        "peak_normalized_uncertainty": 0.04795876,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000159",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000142",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "161.0",
+        "x_start": "141.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000091",
+        "group_id": "sound-pressure-level-directivity-uncertainty-003",
+        "mean_normalized_uncertainty": 0.02918979,
+        "peak_normalized_uncertainty": 0.04528891,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000082",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000051",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "90.0",
+        "x_start": "50.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 17,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000130",
+        "group_id": "sound-pressure-level-directivity-uncertainty-004",
+        "mean_normalized_uncertainty": 0.02469862,
+        "peak_normalized_uncertainty": 0.03410934,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000113",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000104",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "129.0",
+        "x_start": "103.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000211",
+        "group_id": "sound-pressure-level-directivity-uncertainty-007",
+        "mean_normalized_uncertainty": 0.02607685,
+        "peak_normalized_uncertainty": 0.03246257,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000203",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000201",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "210.0",
+        "x_start": "200.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 18,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000340",
+        "group_id": "sound-pressure-level-directivity-uncertainty-009",
+        "mean_normalized_uncertainty": 0.02617817,
+        "peak_normalized_uncertainty": 0.03230272,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000330",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000321",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "339.0",
+        "x_start": "320.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000041",
+        "group_id": "sound-pressure-level-directivity-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02210765,
+        "peak_normalized_uncertainty": 0.02626651,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000032",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000031",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "40.0",
+        "x_start": "30.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 13,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000190",
+        "group_id": "sound-pressure-level-directivity-uncertainty-006",
+        "mean_normalized_uncertainty": 0.02171754,
+        "peak_normalized_uncertainty": 0.02606678,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000180",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000171",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "189.0",
+        "x_start": "170.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 1,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "group_id": "sound-pressure-level-directivity-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02127537,
+        "peak_normalized_uncertainty": 0.02127537,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "2.0",
+        "x_start": "2.0"
+      }
+    ],
+    "priority_group_count": 9,
+    "priority_groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 73,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000311",
+        "group_id": "sound-pressure-level-directivity-uncertainty-008",
+        "mean_normalized_uncertainty": 0.05328458,
+        "peak_normalized_uncertainty": 0.1163812,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000279",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000231",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "310.0",
+        "x_start": "230.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 21,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000162",
+        "group_id": "sound-pressure-level-directivity-uncertainty-005",
+        "mean_normalized_uncertainty": 0.0320667,
+        "peak_normalized_uncertainty": 0.04795876,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000159",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000142",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "161.0",
+        "x_start": "141.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 38,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000091",
+        "group_id": "sound-pressure-level-directivity-uncertainty-003",
+        "mean_normalized_uncertainty": 0.02918979,
+        "peak_normalized_uncertainty": 0.04528891,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000082",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000051",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "90.0",
+        "x_start": "50.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 17,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000130",
+        "group_id": "sound-pressure-level-directivity-uncertainty-004",
+        "mean_normalized_uncertainty": 0.02469862,
+        "peak_normalized_uncertainty": 0.03410934,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000113",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000104",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "129.0",
+        "x_start": "103.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000211",
+        "group_id": "sound-pressure-level-directivity-uncertainty-007",
+        "mean_normalized_uncertainty": 0.02607685,
+        "peak_normalized_uncertainty": 0.03246257,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000203",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000201",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "210.0",
+        "x_start": "200.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 18,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000340",
+        "group_id": "sound-pressure-level-directivity-uncertainty-009",
+        "mean_normalized_uncertainty": 0.02617817,
+        "peak_normalized_uncertainty": 0.03230272,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000330",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000321",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "339.0",
+        "x_start": "320.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 11,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000041",
+        "group_id": "sound-pressure-level-directivity-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02210765,
+        "peak_normalized_uncertainty": 0.02626651,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000032",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000031",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "40.0",
+        "x_start": "30.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 13,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000190",
+        "group_id": "sound-pressure-level-directivity-uncertainty-006",
+        "mean_normalized_uncertainty": 0.02171754,
+        "peak_normalized_uncertainty": 0.02606678,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000180",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000171",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "189.0",
+        "x_start": "170.0"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 1,
+        "end_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "group_id": "sound-pressure-level-directivity-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02127537,
+        "peak_normalized_uncertainty": 0.02127537,
+        "representative_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "series": "sound-pressure-level-directivity",
+        "start_candidate_id": "polar_line-sound-pressure-level-directivity-000003",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "2.0",
+        "x_start": "2.0"
+      }
+    ],
+    "user_review_policy": "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，不得要求逐点复核全部高不确定候选。"
+  },
+  "warnings": []
+}

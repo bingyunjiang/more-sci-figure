@@ -1,0 +1,663 @@
+{
+  "chart": {
+    "type": "line",
+    "plot_box": [
+      127,
+      14,
+      817,
+      546
+    ],
+    "x_axis": {
+      "scale": "linear",
+      "anchors": [
+        {
+          "pixel": 127,
+          "value": 0
+        },
+        {
+          "pixel": 242,
+          "value": 0.02
+        },
+        {
+          "pixel": 357,
+          "value": 0.04
+        },
+        {
+          "pixel": 472,
+          "value": 0.06
+        },
+        {
+          "pixel": 587,
+          "value": 0.08
+        },
+        {
+          "pixel": 702,
+          "value": 0.1
+        },
+        {
+          "pixel": 817,
+          "value": 0.12
+        }
+      ]
+    },
+    "y_axis": {
+      "scale": "linear",
+      "anchors": [
+        {
+          "pixel": 546,
+          "value": 0
+        },
+        {
+          "pixel": 458,
+          "value": 25
+        },
+        {
+          "pixel": 369,
+          "value": 50
+        },
+        {
+          "pixel": 281,
+          "value": 75
+        },
+        {
+          "pixel": 192,
+          "value": 100
+        },
+        {
+          "pixel": 103,
+          "value": 125
+        },
+        {
+          "pixel": 14,
+          "value": 150
+        }
+      ]
+    },
+    "series": [
+      {
+        "id": "test-0deg",
+        "color": "#d95319",
+        "color_space": "lab",
+        "tolerance": 22,
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            540
+          ],
+          [
+            145,
+            492
+          ],
+          [
+            158,
+            443
+          ],
+          [
+            166,
+            413
+          ],
+          [
+            192,
+            319
+          ],
+          [
+            213,
+            259
+          ],
+          [
+            242,
+            211
+          ],
+          [
+            271,
+            176
+          ],
+          [
+            283,
+            162
+          ],
+          [
+            300,
+            140
+          ],
+          [
+            329,
+            119
+          ],
+          [
+            357,
+            109
+          ],
+          [
+            385,
+            104
+          ],
+          [
+            405,
+            107
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            215,
+            398,
+            492,
+            438
+          ]
+        ],
+        "marker_shape": "square",
+        "marker_min_span_px": 6,
+        "marker_min_width_px": 2,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3
+      },
+      {
+        "id": "mfh-0deg",
+        "color": "#ff0000",
+        "color_space": "lab",
+        "tolerance": 24,
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "dashed",
+        "guide_points_px": [
+          [
+            129,
+            535
+          ],
+          [
+            145,
+            469
+          ],
+          [
+            158,
+            405
+          ],
+          [
+            185,
+            280
+          ],
+          [
+            213,
+            203
+          ],
+          [
+            242,
+            155
+          ],
+          [
+            271,
+            123
+          ],
+          [
+            300,
+            103
+          ],
+          [
+            329,
+            86
+          ],
+          [
+            357,
+            72
+          ],
+          [
+            385,
+            61
+          ],
+          [
+            418,
+            52
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            520,
+            445,
+            812,
+            485
+          ]
+        ]
+      },
+      {
+        "id": "test-45deg",
+        "color": "#0072bd",
+        "color_space": "lab",
+        "tolerance": 18,
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            545
+          ],
+          [
+            145,
+            500
+          ],
+          [
+            158,
+            461
+          ],
+          [
+            185,
+            405
+          ],
+          [
+            219,
+            390
+          ],
+          [
+            242,
+            368
+          ],
+          [
+            267,
+            340
+          ],
+          [
+            302,
+            308
+          ],
+          [
+            337,
+            290
+          ],
+          [
+            389,
+            268
+          ],
+          [
+            414,
+            262
+          ],
+          [
+            435,
+            258
+          ],
+          [
+            472,
+            252
+          ],
+          [
+            530,
+            245
+          ],
+          [
+            587,
+            239
+          ],
+          [
+            644,
+            234
+          ],
+          [
+            666,
+            244
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            516,
+            398,
+            812,
+            438
+          ]
+        ],
+        "marker_shape": "triangle",
+        "marker_min_span_px": 6,
+        "marker_min_width_px": 2,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3
+      },
+      {
+        "id": "mfh-45deg",
+        "color": "#0072bd",
+        "color_space": "lab",
+        "tolerance": 18,
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "dashed",
+        "guide_points_px": [
+          [
+            128,
+            542
+          ],
+          [
+            145,
+            495
+          ],
+          [
+            158,
+            455
+          ],
+          [
+            185,
+            397
+          ],
+          [
+            213,
+            372
+          ],
+          [
+            242,
+            354
+          ],
+          [
+            271,
+            324
+          ],
+          [
+            300,
+            300
+          ],
+          [
+            329,
+            285
+          ],
+          [
+            357,
+            275
+          ],
+          [
+            414,
+            258
+          ],
+          [
+            472,
+            249
+          ],
+          [
+            530,
+            245
+          ],
+          [
+            587,
+            248
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            215,
+            493,
+            493,
+            533
+          ]
+        ]
+      },
+      {
+        "id": "test-90deg",
+        "color": "#111111",
+        "color_space": "lab",
+        "tolerance": 12,
+        "extraction_mode": "marker_centers",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "guide_points_px": [
+          [
+            128,
+            544
+          ],
+          [
+            145,
+            508
+          ],
+          [
+            158,
+            478
+          ],
+          [
+            185,
+            423
+          ],
+          [
+            213,
+            396
+          ],
+          [
+            242,
+            375
+          ],
+          [
+            271,
+            345
+          ],
+          [
+            300,
+            321
+          ],
+          [
+            329,
+            306
+          ],
+          [
+            357,
+            296
+          ],
+          [
+            414,
+            283
+          ],
+          [
+            472,
+            276
+          ],
+          [
+            530,
+            273
+          ],
+          [
+            587,
+            287
+          ],
+          [
+            610,
+            300
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            215,
+            445,
+            493,
+            485
+          ]
+        ],
+        "marker_shape": "diamond",
+        "marker_min_span_px": 6,
+        "marker_min_width_px": 2,
+        "marker_window_radius_px": 8,
+        "min_marker_count": 3
+      },
+      {
+        "id": "mfh-90deg",
+        "color": "#111111",
+        "color_space": "lab",
+        "tolerance": 12,
+        "extraction_mode": "guided_path",
+        "guide_corridor_px": 10,
+        "guide_interpolation": "shape_preserving",
+        "line_semantics": "dashed",
+        "guide_points_px": [
+          [
+            128,
+            542
+          ],
+          [
+            145,
+            500
+          ],
+          [
+            158,
+            468
+          ],
+          [
+            185,
+            413
+          ],
+          [
+            213,
+            383
+          ],
+          [
+            242,
+            359
+          ],
+          [
+            271,
+            329
+          ],
+          [
+            300,
+            306
+          ],
+          [
+            329,
+            290
+          ],
+          [
+            357,
+            280
+          ],
+          [
+            414,
+            270
+          ],
+          [
+            472,
+            264
+          ],
+          [
+            530,
+            261
+          ],
+          [
+            587,
+            263
+          ]
+        ],
+        "exclude_boxes_px": [
+          [
+            520,
+            493,
+            812,
+            533
+          ]
+        ]
+      }
+    ]
+  },
+  "project_id": "jiang-tian-2021-figure7-mixed-markers",
+  "quality_gates": {
+    "calibration": {
+      "require_three_anchors": true,
+      "max_normalized_rmse": 0.003
+    },
+    "line": {
+      "min_coverage_solid": 0.7,
+      "min_coverage_dashed": 0.18,
+      "max_gap_fraction_solid": 0.08,
+      "max_gap_fraction_dashed": 0.12
+    }
+  },
+  "render": {
+    "plot_type": "line",
+    "x": "x",
+    "y": "y",
+    "group": "series",
+    "title": "",
+    "x_label": "True strain",
+    "y_label": "True stress (MPa)",
+    "x_limits": [
+      0,
+      0.12
+    ],
+    "y_limits": [
+      0,
+      150
+    ],
+    "x_ticks": [
+      0,
+      0.02,
+      0.04,
+      0.06,
+      0.08,
+      0.1,
+      0.12
+    ],
+    "y_ticks": [
+      0,
+      25,
+      50,
+      75,
+      100,
+      125,
+      150
+    ],
+    "grid": "none",
+    "legend": {
+      "loc": "lower right",
+      "frameon": false,
+      "ncol": 2
+    },
+    "series_styles": {
+      "test-0deg": {
+        "label": "Test of 0° specimen",
+        "color": "#ed3b18",
+        "line_style": "-",
+        "marker": "s",
+        "linewidth": 1.5
+      },
+      "test-45deg": {
+        "label": "Test of 45° specimen",
+        "color": "#0879bd",
+        "line_style": "-",
+        "marker": "^",
+        "linewidth": 1.5
+      },
+      "test-90deg": {
+        "label": "Test of 90° specimen",
+        "color": "#111111",
+        "line_style": "-",
+        "marker": "D",
+        "linewidth": 1.5
+      },
+      "mfh-0deg": {
+        "label": "MFH of 0° specimen",
+        "color": "#ed3b18",
+        "line_style": "--",
+        "linewidth": 1.7
+      },
+      "mfh-45deg": {
+        "label": "MFH of 45° specimen",
+        "color": "#0879bd",
+        "line_style": "-.",
+        "linewidth": 1.7
+      },
+      "mfh-90deg": {
+        "label": "MFH of 90° specimen",
+        "color": "#111111",
+        "line_style": "--",
+        "linewidth": 1.7
+      }
+    }
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "measurement_raster": "source-image.jpeg",
+    "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+    "page": 6,
+    "path": "../../Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "pdf_image_index": 0,
+    "pdf_xref": 186,
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387"
+  },
+  "assessment": {
+    "acceptance_profile": "publication"
+  }
+}

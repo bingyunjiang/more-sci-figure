@@ -1,0 +1,84 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 233611,
+      "path": "examples/full-workflow-20260726/figure7/candidates.csv",
+      "sha256": "1c6a91fe995d40184770a7d0892b645088cdd4ab2661ee4d4b8446cdba7f952e"
+    },
+    "extraction_report": {
+      "bytes": 8943,
+      "path": "examples/full-workflow-20260726/figure7/extraction-report.json",
+      "sha256": "94de437ec856c2c9af424206e8bafde450b1634fd1d9575a5faa230e77683978"
+    },
+    "overlay": {
+      "bytes": 217272,
+      "path": "examples/full-workflow-20260726/figure7/overlay.png",
+      "sha256": "f0108ac0c709c535fbbf4b9851093dd5f8acedd521e78f372feb067af156588a"
+    },
+    "project_spec": {
+      "bytes": 11531,
+      "path": "examples/full-workflow-20260726/figure7/project.json",
+      "sha256": "8304b7b68d0ad25391b16bf182d11320d2d62d8b58962d955484b9e83514b3fa"
+    },
+    "review_anomalies": {
+      "bytes": 5592,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/review-anomalies.csv",
+      "sha256": "7cd2f0816a5b4f5d49284d70a544b6493d081f93dc0330b16b475f81b783ecc4"
+    },
+    "review_assessment": {
+      "bytes": 33317,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/review-assessment.json",
+      "sha256": "ea74b36560eea7bf8e38f51683e91c006f101e44c0f658aa77c303543266cf38"
+    },
+    "review_html": {
+      "bytes": 1414502,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/review.html",
+      "sha256": "22d1ee7acb42eab5183364a2eb2ea5b2e1542dbdbd954c6b594017369b001690"
+    },
+    "review_template": {
+      "bytes": 108980,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/review-template.json",
+      "sha256": "93aecf45993e651d7dc1e2262b469451849715589d28c8160aa6e1228469e368"
+    },
+    "review_uncertainty": {
+      "bytes": 8277,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/review-uncertainty.csv",
+      "sha256": "411447aaf6bde42f7908944530e81986bcf4dad2f134e95404123170ade8cddd"
+    },
+    "source_report": {
+      "bytes": 1871,
+      "path": "examples/full-workflow-20260726/figure7/source-report.json",
+      "sha256": "ef1d7903bf5a439454f81c884874ea7e602d1cef2e6f96bac55413b6cc700865"
+    },
+    "spec_confirmation": {
+      "bytes": 785,
+      "path": "examples/full-workflow-20260726/figure7/spec-confirmation.json",
+      "sha256": "d69510dd8410d8d57bf1a855b6f051b6b9e572e06848b32e3373938c25b79b34"
+    },
+    "spec_review": {
+      "bytes": 2702,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/spec-review.json",
+      "sha256": "caf7814f5c0cadf641b6c6615abf45728b038f8f3aedc4ec129e03705ef1cf2b"
+    },
+    "spec_review_overlay": {
+      "bytes": 224684,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/spec-review.png",
+      "sha256": "671326101d3e73ba683df2e66efa792af9c1c7d45a4121c4c770f73d4693c2f2"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "partial",
+  "project_id": "jiang-tian-2021-figure7-stress-strain",
+  "project_spec": {
+    "bytes": 11531,
+    "path": "examples/full-workflow-20260726/figure7/project.json",
+    "sha256": "8304b7b68d0ad25391b16bf182d11320d2d62d8b58962d955484b9e83514b3fa"
+  },
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "spec_confirmation_status": "confirmed",
+  "spec_review_status": "confirmed",
+  "tool_version": "0.3.1"
+}

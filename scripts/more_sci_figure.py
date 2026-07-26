@@ -27,6 +27,8 @@ SCHEMA = "more-sci-figure.project.v1"
 MANIFEST_SCHEMA = "more-sci-figure.manifest.v1"
 REVIEW_SCHEMA = "more-sci-figure.review-decisions.v1"
 ASSESSMENT_SCHEMA = "more-sci-figure.review-assessment.v1"
+SPEC_REVIEW_SCHEMA = "more-sci-figure.spec-review.v1"
+SPEC_CONFIRMATION_SCHEMA = "more-sci-figure.spec-confirmation.v1"
 SUPPORTED_CHARTS = {"line", "polar_line", "scatter", "bar", "histogram"}
 VERSION = "0.3.1"
 ACCEPTANCE_PROFILES = {
@@ -461,6 +463,7 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     "color_column_median",
                     "guided_path",
                     "guided_group_path",
+                    "marker_centers",
                     "polar_radial",
                 }:
                     errors.append(
@@ -480,7 +483,7 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     errors.append(
                         f"系列 {entry.get('id', '')} 的 angular_half_width_deg 必须位于 0 到 10 度之间"
                     )
-                if extraction_mode in {"guided_path", "guided_group_path"}:
+                if extraction_mode in {"guided_path", "guided_group_path", "marker_centers"}:
                     guide_points = parse_guide_points(entry)
                     if len(guide_points) < 2:
                         errors.append(f"系列 {entry.get('id', '')} 的 guided_path 至少需要两个 guide_points_px")
@@ -530,6 +533,33 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                             or float(value) < 0
                         ):
                             errors.append(f"系列 {entry.get('id', '')} 的 {key} 必须为非负数")
+                if extraction_mode == "marker_centers":
+                    minimum_markers = entry.get("min_marker_count", 1)
+                    if (
+                        not isinstance(minimum_markers, int)
+                        or isinstance(minimum_markers, bool)
+                        or minimum_markers <= 0
+                    ):
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 min_marker_count 必须为正整数"
+                        )
+                    for key, default in (
+                        ("marker_min_span_px", 6.0),
+                        ("marker_min_width_px", 2.0),
+                        ("marker_window_radius_px", 7.0),
+                    ):
+                        value = entry.get(key, default)
+                        if (
+                            not isinstance(value, (int, float))
+                            or not math.isfinite(float(value))
+                            or float(value) <= 0
+                        ):
+                            errors.append(f"系列 {entry.get('id', '')} 的 {key} 必须为正数")
+                    marker_shape = str(entry.get("marker_shape", "unspecified"))
+                    if marker_shape not in {"square", "triangle", "diamond", "circle", "x", "unspecified"}:
+                        errors.append(
+                            f"系列 {entry.get('id', '')} 的 marker_shape 不受支持"
+                        )
                 for box in entry.get("exclude_boxes_px", []):
                     if (
                         not isinstance(box, list)
@@ -1324,6 +1354,103 @@ def prepare_measurement_raster(spec: dict[str, Any], spec_path: Path, out_dir: P
     return Image.open(measurement_path).convert("RGB"), measurement_path
 
 
+def extract_marker_centers(
+    crop: np.ndarray,
+    box: tuple[int, int, int, int],
+    entry: dict[str, Any],
+    x_map: AxisMap,
+    y_map: AxisMap,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Recover visible marker centres from a connected marker-and-line series."""
+    left, top, right, _ = box
+    mask, applied_exclusions = apply_series_exclusions(series_mask(crop, entry), entry, box)
+    start_x, end_x = guide_x_bounds(entry, box)
+    corridor = float(entry.get("guide_corridor_px", 9.0))
+    minimum_span = float(entry.get("marker_min_span_px", 6.0))
+    minimum_width = int(math.ceil(float(entry.get("marker_min_width_px", 2.0))))
+    radius = int(math.ceil(float(entry.get("marker_window_radius_px", 7.0))))
+    qualifying: list[int] = []
+    column_spans: dict[int, float] = {}
+    for pixel_x in range(start_x, end_x + 1):
+        expected_y = guide_y_at(entry, pixel_x)
+        if expected_y is None:
+            continue
+        local_rows = np.flatnonzero(mask[:, pixel_x - left]).astype(float) + top
+        accepted = local_rows[np.abs(local_rows - expected_y) <= corridor]
+        span = float(np.ptp(accepted)) if accepted.size >= 2 else 0.0
+        column_spans[pixel_x] = span
+        if span >= minimum_span:
+            qualifying.append(pixel_x)
+
+    runs: list[list[int]] = []
+    for pixel_x in qualifying:
+        if not runs or pixel_x > runs[-1][-1] + 1:
+            runs.append([pixel_x])
+        else:
+            runs[-1].append(pixel_x)
+
+    rows: list[dict[str, Any]] = []
+    rejected_runs = 0
+    previous_x: float | None = None
+    for run in runs:
+        if len(run) < minimum_width:
+            rejected_runs += 1
+            continue
+        peak_x = max(run, key=lambda value: column_spans.get(value, 0.0))
+        expected_y = guide_y_at(entry, peak_x)
+        if expected_y is None:
+            rejected_runs += 1
+            continue
+        x0 = max(left, run[0] - 1)
+        x1 = min(right, run[-1] + 1)
+        y0 = max(top, int(math.floor(expected_y - radius)))
+        y1 = min(top + crop.shape[0] - 1, int(math.ceil(expected_y + radius)))
+        patch = mask[y0 - top : y1 - top + 1, x0 - left : x1 - left + 1]
+        local_y, local_x = np.where(patch)
+        if local_x.size == 0:
+            rejected_runs += 1
+            continue
+        pixel_x = float(np.median(local_x + x0))
+        pixel_y = float(np.median(local_y + y0))
+        half_width = max(0.5, float(np.ptp(local_x)) / 2.0)
+        half_height = max(0.5, float(np.ptp(local_y)) / 2.0)
+        rows.append(
+            {
+                "series": entry["id"],
+                "x": x_map.value(pixel_x),
+                "y": y_map.value(pixel_y),
+                "x_uncertainty": x_map.uncertainty(pixel_x, half_width),
+                "y_uncertainty": y_map.uncertainty(pixel_y, half_height),
+                "pixel_x": pixel_x,
+                "pixel_y": pixel_y,
+                "pixel_half_width": half_width,
+                "pixel_half_height": half_height,
+                "support_pixels": int(local_x.size),
+                "marker_shape": str(entry.get("marker_shape", "unspecified")),
+                "evidence_status": "visible_marker_support",
+                "segment_break": previous_x is None,
+                "status": "visible_candidate",
+            }
+        )
+        previous_x = pixel_x
+    minimum_markers = int(entry.get("min_marker_count", 1))
+    diagnostic = {
+        "id": entry["id"],
+        "extraction_mode": "marker_centers",
+        "marker_shape": str(entry.get("marker_shape", "unspecified")),
+        "accepted_markers": len(rows),
+        "rejected_runs": rejected_runs,
+        "minimum_declared_marker_count": minimum_markers,
+        "coverage": min(1.0, len(rows) / max(1, minimum_markers)),
+        "coverage_basis": "minimum_declared_marker_count_not_completeness",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": applied_exclusions,
+    }
+    return rows, diagnostic
+
+
 def extract_line(
     array: np.ndarray,
     box: tuple[int, int, int, int],
@@ -1358,6 +1485,13 @@ def extract_line(
             processed_entries.update(id(peer) for peer in group_entries)
             continue
         mask, applied_exclusions = apply_series_exclusions(series_mask(crop, entry), entry, box)
+        if extraction_mode == "marker_centers":
+            marker_rows, marker_diagnostics = extract_marker_centers(
+                crop, box, entry, x_map, y_map
+            )
+            rows.extend(marker_rows)
+            diagnostics["series"].append(marker_diagnostics)
+            continue
         if extraction_mode == "guided_path":
             guide_points = parse_guide_points(entry)
             corridor = float(entry.get("guide_corridor_px", 7.0))
@@ -1796,6 +1930,8 @@ def load_manifest(root: Path) -> dict[str, Any]:
     return {
         "schema": MANIFEST_SCHEMA,
         "tool_version": VERSION,
+        "spec_review_status": "not_run",
+        "spec_confirmation_status": "not_run",
         "extraction_status": "not_run",
         "review_status": "not_run",
         "render_status": "not_run",
@@ -1806,6 +1942,213 @@ def load_manifest(root: Path) -> dict[str, Any]:
 
 def artifact_entry(path: Path) -> dict[str, Any]:
     return {"path": str(path), "sha256": sha256_file(path), "bytes": path.stat().st_size}
+
+
+def draw_spec_review_overlay(
+    image: Image.Image, spec: dict[str, Any], output: Path
+) -> None:
+    """Render the declared plot geometry before any candidate extraction."""
+    overlay = image.copy()
+    draw = ImageDraw.Draw(overlay)
+    chart = spec["chart"]
+    left, top, right, bottom = [int(round(value)) for value in chart["plot_box"]]
+    draw.rectangle((left, top, right, bottom), outline="#00bfff", width=3)
+    draw.text((left + 6, top + 6), "PLOT BOX", fill="#006d99")
+
+    if chart["type"] == "polar_line":
+        polar = chart["polar"]
+        center_x, center_y = [float(value) for value in polar["center_px"]]
+        draw.line((center_x - 8, center_y, center_x + 8, center_y), fill="#00bfff", width=2)
+        draw.line((center_x, center_y - 8, center_x, center_y + 8), fill="#00bfff", width=2)
+        for anchor in polar["radius_axis"]["anchors"]:
+            radius = float(anchor["pixel"])
+            draw.ellipse(
+                (center_x - radius, center_y - radius, center_x + radius, center_y + radius),
+                outline="#00bfff",
+                width=1,
+            )
+        for anchor in polar["angle_axis"]["anchors"]:
+            point_x, point_y = [float(value) for value in anchor["pixel"]]
+            draw.line((center_x, center_y, point_x, point_y), fill="#00bfff", width=1)
+            draw.ellipse((point_x - 4, point_y - 4, point_x + 4, point_y + 4), fill="#00bfff")
+    else:
+        for anchor in chart["x_axis"]["anchors"]:
+            pixel = float(anchor["pixel"])
+            draw.line((pixel, bottom - 7, pixel, bottom + 7), fill="#00bfff", width=2)
+        for anchor in chart["y_axis"]["anchors"]:
+            pixel = float(anchor["pixel"])
+            draw.line((left - 7, pixel, left + 7, pixel), fill="#00bfff", width=2)
+
+    swatch_y = top + 24
+    for series in chart["series"]:
+        color = str(series["color"])
+        draw.rectangle((left + 7, swatch_y, left + 25, swatch_y + 8), fill=color, outline="#ffffff")
+        label = str(series["id"])
+        if str(series.get("extraction_mode")) == "marker_centers":
+            label += f" [MARKERS:{series.get('marker_shape', 'unspecified')}]"
+        draw.text((left + 30, swatch_y - 2), label, fill="#202020")
+        swatch_y += 14
+        guide_points = series.get("guide_points_px", [])
+        if len(guide_points) >= 2:
+            points = [tuple(float(value) for value in point) for point in guide_points]
+            draw.line(points, fill=color, width=2)
+            for point_x, point_y in points:
+                draw.ellipse(
+                    (point_x - 3, point_y - 3, point_x + 3, point_y + 3),
+                    fill="#ffffff",
+                    outline=color,
+                    width=2,
+                )
+        for exclusion in series.get("exclude_boxes_px", []):
+            draw.rectangle(tuple(float(value) for value in exclusion), outline="#ff8c00", width=2)
+    notice = "SPEC GUIDE ONLY - NO DATA EXTRACTED"
+    draw.text(
+        (max(4, image.width - 270), max(4, image.height - 18)),
+        notice,
+        fill="#d000ff",
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    overlay.save(output)
+
+
+def spec_review_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
+    """Prepare a hash-bound visual specification for informed user confirmation."""
+    spec_path = spec_path.expanduser().resolve()
+    out_dir = out_dir.expanduser().resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    spec = read_json(spec_path)
+    errors = validate_spec(spec, spec_path, extraction=True)
+    if errors:
+        raise FigureError("；".join(errors))
+    image, measurement_path = prepare_measurement_raster(spec, spec_path, out_dir)
+    overlay_path = out_dir / "spec-review.png"
+    draw_spec_review_overlay(image, spec, overlay_path)
+    chart = spec["chart"]
+    report = {
+        "schema": SPEC_REVIEW_SCHEMA,
+        "tool_version": VERSION,
+        "status": "awaiting_user_confirmation",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "project_id": spec.get("project_id"),
+        "project_path": str(spec_path),
+        "project_sha256": sha256_file(spec_path),
+        "source_sha256": spec["source"]["sha256"],
+        "measurement_raster": str(measurement_path),
+        "measurement_sha256": sha256_file(measurement_path),
+        "measurement_size": [image.width, image.height],
+        "chart_type": chart["type"],
+        "overlay_semantics": {
+            "blue": "plot box and calibration anchors",
+            "series_color_with_hollow_nodes": "sparse guide only, not extracted data",
+            "orange": "declared exclusion boxes",
+        },
+        "plot_box": chart["plot_box"],
+        "series": [
+            {
+                "id": series["id"],
+                "color": series["color"],
+                "extraction_mode": series.get("extraction_mode", "color_column_median"),
+                "marker_shape": series.get("marker_shape"),
+                "line_semantics": series.get("line_semantics"),
+                "exclude_boxes_px": series.get("exclude_boxes_px", []),
+            }
+            for series in chart["series"]
+        ],
+        "confirmation_scope": [
+            "原始图对象是否正确",
+            "蓝色绘图区和坐标锚点是否正确",
+            "系列颜色、线型与语义是否正确",
+            "橙色排除框是否只覆盖图中文字、图例或坐标轴",
+        ],
+        "required_next": "用户查看原图与 spec-review.png 后给出明确确认；再运行 spec-confirm。",
+    }
+    report_path = out_dir / "spec-review.json"
+    write_json(report_path, report)
+    manifest = load_manifest(out_dir)
+    manifest.update(
+        {
+            "project_id": spec.get("project_id"),
+            "source_sha256": spec["source"]["sha256"],
+            "spec_review_status": "awaiting_user_confirmation",
+            "spec_confirmation_status": "not_run",
+            "tool_version": VERSION,
+        }
+    )
+    manifest["artifacts"].update(
+        {
+            "project_spec": artifact_entry(spec_path),
+            "spec_review": artifact_entry(report_path),
+            "spec_review_overlay": artifact_entry(overlay_path),
+        }
+    )
+    write_json(out_dir / "manifest.json", manifest)
+    return report
+
+
+def spec_confirm_command(
+    spec_path: Path,
+    project_dir: Path,
+    confirmed_by: str,
+    confirmation: str,
+) -> dict[str, Any]:
+    """Bind an explicit user statement to the exact reviewed specification."""
+    spec_path = spec_path.expanduser().resolve()
+    project_dir = project_dir.expanduser().resolve()
+    if not confirmed_by.strip() or not confirmation.strip():
+        raise FigureError("confirmed-by 和 confirmation 都不能为空")
+    review_path = project_dir / "spec-review.json"
+    if not review_path.is_file():
+        raise FigureError("缺少 spec-review.json，请先运行 spec-review 并让用户查看叠图")
+    review = read_json(review_path)
+    if review.get("schema") != SPEC_REVIEW_SCHEMA:
+        raise FigureError("spec-review.json schema 不受支持")
+    project_hash = sha256_file(spec_path)
+    spec = read_json(spec_path)
+    if review.get("project_sha256") != project_hash:
+        raise FigureError("project.json 在规格叠图生成后已变化，请重新运行 spec-review")
+    if review.get("source_sha256") != spec["source"]["sha256"]:
+        raise FigureError("来源哈希与规格复核记录不一致，请重新运行 spec-review")
+    record = {
+        "schema": SPEC_CONFIRMATION_SCHEMA,
+        "tool_version": VERSION,
+        "status": "confirmed",
+        "confirmed_at": datetime.now(timezone.utc).isoformat(),
+        "confirmed_by": confirmed_by.strip(),
+        "confirmation": confirmation.strip(),
+        "project_id": spec.get("project_id"),
+        "project_sha256": project_hash,
+        "source_sha256": review["source_sha256"],
+        "measurement_sha256": review["measurement_sha256"],
+        "spec_review_sha256": sha256_file(review_path),
+        "spec_review_overlay_sha256": sha256_file(project_dir / "spec-review.png"),
+    }
+    record_path = project_dir / "spec-confirmation.json"
+    write_json(record_path, record)
+    manifest = load_manifest(project_dir)
+    manifest["spec_review_status"] = "confirmed"
+    manifest["spec_confirmation_status"] = "confirmed"
+    manifest["artifacts"]["spec_confirmation"] = artifact_entry(record_path)
+    write_json(project_dir / "manifest.json", manifest)
+    return record
+
+
+def require_spec_confirmation(spec_path: Path, project_dir: Path) -> dict[str, Any]:
+    record_path = project_dir / "spec-confirmation.json"
+    if not record_path.is_file():
+        raise FigureError(
+            "提取前缺少用户规格确认：请先运行 spec-review，向用户展示原图与规格叠图，再用 spec-confirm 记录其明确确认"
+        )
+    record = read_json(record_path)
+    if record.get("schema") != SPEC_CONFIRMATION_SCHEMA or record.get("status") != "confirmed":
+        raise FigureError("spec-confirmation.json 无效，请重新完成规格确认")
+    spec = read_json(spec_path)
+    if record.get("project_sha256") != sha256_file(spec_path):
+        raise FigureError("project.json 在用户确认后已变化，必须重新进行规格复核与确认")
+    if record.get("source_sha256") != spec["source"]["sha256"]:
+        raise FigureError("来源哈希在用户确认后已变化，必须重新进行规格复核与确认")
+    if not str(record.get("confirmed_by", "")).strip() or not str(record.get("confirmation", "")).strip():
+        raise FigureError("规格确认记录缺少确认人或原始确认语句")
+    return record
 
 
 def assign_candidate_ids(chart_type: str, rows: list[dict[str, Any]]) -> None:
@@ -1894,6 +2237,18 @@ def evaluate_quality_gates(
     chart_gates = configured.get("bar" if chart_type == "histogram" else chart_type, {})
     if chart_type in {"line", "polar_line"}:
         for series in diagnostics["series"]:
+            if str(series.get("extraction_mode")) == "marker_centers":
+                minimum_markers = int(series.get("minimum_declared_marker_count", 1))
+                accepted_markers = int(series.get("accepted_markers", 0))
+                checks.append(
+                    {
+                        "name": f"{series['id']}.accepted_markers",
+                        "status": "pass" if accepted_markers >= minimum_markers else "failed",
+                        "observed": accepted_markers,
+                        "threshold": f">={minimum_markers}",
+                    }
+                )
+                continue
             semantics = str(series.get("line_semantics", "solid"))
             minimum_coverage = float(
                 chart_gates.get(
@@ -1978,6 +2333,8 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
         write_json(out_dir / "extraction-report.json", report)
         raise FigureError("；".join(errors))
 
+    specification_confirmation = require_spec_confirmation(spec_path, out_dir)
+
     image, measurement_path = prepare_measurement_raster(spec, spec_path, out_dir)
     array = np.asarray(image, dtype=np.uint8)
     box = tuple(int(round(value)) for value in spec["chart"]["plot_box"])
@@ -2044,6 +2401,13 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
             "height": image.height,
         },
         "chart_type": chart_type,
+        "specification_confirmation": {
+            "status": "confirmed",
+            "confirmed_by": specification_confirmation["confirmed_by"],
+            "confirmed_at": specification_confirmation["confirmed_at"],
+            "confirmation": specification_confirmation["confirmation"],
+            "record_sha256": sha256_file(out_dir / "spec-confirmation.json"),
+        },
         "plot_box": list(box),
         "calibration": (
             calibration_reports
@@ -2068,6 +2432,8 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
             "project_id": spec.get("project_id"),
             "project_spec": artifact_entry(project_copy if project_copy.exists() else spec_path),
             "source_sha256": spec["source"]["sha256"],
+            "spec_review_status": "confirmed",
+            "spec_confirmation_status": "confirmed",
             "extraction_status": status,
             "review_status": "not_run",
             "tool_version": VERSION,
@@ -2079,6 +2445,7 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
             "candidates": artifact_entry(candidates_path),
             "overlay": artifact_entry(overlay_path),
             "extraction_report": artifact_entry(report_path),
+            "spec_confirmation": artifact_entry(out_dir / "spec-confirmation.json"),
         }
     )
     source_report = out_dir / "source-report.json"
@@ -5606,6 +5973,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     inspect_parser.add_argument("--out-dir", required=True, type=Path, help="输出目录")
 
+    spec_review_parser = subparsers.add_parser(
+        "spec-review", help="生成提取前规格叠图并等待用户确认"
+    )
+    spec_review_parser.add_argument("--spec", required=True, type=Path, help="项目规格 project.json")
+    spec_review_parser.add_argument("--out-dir", required=True, type=Path, help="证据目录")
+
+    spec_confirm_parser = subparsers.add_parser(
+        "spec-confirm", help="记录用户对原图、绘图区、锚点、系列和排除规则的确认"
+    )
+    spec_confirm_parser.add_argument("--spec", required=True, type=Path, help="已展示的项目规格")
+    spec_confirm_parser.add_argument("--project-dir", required=True, type=Path, help="证据目录")
+    spec_confirm_parser.add_argument("--confirmed-by", required=True, help="确认人或可追溯身份")
+    spec_confirm_parser.add_argument("--confirmation", required=True, help="用户的原始确认语句")
+
     extract_parser = subparsers.add_parser("extract", help="提取可见候选值并生成复核页面")
     extract_parser.add_argument("--spec", required=True, type=Path, help="项目规格 project.json")
     extract_parser.add_argument("--out-dir", required=True, type=Path, help="证据目录")
@@ -5666,6 +6047,8 @@ def build_parser() -> argparse.ArgumentParser:
     for current in (
         parser,
         inspect_parser,
+        spec_review_parser,
+        spec_confirm_parser,
         extract_parser,
         review_parser,
         assess_parser,
@@ -5700,6 +6083,12 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "extract":
             result = extract_command(args.spec, args.out_dir)
+        elif args.command == "spec-review":
+            result = spec_review_command(args.spec, args.out_dir)
+        elif args.command == "spec-confirm":
+            result = spec_confirm_command(
+                args.spec, args.project_dir, args.confirmed_by, args.confirmation
+            )
         elif args.command == "review":
             result = review_command(args.project_dir)
         elif args.command == "review-assess":

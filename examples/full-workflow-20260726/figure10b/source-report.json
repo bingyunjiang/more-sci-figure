@@ -1,0 +1,102 @@
+{
+  "chart_type_proposal": "polar_line",
+  "measurement_raster": {
+    "encoding": "png",
+    "height": 620,
+    "measurement_kind": "pdf_embedded_raster",
+    "mode": "RGB",
+    "page": 9,
+    "path": "examples/full-workflow-20260726/figure10b/source-image.png",
+    "pdf_image_index": 2,
+    "pdf_xref": 44,
+    "sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
+    "width": 645
+  },
+  "numeric_extraction_authorized": false,
+  "required_next": [
+    "确认图表类型",
+    "确认绘图区",
+    "确认坐标轴锚点"
+  ],
+  "schema": "more-sci-figure.source-report.v1",
+  "source": {
+    "bytes": 3396751,
+    "kind": "pdf",
+    "page_sizes_points": [
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ],
+      [
+        595.219970703125,
+        842.0
+      ]
+    ],
+    "pages": 17,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+    "suffix": ".pdf"
+  },
+  "tool_version": "0.3.1",
+  "说明": "检查阶段不会授权数值提取；请先完成人工确认。"
+}

@@ -1,0 +1,84 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 600667,
+      "path": "examples/full-workflow-20260726/figure9/candidates.csv",
+      "sha256": "0b4484ef6b1ebf800de2de4863e8f0e48b7d6c92e789c50583cb6811fcf3c177"
+    },
+    "extraction_report": {
+      "bytes": 8402,
+      "path": "examples/full-workflow-20260726/figure9/extraction-report.json",
+      "sha256": "4cfa539d05115c516e87d485b0b23c50f02a0def493890b4f1c354c4dadecac0"
+    },
+    "overlay": {
+      "bytes": 229764,
+      "path": "examples/full-workflow-20260726/figure9/overlay.png",
+      "sha256": "28b63813695f0bbf7cd24caa1f83d9dca7dc30cdcdd29964eb9bd32621619bc4"
+    },
+    "project_spec": {
+      "bytes": 11381,
+      "path": "examples/full-workflow-20260726/figure9/project.json",
+      "sha256": "05ae25e181505e320c1cb55f1b12a9f08afbf1699bfaa5515aba2324e8e080f9"
+    },
+    "review_anomalies": {
+      "bytes": 1011,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/review-anomalies.csv",
+      "sha256": "e2d67d61cb4ed6ae6266c0612575fb6d5e786a4fd70d894f6dda404ae47596c0"
+    },
+    "review_assessment": {
+      "bytes": 53428,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/review-assessment.json",
+      "sha256": "53ebbddc243bb993e1a317031b479c5d6ce78633b908b2b3377e00b119abb573"
+    },
+    "review_html": {
+      "bytes": 4099521,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/review.html",
+      "sha256": "db4fc7e09a62a93692e332067b0b3cd158cd6900edd759cc34989928440eec99"
+    },
+    "review_template": {
+      "bytes": 316356,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/review-template.json",
+      "sha256": "6480372d70755172d5a03495dde50a1dd9359b472542f914eee152364cb37ade"
+    },
+    "review_uncertainty": {
+      "bytes": 216017,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/review-uncertainty.csv",
+      "sha256": "09d561b479b2bf019ec73e4b4ff374429507cb0d31ff15aeed11313a096373e0"
+    },
+    "source_report": {
+      "bytes": 1871,
+      "path": "examples/full-workflow-20260726/figure9/source-report.json",
+      "sha256": "be6bce72ab4cb0b4e43852122b1e000a47fc6c03eb75bfc1ac9a226fcfb949c7"
+    },
+    "spec_confirmation": {
+      "bytes": 789,
+      "path": "examples/full-workflow-20260726/figure9/spec-confirmation.json",
+      "sha256": "4eef5bd2aea23a121e30be91db547d135a7d64d18f53376a72d61881b24060a7"
+    },
+    "spec_review": {
+      "bytes": 2727,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/spec-review.json",
+      "sha256": "ab91643cfb9f2c73954818fefaff60899d8fcc758766e778b327344ebb2a409b"
+    },
+    "spec_review_overlay": {
+      "bytes": 236608,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/spec-review.png",
+      "sha256": "18a37045a42fcfbdf7d1943391ff2c32bcdde0401a225a46a7ee2795c5a12423"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "pass",
+  "project_id": "jiang-tian-2021-figure9-fiber-orientation",
+  "project_spec": {
+    "bytes": 11381,
+    "path": "examples/full-workflow-20260726/figure9/project.json",
+    "sha256": "05ae25e181505e320c1cb55f1b12a9f08afbf1699bfaa5515aba2324e8e080f9"
+  },
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "spec_confirmation_status": "confirmed",
+  "spec_review_status": "confirmed",
+  "tool_version": "0.3.1"
+}

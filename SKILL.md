@@ -13,7 +13,7 @@ description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可
 
 1. 测量前保留来源文件并记录 SHA-256。
 2. 只测量原始栅格或声明的 PDF 页面，不测量预览图或缩放截图。
-3. 数值提取前必须确认绘图区，并为每个数值轴提供至少两个有效锚点。
+3. 数值提取前必须向用户同时展示原始测量栅格与 `spec-review.png`，确认图对象、绘图区、坐标锚点、系列语义和排除框；确认记录必须绑定项目、来源、测量栅格和叠图哈希。
 4. 算法候选值、人工接受值、外部提供数据和重绘产物必须分开保存。
 5. 不推断隐藏点、原始重复实验、误差含义或作者模型参数。
 6. 算法输出先进入 `candidates.csv`；只有绑定候选哈希的人工复核记录才能生成 `data.csv`。
@@ -47,7 +47,27 @@ python scripts/more_sci_figure.py inspect \
 
 检查 `source-report.json`，补全生成的 `project.json`。如果图表类型、绘图区、坐标变换或锚点仍不确定，应在提取前停止。
 
-### 2. 提取候选值
+### 2. 提取前规格确认
+
+Agent 先生成不含候选值的规格叠图：蓝色表示绘图区和锚点，系列色折线及空心节点只表示稀疏引导路径（不是提取数据点），橙色表示局部排除框；图底部必须显示 `SPEC GUIDE ONLY - NO DATA EXTRACTED`。
+
+```bash
+python scripts/more_sci_figure.py spec-review \
+  --spec evidence/project.json --out-dir evidence
+```
+
+必须把原始测量栅格和 `spec-review.png` 一起展示给用户，并简述系列、坐标范围和排除规则。用户未明确确认时，不得运行 `spec-confirm`、`extract` 或 `pipeline`。收到确认后，Agent 内部记录用户原始语句：
+
+```bash
+python scripts/more_sci_figure.py spec-confirm \
+  --spec evidence/project.json --project-dir evidence \
+  --confirmed-by "可追溯用户身份" \
+  --confirmation "用户原始确认语句"
+```
+
+`extract` 会强制检查 `spec-confirmation.json`。确认后只要 `project.json` 或来源声明变化，确认立即失效，必须重新生成叠图并请求确认。
+
+### 3. 提取候选值
 
 先阅读 [数据提取协议](references/extraction-protocol.md)，再运行：
 
@@ -56,7 +76,7 @@ python scripts/more_sci_figure.py extract \
   --spec evidence/project.json --out-dir evidence
 ```
 
-支持颜色可区分的 `line`、单值径向 `polar_line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。`polar_line` 必须声明中心、内外半径、至少两个角度锚点、至少两个径向锚点、零度方位和增角方向；候选按声明角度采样，并保留真实颜色像素支持。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
+支持颜色可区分的 `line`、单值径向 `polar_line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。连续线叠加方形、三角形、菱形、圆形或叉形标记时，标记系列使用 `marker_centers`，只恢复真实标记中心，不把连接线逐列扩展为伪数据点。`polar_line` 必须声明中心、内外半径、至少两个角度锚点、至少两个径向锚点、零度方位和增角方向；候选按声明角度采样，并保留真实颜色像素支持。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
 
 需要在复核前检查整体轨迹时，只能生成带水印候选预览：
 
@@ -69,7 +89,7 @@ python scripts/more_sci_figure.py preview \
 
 `preview` 不生成 `data.csv`、不修改 `manifest.json`，也不推进正式重绘或交付状态。
 
-### 3. AI 综合评判与对话确认
+### 4. AI 综合评判与对话确认
 
 默认流程不得要求用户逐点校对大量候选。`extract` 自动生成 `review-assessment.json` 和 `review-anomalies.csv`；Agent 应读取综合评分、风险等级、逐系列覆盖率/缺口/引导残差、模型辅助比例和异常组，只向用户汇报关键结论。
 
@@ -116,7 +136,7 @@ python scripts/more_sci_figure.py review-apply \
 
 复核文件仍必须覆盖全部候选值，且候选哈希必须与当前 `candidates.csv` 一致。只有接受项会进入正式 `data.csv`。逐点页面保留为异常深挖工具，不再是默认入口。
 
-### 4. 重绘
+### 5. 重绘
 
 先阅读 [重绘协议](references/rendering-protocol.md)，再运行：
 
@@ -129,7 +149,7 @@ python scripts/more_sci_figure.py render \
 
 同一图形对象统一导出 PNG、SVG 和 PDF。不得自行添加误差条、显著性或拟合。只有项目明确声明时，才可为展示生成形状保持的派生几何；派生点写入独立 `display-geometry.csv`，不得覆盖人工接受的 `data.csv`。
 
-### 5. 验证
+### 6. 验证
 
 ```bash
 python scripts/more_sci_figure.py validate \
@@ -141,9 +161,9 @@ python scripts/more_sci_figure.py validate \
 
 `validation-report.json` 还包含独立的重绘技术交付评分：交付物与哈希完整性 30%、三格式完整性 20%、数据到图形可追溯性 25%、重绘规格符合度 25%。它不抬升 `extraction_status` 或 `review_status`，参考图像素残差也只作诊断，不冒充数据准确率或视觉审美评分。
 
-### 6. 门控管线
+### 7. 门控管线
 
-项目规格完整后才能使用 `pipeline`。第一次运行会输出综合评分与异常组，并停在对话确认门：
+项目规格完整且已完成提取前规格确认后才能使用 `pipeline`。第一次运行会输出综合评分与异常组，并停在候选值对话确认门：
 
 ```bash
 python scripts/more_sci_figure.py pipeline \
@@ -169,6 +189,8 @@ python scripts/more_sci_figure.py pipeline \
 
 图像提取项目的主要交付物：
 
+- `spec-review.png` / `spec-review.json`：提取前供用户判断的规格叠图及项目/来源哈希；
+- `spec-confirmation.json`：绑定用户原始确认语句和已审规格哈希的门禁记录；
 - `candidates.csv`：算法检测到的候选值；
 - `overlay.png`：原始分辨率证据叠图；
 - `extraction-report.json`：标定、覆盖率、排除项、质量门与局限；
@@ -190,6 +212,7 @@ python scripts/more_sci_figure.py pipeline \
 
 - 图表类型未知或不支持；
 - 绘图区或坐标变换未确认；
+- 未向用户展示原始图与规格叠图，或规格确认缺失、过期；
 - 任一数值轴少于两个有效锚点；
 - 锚点像素或数值退化，或对数轴含非正锚点；
 - 来源哈希或测量栅格与声明不一致；

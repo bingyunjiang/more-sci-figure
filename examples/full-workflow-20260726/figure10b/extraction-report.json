@@ -1,0 +1,162 @@
+{
+  "calibration": {
+    "angle_axis": {
+      "anchor_count": 4,
+      "anchor_residuals_degrees": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "direction": "clockwise",
+      "normalized_rmse": 0.0,
+      "rmse_degrees": 0.0,
+      "rmse_evaluable": true,
+      "scale": "circular_degree",
+      "zero_bearing_deg": 180.0,
+      "说明": "角度锚点以声明中心、零度方位和方向进行圆周残差核验。"
+    },
+    "radius_axis": {
+      "anchor_count": 7,
+      "anchor_residuals_transformed_units": [
+        -0.03917212347987231,
+        0.01146439175175118,
+        0.06210090698337467,
+        -0.04509496888598363,
+        0.005541546345639858,
+        0.056178061577270455,
+        -0.051017814292094954
+      ],
+      "intercept": 35.068023752389486,
+      "normalized_rmse": 0.0014554477365308631,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.043663432095925894,
+      "scale": "linear",
+      "slope": 0.15783239110098835,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "chart_type": "polar_line",
+  "diagnostics": {
+    "angle_axis": {
+      "anchor_count": 4,
+      "anchor_residuals_degrees": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "direction": "clockwise",
+      "normalized_rmse": 0.0,
+      "rmse_degrees": 0.0,
+      "rmse_evaluable": true,
+      "scale": "circular_degree",
+      "zero_bearing_deg": 180.0,
+      "说明": "角度锚点以声明中心、零度方位和方向进行圆周残差核验。"
+    },
+    "radius_axis": {
+      "anchor_count": 7,
+      "anchor_residuals_transformed_units": [
+        -0.03917212347987231,
+        0.01146439175175118,
+        0.06210090698337467,
+        -0.04509496888598363,
+        0.005541546345639858,
+        0.056178061577270455,
+        -0.051017814292094954
+      ],
+      "intercept": 35.068023752389486,
+      "normalized_rmse": 0.0014554477365308631,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.043663432095925894,
+      "scale": "linear",
+      "slope": 0.15783239110098835,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "series": [
+      {
+        "angular_half_width_deg": 0.75,
+        "applied_exclusions_px": [],
+        "coverage": 1.0,
+        "extraction_mode": "polar_radial",
+        "id": "sound-pressure-level-directivity",
+        "line_semantics": "solid",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "supported_columns": 360
+      }
+    ]
+  },
+  "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
+  "numeric_output_authorized": false,
+  "plot_box": [
+    72,
+    67,
+    582,
+    578
+  ],
+  "quality_gates": {
+    "checks": [
+      {
+        "name": "radius_axis.anchor_count",
+        "observed": 7,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "radius_axis.normalized_rmse",
+        "observed": 0.0014554477365308631,
+        "status": "pass",
+        "threshold": "<=0.002"
+      },
+      {
+        "name": "angle_axis.anchor_count",
+        "observed": 4,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "angle_axis.normalized_rmse",
+        "observed": 0.0,
+        "status": "pass",
+        "threshold": "<=0.002"
+      },
+      {
+        "name": "sound-pressure-level-directivity.coverage",
+        "observed": 1.0,
+        "status": "pass",
+        "threshold": ">=0.95"
+      },
+      {
+        "name": "sound-pressure-level-directivity.maximum_gap_fraction",
+        "observed": 0.0,
+        "status": "pass",
+        "threshold": "<=0.03"
+      }
+    ],
+    "status": "pass",
+    "说明": "质量门槛只用于筛查风险，不能替代人工语义复核。"
+  },
+  "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
+  "review_status": "not_run",
+  "rows": 360,
+  "schema": "more-sci-figure.extraction-report.v1",
+  "source": {
+    "height": 620,
+    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b/source-image.png",
+    "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+    "width": 645
+  },
+  "specification_confirmation": {
+    "confirmation": "确认四张图规格，继续提取",
+    "confirmed_at": "2026-07-26T07:29:44.556559+00:00",
+    "confirmed_by": "Bing（Codex 对话用户）",
+    "record_sha256": "d42bb5982a6908659aabd9dec529ce7747ff9939dcfb66a4f2acc400e248af93",
+    "status": "confirmed"
+  },
+  "status": "pass"
+}

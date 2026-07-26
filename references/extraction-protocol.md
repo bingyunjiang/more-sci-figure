@@ -48,6 +48,14 @@
 - 多个系列竞争同一像素簇时，已分配候选标记 `model_assisted_exclusive_assignment`，未分配分支保持缺失；
 - 自动质量门可以分别声明 `min_coverage_solid`、`min_coverage_dashed`、`max_gap_fraction_solid` 和 `max_gap_fraction_dashed`。
 
+连续线条上叠加离散实验/仿真标记时，标记系列使用 `marker_centers`，连续拟合线仍使用 `guided_path` 或 `guided_group_path`：
+
+- `guide_points_px` 只限定标记搜索走廊；候选必须来自源图中具有足够逐列垂直跨度的真实标记像素；
+- 支持 `square`、`triangle`、`diamond`、`circle`、`x` 和 `unspecified` 标记语义；
+- `marker_min_span_px`、`marker_min_width_px` 和 `marker_window_radius_px` 按原始栅格分辨率声明；
+- 标记中心由局部真实颜色像素的中位坐标确定，不把连接线逐列扩展为伪数据点；
+- `min_marker_count` 只是最低可用性门槛，不是期望数量，不能用于反向调参或声称标记恢复完整。
+
 ### 散点
 
 适用于紧凑、实心、可以分离的连通组件。使用面积、填充率和长宽比辅助筛查。粘连、空心、气泡尺寸、遮挡或过度拉长的标记应拒绝或标为未解决。

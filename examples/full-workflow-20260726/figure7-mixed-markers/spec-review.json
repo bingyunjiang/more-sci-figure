@@ -1,0 +1,127 @@
+{
+  "chart_type": "line",
+  "confirmation_scope": [
+    "原始图对象是否正确",
+    "蓝色绘图区和坐标锚点是否正确",
+    "系列颜色、线型与语义是否正确",
+    "橙色排除框是否只覆盖图中文字、图例或坐标轴"
+  ],
+  "generated_at": "2026-07-26T07:39:12.213582+00:00",
+  "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-mixed-markers/source-image.jpeg",
+  "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
+  "measurement_size": [
+    843,
+    643
+  ],
+  "overlay_semantics": {
+    "blue": "plot box and calibration anchors",
+    "orange": "declared exclusion boxes",
+    "series_color_with_hollow_nodes": "sparse guide only, not extracted data"
+  },
+  "plot_box": [
+    127,
+    14,
+    817,
+    546
+  ],
+  "project_id": "jiang-tian-2021-figure7-mixed-markers",
+  "project_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-mixed-markers/project.json",
+  "project_sha256": "7883ba79eed5b91d50a8c90accf87ccce84a72c23bbde64addf74a3512f998a6",
+  "required_next": "用户查看原图与 spec-review.png 后给出明确确认；再运行 spec-confirm。",
+  "schema": "more-sci-figure.spec-review.v1",
+  "series": [
+    {
+      "color": "#d95319",
+      "exclude_boxes_px": [
+        [
+          215,
+          398,
+          492,
+          438
+        ]
+      ],
+      "extraction_mode": "marker_centers",
+      "id": "test-0deg",
+      "line_semantics": null,
+      "marker_shape": "square"
+    },
+    {
+      "color": "#ff0000",
+      "exclude_boxes_px": [
+        [
+          520,
+          445,
+          812,
+          485
+        ]
+      ],
+      "extraction_mode": "guided_path",
+      "id": "mfh-0deg",
+      "line_semantics": "dashed",
+      "marker_shape": null
+    },
+    {
+      "color": "#0072bd",
+      "exclude_boxes_px": [
+        [
+          516,
+          398,
+          812,
+          438
+        ]
+      ],
+      "extraction_mode": "marker_centers",
+      "id": "test-45deg",
+      "line_semantics": null,
+      "marker_shape": "triangle"
+    },
+    {
+      "color": "#0072bd",
+      "exclude_boxes_px": [
+        [
+          215,
+          493,
+          493,
+          533
+        ]
+      ],
+      "extraction_mode": "guided_path",
+      "id": "mfh-45deg",
+      "line_semantics": "dashed",
+      "marker_shape": null
+    },
+    {
+      "color": "#111111",
+      "exclude_boxes_px": [
+        [
+          215,
+          445,
+          493,
+          485
+        ]
+      ],
+      "extraction_mode": "marker_centers",
+      "id": "test-90deg",
+      "line_semantics": null,
+      "marker_shape": "diamond"
+    },
+    {
+      "color": "#111111",
+      "exclude_boxes_px": [
+        [
+          520,
+          493,
+          812,
+          533
+        ]
+      ],
+      "extraction_mode": "guided_path",
+      "id": "mfh-90deg",
+      "line_semantics": "dashed",
+      "marker_shape": null
+    }
+  ],
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "status": "awaiting_user_confirmation",
+  "tool_version": "0.3.1"
+}

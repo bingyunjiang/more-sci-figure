@@ -14,12 +14,16 @@
 
 本地优先、证据可追溯的科研图表数据提取、人工复核、论文级重绘与交付验证工具。
 版本：v0.3.1
+
+[![More Sci Figure：AI 先做全量检查，人只看关键处](assets/more-sci-figure-promo-github-x.png)](assets/more-sci-figure-promo-16x9.png)
+
 **关键词：** 科研图表数字化 · PDF 嵌入图像 · 极坐标曲线 · 同色曲线分离 · 引导路径 · 曲线/散点/柱图提取 · 人工复核 · 候选预览 · 论文级重绘 · PNG/SVG/PDF · 哈希证据链 · 本地优先
 
-> 核心原则：算法检测到的只是候选值。只有经过哈希绑定的人工复核，候选值才能进入正式 `data.csv`。
+> 核心原则：用户先确认哈希绑定的提取规格，算法才可生成候选值；候选值再经哈希绑定的人工复核后，才能进入正式 `data.csv`。
 
 | 关键词 | 链接 |
 | --- | --- |
+| 宣传素材 | [横版宣传海报](#横版宣传海报) |
 | 功能总览 | [功能总览](#功能总览) |
 | 详细操作图 | [标准工作流与人工门控](#标准工作流与人工门控) |
 | 快速使用 | [快速开始](#快速开始) |
@@ -33,6 +37,18 @@
 | 版本计划 | [路线图](#路线图) |
 | 许可证 | [MIT License](#许可证) |
 | 变更记录 | [CHANGELOG.md](CHANGELOG.md) |
+
+## 横版宣传海报
+
+海报采用真实 Figure 10(a) 与 Figure 10(b) 两组案例，分别展示直角坐标多曲线和极坐标单曲线；每组左侧为锁定来源的论文原图，右侧为明确标注 `NOT REVIEWED` 的候选重绘。综合评估分别为 `94.4` 与 `96.1`，但候选状态仍保持独立，不会被包装成正式科研结论。
+
+- [16:9 高清 PNG](assets/more-sci-figure-promo-16x9.png)：2400 × 1350，适合朋友圈横图、B 站封面、演示文稿和文章头图；
+- [16:9 可编辑 SVG](assets/more-sci-figure-promo-16x9.svg)；
+- [GitHub / X 2:1 PNG](assets/more-sci-figure-promo-github-x.png)：1280 × 640，已用于本页顶部展示；
+- [GitHub / X 可编辑 SVG](assets/more-sci-figure-promo-github-x.svg)；
+- [海报生成脚本](scripts/generate_promo_poster.py)：从项目内真实素材确定性重建，不依赖在线图片服务。
+
+两版均采用明亮高对比设计和放大的关键信息；朋友圈版在顶部概括图源锁定、多类型数据提取、七维评分与异常优先复核、三格式交付四项能力，并保留作者 `Dr. Jiang Bingyun`、GitHub 地址、候选状态和科研证据边界。
 
 ## 功能总览
 
@@ -54,7 +70,7 @@
 ### 2. 候选值与正式值分离
 
 ```text
-原图 → candidates.csv → 人工复核 → data.csv → 重绘
+原图 → 规格叠图/用户确认 → candidates.csv → 人工复核 → data.csv → 重绘
 ```
 
 算法结果先写入 `candidates.csv`。复核决定必须覆盖全部候选编号并绑定候选文件 SHA-256；只有明确接受的记录会进入 `data.csv`。
@@ -115,6 +131,8 @@
 
 `guided_path` 使用人工确认的稀疏引导点限定搜索走廊，但只接受走廊内真实存在的源像素。`guided_group_path` 进一步对同色系列执行排他式联合分配：实线与虚线分别声明语义，同一个像素簇不能同时归入两个系列；无法唯一判断的分配标记为模型辅助证据。每个系列可声明局部 `exclude_boxes_px`，避免过去用一个大图例框误删真实曲线。
 
+连续曲线上叠加实验/仿真标记时，`marker_centers` 只检测具有真实二维标记跨度的局部像素并输出标记中心，支持方形、三角形、菱形、圆形和叉形；连接线不会被逐列冒充为实验点。最低标记数只作可用性门槛，不代表恢复完整。
+
 ### 7. 多格式与矢量导出
 
 - 图源：PNG、JPEG、TIFF、BMP、WebP、PDF；
@@ -159,7 +177,22 @@ python3 scripts/more_sci_figure.py inspect \
 
 打开 `evidence/project.json`，确认绘图区、坐标尺度、锚点、系列颜色和质量门。
 
-### 第二步：提取候选值
+### 第二步：确认提取规格
+
+补全 `project.json` 后，先生成规格叠图。叠图中的系列色空心节点只是稀疏引导锚点，不是已提取数据；Agent 必须把原始图和叠图一起展示给用户，用户明确确认后再记录确认：
+
+```bash
+python3 scripts/more_sci_figure.py spec-review \
+  --spec evidence/project.json --out-dir evidence
+python3 scripts/more_sci_figure.py spec-confirm \
+  --spec evidence/project.json --project-dir evidence \
+  --confirmed-by "可追溯用户身份" \
+  --confirmation "用户原始确认语句"
+```
+
+确认绑定项目、来源、测量栅格和叠图哈希；确认后修改项目会使 `extract` 拒绝继续。
+
+### 第三步：提取候选值
 
 ```bash
 python3 scripts/more_sci_figure.py extract \
@@ -178,7 +211,7 @@ python3 scripts/more_sci_figure.py preview \
   --out-dir evidence/candidate-preview
 ```
 
-### 第三步：查看综合评判并回复“下一步”
+### 第四步：查看综合评判并回复“下一步”
 
 Agent 自动读取综合评分、风险等级、逐系列指标和异常组。默认不打开逐点复核页。风险允许时，用户只需回复“下一步”或“继续”；Agent 内部执行：
 
@@ -236,12 +269,13 @@ python3 scripts/more_sci_figure.py validate \
 详细操作图保留 1–7 步命令、质量门、拒绝分支、直接数据旁路以及四类独立状态。完整流程按以下顺序执行：
 
 1. `inspect` 保留并锁定来源，生成 `source-report.json` 和待补全的 `project.json`。
-2. 人工确认图表类型、绘图区、坐标尺度、系列颜色以及每个数值轴至少两个有效锚点。
-3. `extract` 生成候选、证据叠图、质量报告、AI 综合评估和异常清单，不会生成正式数据。
-4. Agent 自动完成锚点留一稳定性、候选级不确定度和优先区间定位，再汇报综合评分、责任分工和异常组；风险允许时，用户回复“下一步/继续”即可生成哈希绑定的批量确认。只有仍未解决的异常或代表区间才进入用户判断。
-5. `review-apply` 校验哈希和决策覆盖率，仅把接受项写入正式 `data.csv`。
-6. `render` 从声明数据统一导出 PNG、SVG 和 PDF；可选展示几何单独记录，不覆盖正式观测值。
-7. `validate` 检查来源与交付物哈希、清单、状态、产物完整性，并可计算参考图残差与残差热图。
+2. `spec-review` 生成只含绘图区、锚点、系列引导和排除框的规格叠图；Agent 同时向用户展示原始图。
+3. 用户明确确认后，`spec-confirm` 把原始确认语句与项目、来源、测量栅格和叠图哈希绑定。
+4. `extract` 只接受有效确认，并生成候选、证据叠图、质量报告、AI 综合评估和异常清单，不会生成正式数据。
+5. Agent 自动完成锚点留一稳定性、候选级不确定度和优先区间定位，再汇报综合评分、责任分工和异常组；风险允许时，用户回复“下一步/继续”即可生成哈希绑定的批量确认。只有仍未解决的异常或代表区间才进入用户判断。
+6. `review-apply` 校验哈希和决策覆盖率，仅把接受项写入正式 `data.csv`。
+7. `render` 从声明数据统一导出 PNG、SVG 和 PDF；可选展示几何单独记录，不覆盖正式观测值。
+8. `validate` 检查来源与交付物哈希、清单、状态、产物完整性，并可计算参考图残差与残差热图。
 
 `pipeline` 第一次运行会输出综合评分、风险等级和异常组，并停在对话确认门：
 
@@ -265,6 +299,8 @@ python3 scripts/more_sci_figure.py pipeline \
 | 命令 | 关键词 | 功能 |
 | --- | --- | --- |
 | `inspect` | 来源、哈希、PDF 页面/嵌入对象 | 检查输入并生成项目模板 |
+| `spec-review` | 原图、绘图区、锚点、系列、排除框 | 生成提取前规格叠图并等待用户判断 |
+| `spec-confirm` | 用户原始语句、项目哈希、来源哈希 | 固定记录用户对当前规格的明确确认 |
 | `extract` | 标定、候选值、证据叠图 | 提取可见候选值并生成复核页 |
 | `review-assess` | AI 综合评分、异常组 | 融合质量指标并生成对话式评判摘要 |
 | `review-confirm` | 下一步、批量确认 | 把用户对话确认转为覆盖全部候选的审计记录 |

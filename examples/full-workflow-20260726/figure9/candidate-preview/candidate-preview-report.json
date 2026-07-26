@@ -1,0 +1,62 @@
+{
+  "axis_scales": {
+    "x": "linear",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/full-workflow-20260726/figure9/candidate-preview/candidate-preview-display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 2792
+  },
+  "formal_render": false,
+  "geometry_sources": {
+    "simulation-a11": "accepted_observation_geometry",
+    "simulation-a22": "accepted_observation_geometry",
+    "simulation-a33": "accepted_observation_geometry",
+    "uct-test-a11": "accepted_observation_geometry",
+    "uct-test-a22": "accepted_observation_geometry",
+    "uct-test-a33": "accepted_observation_geometry"
+  },
+  "input_status": "unreviewed_candidates",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 32656,
+      "path": "examples/full-workflow-20260726/figure9/candidate-preview/candidate-preview.pdf",
+      "sha256": "bab737ddf90ba0a1fc2e8413031f44f09ea455c1e278aa11c30e3f078842ead3"
+    },
+    "png": {
+      "bytes": 110402,
+      "path": "examples/full-workflow-20260726/figure9/candidate-preview/candidate-preview.png",
+      "sha256": "dfccb6229252299721aa1266d0607a69deb7cacb76432548b0d26a97663ab626"
+    },
+    "svg": {
+      "bytes": 120479,
+      "path": "examples/full-workflow-20260726/figure9/candidate-preview/candidate-preview.svg",
+      "sha256": "2e25b92dc3fa637c7399dbfac733630c303ca16805c951a23439287a0bd1294a"
+    }
+  },
+  "plot_type": "line",
+  "project_spec": {
+    "bytes": 11381,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/project.json",
+    "sha256": "05ae25e181505e320c1cb55f1b12a9f08afbf1699bfaa5515aba2324e8e080f9"
+  },
+  "rendered_segments": {
+    "simulation-a11": 13,
+    "simulation-a22": 17,
+    "simulation-a33": 1,
+    "uct-test-a11": 4,
+    "uct-test-a22": 45,
+    "uct-test-a33": 25
+  },
+  "rows": 2792,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

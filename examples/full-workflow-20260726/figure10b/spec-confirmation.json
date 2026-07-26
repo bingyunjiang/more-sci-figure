@@ -1,0 +1,14 @@
+{
+  "confirmation": "确认四张图规格，继续提取",
+  "confirmed_at": "2026-07-26T07:29:44.556559+00:00",
+  "confirmed_by": "Bing（Codex 对话用户）",
+  "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
+  "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
+  "project_sha256": "73fda03c2c0a7eb3fa086b96ed51adc74050785473900988caa8a3c953672bcd",
+  "schema": "more-sci-figure.spec-confirmation.v1",
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "spec_review_overlay_sha256": "0a318cabbeadfc36bddc5b57f44f76f374a2b95424bb883810aeb7f0402bbeb7",
+  "spec_review_sha256": "5a40c599410320098fc93fad46236dfdcbcda2a07f7e230b00d0f264b2325817",
+  "status": "confirmed",
+  "tool_version": "0.3.1"
+}

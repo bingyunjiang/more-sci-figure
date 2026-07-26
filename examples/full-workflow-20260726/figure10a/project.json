@@ -1,0 +1,260 @@
+{
+  "chart": {
+    "plot_box": [
+      98,
+      58,
+      725,
+      537
+    ],
+    "series": [
+      {
+        "color": "#ff0a0d",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            160,
+            58,
+            302,
+            215
+          ],
+          [
+            360,
+            125,
+            505,
+            245
+          ],
+          [
+            570,
+            150,
+            704,
+            260
+          ]
+        ],
+        "extraction_mode": "color_column_median",
+        "id": "p1",
+        "line_semantics": "solid",
+        "tolerance": 14
+      },
+      {
+        "color": "#000000",
+        "color_space": "lab",
+        "exclude_boxes_px": [
+          [
+            94,
+            50,
+            107,
+            537
+          ],
+          [
+            98,
+            530,
+            725,
+            537
+          ]
+        ],
+        "extraction_mode": "color_column_median",
+        "id": "p2",
+        "line_semantics": "solid",
+        "tolerance": 8
+      },
+      {
+        "color": "#1f36fe",
+        "color_space": "lab",
+        "extraction_mode": "color_column_median",
+        "id": "p3",
+        "line_semantics": "dashed",
+        "tolerance": 10
+      },
+      {
+        "color": "#b633fd",
+        "color_space": "lab",
+        "extraction_mode": "color_column_median",
+        "id": "p4",
+        "line_semantics": "dashed",
+        "tolerance": 10
+      }
+    ],
+    "type": "line",
+    "x_axis": {
+      "anchors": [
+        {
+          "pixel": 183,
+          "value": 500
+        },
+        {
+          "pixel": 291,
+          "value": 1000
+        },
+        {
+          "pixel": 400,
+          "value": 1500
+        },
+        {
+          "pixel": 509,
+          "value": 2000
+        },
+        {
+          "pixel": 618,
+          "value": 2500
+        },
+        {
+          "pixel": 726,
+          "value": 3000
+        }
+      ],
+      "scale": "linear"
+    },
+    "y_axis": {
+      "anchors": [
+        {
+          "pixel": 539,
+          "value": -10
+        },
+        {
+          "pixel": 486,
+          "value": 0
+        },
+        {
+          "pixel": 432,
+          "value": 10
+        },
+        {
+          "pixel": 379,
+          "value": 20
+        },
+        {
+          "pixel": 326,
+          "value": 30
+        },
+        {
+          "pixel": 272,
+          "value": 40
+        },
+        {
+          "pixel": 219,
+          "value": 50
+        },
+        {
+          "pixel": 165,
+          "value": 60
+        },
+        {
+          "pixel": 112,
+          "value": 70
+        },
+        {
+          "pixel": 59,
+          "value": 80
+        }
+      ],
+      "scale": "linear"
+    }
+  },
+  "project_id": "jiang-2026-figure10a-full-workflow-rerun-20260726",
+  "quality_gates": {
+    "bar": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    },
+    "calibration": {
+      "max_normalized_rmse": 0.002,
+      "require_three_anchors": true
+    },
+    "line": {
+      "max_gap_fraction_dashed": 0.05,
+      "max_gap_fraction_solid": 0.08,
+      "min_coverage_dashed": 0.3,
+      "min_coverage_solid": 0.7
+    },
+    "scatter": {
+      "max_rejected_ratio": null,
+      "min_accepted_components": 1
+    }
+  },
+  "render": {
+    "group": "series",
+    "grid": "none",
+    "legend": {
+      "bbox_to_anchor": [
+        0.5,
+        1.08
+      ],
+      "frameon": false,
+      "loc": "upper center",
+      "ncol": 4
+    },
+    "plot_type": "line",
+    "series_styles": {
+      "p1": {
+        "color": "#ff0a0d",
+        "label": "p₁",
+        "line_style": "-",
+        "linewidth": 1.2
+      },
+      "p2": {
+        "color": "#000000",
+        "label": "p₂",
+        "line_style": "-",
+        "linewidth": 1.2
+      },
+      "p3": {
+        "color": "#1f36fe",
+        "label": "p₃",
+        "line_style": "--",
+        "linewidth": 1.2
+      },
+      "p4": {
+        "color": "#b633fd",
+        "label": "p₄",
+        "line_style": "--",
+        "linewidth": 1.2
+      }
+    },
+    "title": "",
+    "x": "x",
+    "x_label": "f / Hz",
+    "x_limits": [
+      100,
+      3000
+    ],
+    "x_ticks": [
+      500,
+      1000,
+      1500,
+      2000,
+      2500,
+      3000
+    ],
+    "y": "y",
+    "y_label": "SPL / dBA",
+    "y_limits": [
+      -10,
+      80
+    ],
+    "y_ticks": [
+      -10,
+      0,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80
+    ]
+  },
+  "schema": "more-sci-figure.project.v1",
+  "source": {
+    "measurement_raster": "source-image.jpeg",
+    "measurement_sha256": "c50dd7550159fd5013857ea202b03408abc8b6ea4b2becc14209472b54db374a",
+    "page": 9,
+    "path": "../../Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "pdf_image_index": 1,
+    "pdf_xref": 43,
+    "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6"
+  },
+  "assessment": {
+    "acceptance_profile": "publication"
+  }
+}

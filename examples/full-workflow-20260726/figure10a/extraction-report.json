@@ -1,0 +1,229 @@
+{
+  "calibration": {
+    "x_axis": {
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        1.3175103164688835,
+        -1.969013124336243,
+        -0.6563377081117778,
+        0.6563377081126873,
+        1.969013124336925,
+        -1.317510316467633
+      ],
+      "intercept": -340.3358805199448,
+      "normalized_rmse": 0.0005677382168993041,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 1.4193455422482604,
+      "scale": "linear",
+      "slope": 4.599198857029583,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "anchor_count": 10,
+      "anchor_residuals_transformed_units": [
+        0.017175734095587813,
+        -0.05325456122747596,
+        0.06366551523581165,
+        -0.00676478008725212,
+        -0.0771950754103159,
+        0.039725001052978826,
+        -0.03070529427008495,
+        0.08621478219320977,
+        0.015784486870131786,
+        -0.05464580845291778
+      ],
+      "intercept": 90.99902612694216,
+      "normalized_rmse": 0.0005706654958607814,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.05135989462747033,
+      "scale": "linear",
+      "slope": -0.18735037178635727,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "chart_type": "line",
+  "diagnostics": {
+    "series": [
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            160,
+            58,
+            302,
+            215
+          ],
+          [
+            360,
+            125,
+            505,
+            245
+          ],
+          [
+            570,
+            150,
+            704,
+            260
+          ]
+        ],
+        "coverage": 0.9251592356687898,
+        "extraction_mode": "color_column_median",
+        "id": "p1",
+        "maximum_gap_columns": 19,
+        "maximum_gap_fraction": 0.030254777070063694,
+        "supported_columns": 581
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            98,
+            58,
+            107,
+            537
+          ],
+          [
+            98,
+            530,
+            725,
+            537
+          ]
+        ],
+        "coverage": 0.9808917197452229,
+        "extraction_mode": "color_column_median",
+        "id": "p2",
+        "maximum_gap_columns": 10,
+        "maximum_gap_fraction": 0.01592356687898089,
+        "supported_columns": 616
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [],
+        "coverage": 0.8375796178343949,
+        "extraction_mode": "color_column_median",
+        "id": "p3",
+        "maximum_gap_columns": 5,
+        "maximum_gap_fraction": 0.007961783439490446,
+        "supported_columns": 526
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [],
+        "coverage": 0.8646496815286624,
+        "extraction_mode": "color_column_median",
+        "id": "p4",
+        "maximum_gap_columns": 5,
+        "maximum_gap_fraction": 0.007961783439490446,
+        "supported_columns": 543
+      }
+    ]
+  },
+  "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
+  "numeric_output_authorized": false,
+  "plot_box": [
+    98,
+    58,
+    725,
+    537
+  ],
+  "quality_gates": {
+    "checks": [
+      {
+        "name": "x_axis.anchor_count",
+        "observed": 6,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "x_axis.normalized_rmse",
+        "observed": 0.0005677382168993041,
+        "status": "pass",
+        "threshold": "<=0.002"
+      },
+      {
+        "name": "y_axis.anchor_count",
+        "observed": 10,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "y_axis.normalized_rmse",
+        "observed": 0.0005706654958607814,
+        "status": "pass",
+        "threshold": "<=0.002"
+      },
+      {
+        "name": "p1.coverage",
+        "observed": 0.9251592356687898,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "p1.maximum_gap_fraction",
+        "observed": 0.030254777070063694,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "p2.coverage",
+        "observed": 0.9808917197452229,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "p2.maximum_gap_fraction",
+        "observed": 0.01592356687898089,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "p3.coverage",
+        "observed": 0.8375796178343949,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "p3.maximum_gap_fraction",
+        "observed": 0.007961783439490446,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "p4.coverage",
+        "observed": 0.8646496815286624,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "p4.maximum_gap_fraction",
+        "observed": 0.007961783439490446,
+        "status": "pass",
+        "threshold": "<=0.08"
+      }
+    ],
+    "status": "pass",
+    "说明": "质量门槛只用于筛查风险，不能替代人工语义复核。"
+  },
+  "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
+  "review_status": "not_run",
+  "rows": 2266,
+  "schema": "more-sci-figure.extraction-report.v1",
+  "source": {
+    "height": 619,
+    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/source-image.jpeg",
+    "measurement_sha256": "c50dd7550159fd5013857ea202b03408abc8b6ea4b2becc14209472b54db374a",
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+    "width": 757
+  },
+  "specification_confirmation": {
+    "confirmation": "确认四张图规格，继续提取",
+    "confirmed_at": "2026-07-26T07:29:44.412847+00:00",
+    "confirmed_by": "Bing（Codex 对话用户）",
+    "record_sha256": "202f16ed920faf73bbde0cf210c3b1097164ffcaefb71c69d20863cde7b9819c",
+    "status": "confirmed"
+  },
+  "status": "pass"
+}

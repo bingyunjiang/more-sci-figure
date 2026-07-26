@@ -38,6 +38,10 @@ def main() -> int:
         "SKILL.md",
         "VERSION",
         "agents/openai.yaml",
+        "assets/more-sci-figure-promo-16x9.png",
+        "assets/more-sci-figure-promo-16x9.svg",
+        "assets/more-sci-figure-promo-github-x.png",
+        "assets/more-sci-figure-promo-github-x.svg",
         "assets/project-template.json",
         "benchmarks/README.md",
         "references/artifact-contract.md",
@@ -48,6 +52,7 @@ def main() -> int:
         "schemas/review-decisions.schema.json",
         "schemas/validation-report.schema.json",
         "scripts/more_sci_figure.py",
+        "scripts/generate_promo_poster.py",
     ]
     structure = {
         "status": "pass" if all((ROOT / path).is_file() for path in required) else "failed",

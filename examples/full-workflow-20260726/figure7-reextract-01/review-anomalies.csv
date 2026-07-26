@@ -1,0 +1,10 @@
+candidate_id,series,severity,anomaly_type,observed,reason,recommended_action
+line-test-0deg-000001,test-0deg,medium,guide_residual_outlier,10.0,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000005,test-0deg,medium,guide_residual_outlier,9.0123,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000031,test-0deg,medium,guide_residual_outlier,8.163,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000037,test-0deg,medium,guide_residual_outlier,9.0392,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000039,test-0deg,medium,guide_residual_outlier,8.7221,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000041,test-0deg,medium,guide_residual_outlier,8.1371,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000042,test-0deg,medium,guide_residual_outlier,8.3299,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000043,test-0deg,medium,guide_residual_outlier,8.5124,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review
+line-test-0deg-000049,test-0deg,medium,guide_residual_outlier,8.7444,系列 test-0deg 的引导残差显著高于稳健阈值 7.84px,batch_review

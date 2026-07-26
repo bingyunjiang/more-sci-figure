@@ -144,6 +144,19 @@ class WorkflowTests(unittest.TestCase):
         msf.write_json(spec_path, spec)
         return spec_path
 
+    def confirm_spec(self, spec_path: Path, output: Path) -> None:
+        msf.spec_review_command(spec_path, output)
+        msf.spec_confirm_command(
+            spec_path,
+            output,
+            "自动化测试确认夹具",
+            "已查看原图与规格叠图，确认绘图区、锚点、系列和排除规则。",
+        )
+
+    def extract_command(self, spec_path: Path, output: Path) -> dict[str, object]:
+        self.confirm_spec(spec_path, output)
+        return msf.extract_command(spec_path, output)
+
     def decisions_for(self, evidence: Path, accepted_ids: set[str] | None = None) -> Path:
         candidates = msf.read_tabular_rows(evidence / "candidates.csv")
         accepted_ids = accepted_ids if accepted_ids is not None else {
@@ -169,9 +182,33 @@ class WorkflowTests(unittest.TestCase):
         msf.write_json(path, payload)
         return path
 
+    def test_extract_requires_hash_bound_user_spec_confirmation(self) -> None:
+        spec_path = self.make_line_project()
+        output = self.root / "evidence"
+        with self.assertRaisesRegex(msf.FigureError, "提取前缺少用户规格确认"):
+            msf.extract_command(spec_path, output)
+
+        review = msf.spec_review_command(spec_path, output)
+        self.assertEqual("awaiting_user_confirmation", review["status"])
+        self.assertTrue((output / "spec-review.png").is_file())
+        confirmation = msf.spec_confirm_command(
+            spec_path,
+            output,
+            "测试用户",
+            "确认原图、绘图区、锚点、系列和排除规则。",
+        )
+        self.assertEqual("confirmed", confirmation["status"])
+
+        changed = msf.read_json(spec_path)
+        changed["render"]["title"] = "确认后修改"
+        msf.write_json(spec_path, changed)
+        with self.assertRaisesRegex(msf.FigureError, "用户确认后已变化"):
+            msf.extract_command(spec_path, output)
+
     def test_pipeline_stops_for_review_then_completes(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
+        self.confirm_spec(spec_path, output)
         waiting = msf.pipeline_command(spec_path, output)
         self.assertEqual("awaiting_confirmation", waiting["review"])
         self.assertIn("综合评分", waiting)
@@ -279,7 +316,7 @@ class WorkflowTests(unittest.TestCase):
     def test_ai_assessment_supports_conversational_batch_confirmation(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
 
         assessment = msf.review_assess_command(output)
         self.assertEqual("pass", assessment["status"])
@@ -348,7 +385,7 @@ class WorkflowTests(unittest.TestCase):
     def test_anomalies_are_reviewed_separately_from_normal_batch(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         candidates = msf.read_tabular_rows(output / "candidates.csv")
         anomaly_candidate = candidates[0]
         anomaly_id = str(anomaly_candidate["candidate_id"])
@@ -400,7 +437,7 @@ class WorkflowTests(unittest.TestCase):
     def test_ai_batch_confirmation_stops_on_critical_source_issue(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         project = msf.read_json(output / "project.json")
         project["source"]["path"] = "missing-source.png"
         msf.write_json(output / "project.json", project)
@@ -423,7 +460,7 @@ class WorkflowTests(unittest.TestCase):
         msf.write_json(spec_path, spec)
         output = self.root / "evidence"
 
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         assessment = msf.read_json(output / "review-assessment.json")
 
         self.assertEqual("publication", assessment["acceptance"]["profile"])
@@ -448,7 +485,7 @@ class WorkflowTests(unittest.TestCase):
         msf.write_json(spec_path, spec)
         output = self.root / "nested" / "evidence"
 
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
 
         copied_path = output / "project.json"
         copied = msf.read_json(copied_path)
@@ -466,7 +503,7 @@ class WorkflowTests(unittest.TestCase):
     def test_validate_uses_the_actual_project_spec_recorded_by_render(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         msf.review_apply_command(output, self.decisions_for(output))
         stale_copy = msf.read_json(output / "project.json")
         stale_copy["source"]["path"] = "missing-source.png"
@@ -484,7 +521,7 @@ class WorkflowTests(unittest.TestCase):
     def test_review_save_uses_fixed_project_path_without_advancing_status(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         payload = msf.read_json(self.decisions_for(output))
         manifest_before = msf.read_json(output / "manifest.json")
 
@@ -503,7 +540,7 @@ class WorkflowTests(unittest.TestCase):
     def test_review_save_rejects_tampered_candidate_hash(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         payload = msf.read_json(self.decisions_for(output))
         payload["candidate_sha256"] = "0" * 64
 
@@ -515,7 +552,7 @@ class WorkflowTests(unittest.TestCase):
     def test_review_save_does_not_overwrite_applied_evidence(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions_path = self.decisions_for(output)
         payload = msf.read_json(decisions_path)
         msf.review_apply_command(output, decisions_path)
@@ -529,7 +566,7 @@ class WorkflowTests(unittest.TestCase):
     def test_review_partial_only_promotes_accepted_rows(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         candidates = msf.read_tabular_rows(output / "candidates.csv")
         accepted_id = str(candidates[0]["candidate_id"])
         result = msf.review_apply_command(output, self.decisions_for(output, {accepted_id}))
@@ -546,7 +583,7 @@ class WorkflowTests(unittest.TestCase):
         )
         msf.write_json(spec_path, spec)
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions_path = self.decisions_for(output, set())
         payload = msf.read_json(decisions_path)
         first, second = payload["decisions"][:2]
@@ -576,7 +613,7 @@ class WorkflowTests(unittest.TestCase):
     def test_review_hash_mismatch_is_rejected(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions = self.decisions_for(output)
         payload = msf.read_json(decisions)
         payload["candidate_sha256"] = "0" * 64
@@ -643,12 +680,12 @@ class WorkflowTests(unittest.TestCase):
         spec["source"]["measurement_sha256"] = "0" * 64
         msf.write_json(spec_path, spec)
         with self.assertRaisesRegex(msf.FigureError, "测量栅格哈希"):
-            msf.extract_command(spec_path, self.root / "evidence")
+            self.extract_command(spec_path, self.root / "evidence")
 
     def test_review_must_cover_every_candidate(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions = self.decisions_for(output)
         payload = msf.read_json(decisions)
         payload["decisions"] = payload["decisions"][:-1]
@@ -659,7 +696,7 @@ class WorkflowTests(unittest.TestCase):
     def test_gap_is_preserved_as_two_render_segments(self) -> None:
         spec_path = self.make_line_project(with_gap=True)
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions = self.decisions_for(output)
         msf.review_apply_command(output, decisions)
         report = msf.render_command(spec_path, output / "data.csv", output / "render")
@@ -896,7 +933,7 @@ class WorkflowTests(unittest.TestCase):
         )
         msf.write_json(spec_path, spec)
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         msf.review_apply_command(output, self.decisions_for(output))
         observed_rows = msf.read_tabular_rows(output / "data.csv")
         report = msf.render_command(spec_path, output / "data.csv", output / "render")
@@ -912,7 +949,7 @@ class WorkflowTests(unittest.TestCase):
     def test_candidate_preview_never_promotes_or_updates_manifest(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         manifest_before = msf.read_json(output / "manifest.json")
         report = msf.preview_command(
             spec_path, output / "candidates.csv", output / "candidate-preview"
@@ -929,7 +966,7 @@ class WorkflowTests(unittest.TestCase):
     def test_formal_render_rejects_unreviewed_candidates(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         with self.assertRaisesRegex(msf.FigureError, "未复核候选"):
             msf.render_command(
                 spec_path, output / "candidates.csv", output / "render"
@@ -955,7 +992,7 @@ class WorkflowTests(unittest.TestCase):
     def test_validation_fails_if_review_artifact_is_missing(self) -> None:
         spec_path = self.make_line_project()
         output = self.root / "evidence"
-        msf.extract_command(spec_path, output)
+        self.extract_command(spec_path, output)
         decisions = self.decisions_for(output)
         msf.review_apply_command(output, decisions)
         msf.render_command(spec_path, output / "data.csv", output / "render")
@@ -1147,7 +1184,7 @@ class WorkflowTests(unittest.TestCase):
         msf.write_json(spec_path, spec)
         evidence = self.root / "polar-evidence"
 
-        report = msf.extract_command(spec_path, evidence)
+        report = self.extract_command(spec_path, evidence)
 
         self.assertEqual("pass", report["status"])
         self.assertGreater(report["rows"], 340)
@@ -1194,6 +1231,52 @@ class WorkflowTests(unittest.TestCase):
         )
         self.assertEqual([], rows)
         self.assertGreater(diagnostics["series"][0]["rejected_components"], 0)
+
+    def test_marker_centers_recover_visible_markers_connected_by_a_line(self) -> None:
+        image = Image.new("RGB", (240, 140), "white")
+        draw = ImageDraw.Draw(image)
+        color = "#d95319"
+        draw.line((20, 115, 220, 35), fill=color, width=2)
+        expected = [(50, 103), (110, 79), (180, 51)]
+        for pixel_x, pixel_y in expected:
+            draw.rectangle(
+                (pixel_x - 5, pixel_y - 5, pixel_x + 5, pixel_y + 5),
+                outline=color,
+                width=2,
+            )
+        mapping_x = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 0, "value": 0}, {"pixel": 239, "value": 1}]}
+        )
+        mapping_y = msf.AxisMap(
+            {"scale": "linear", "anchors": [{"pixel": 139, "value": 0}, {"pixel": 0, "value": 1}]}
+        )
+        rows, diagnostics = msf.extract_line(
+            np.asarray(image),
+            (0, 0, 239, 139),
+            [
+                {
+                    "id": "squares",
+                    "color": color,
+                    "tolerance": 10,
+                    "extraction_mode": "marker_centers",
+                    "guide_points_px": [[20, 115], [220, 35]],
+                    "guide_corridor_px": 10,
+                    "marker_shape": "square",
+                    "marker_min_span_px": 7,
+                    "marker_min_width_px": 3,
+                    "marker_window_radius_px": 7,
+                    "min_marker_count": 3,
+                }
+            ],
+            mapping_x,
+            mapping_y,
+        )
+        self.assertEqual(3, len(rows))
+        for row, (expected_x, expected_y) in zip(rows, expected):
+            self.assertAlmostEqual(expected_x, float(row["pixel_x"]), delta=1.0)
+            self.assertAlmostEqual(expected_y, float(row["pixel_y"]), delta=1.0)
+            self.assertEqual("visible_marker_support", row["evidence_status"])
+        self.assertEqual(3, diagnostics["series"][0]["accepted_markers"])
 
     def test_bar_rectangles_are_recovered(self) -> None:
         image = Image.new("RGB", (140, 110), "white")

@@ -1,0 +1,291 @@
+{
+  "calibration": {
+    "x_axis": {
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        0.0004107590668887551,
+        -0.0009008492840368865,
+        0.0006558041754625155,
+        -0.0006558041754629595,
+        0.0009008492840363314,
+        -0.00041075906688914365
+      ],
+      "intercept": -0.3552537054258107,
+      "normalized_rmse": 0.0003428230301646308,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.0006856460603292616,
+      "scale": "linear",
+      "slope": 0.0028682618104249958,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    },
+    "y_axis": {
+      "anchor_count": 6,
+      "anchor_residuals_transformed_units": [
+        -0.0006756648059071946,
+        0.0010183233860459606,
+        0.0003394411286820054,
+        -0.0003394411286820054,
+        -0.0010183233860459051,
+        0.0006756648059071946
+      ],
+      "intercept": 1.0410144624442979,
+      "normalized_rmse": 0.0007322854016366785,
+      "rmse_evaluable": true,
+      "rmse_transformed_units": 0.0007322854016366785,
+      "scale": "linear",
+      "slope": -0.0023728704493170957,
+      "说明": "至少三个锚点，可用残差辅助评估标定质量。"
+    }
+  },
+  "chart_type": "line",
+  "diagnostics": {
+    "series": [
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            145,
+            812,
+            176
+          ]
+        ],
+        "coverage": 0.7934782608695652,
+        "extraction_mode": "guided_path",
+        "id": "simulation-a11",
+        "maximum_gap_columns": 42,
+        "maximum_gap_fraction": 0.07608695652173914,
+        "mean_guide_residual_px": 2.6292417426766437,
+        "supported_columns": 438
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            190,
+            812,
+            220
+          ]
+        ],
+        "coverage": 0.8713768115942029,
+        "extraction_mode": "guided_path",
+        "id": "simulation-a22",
+        "maximum_gap_columns": 19,
+        "maximum_gap_fraction": 0.034420289855072464,
+        "mean_guide_residual_px": 3.1250899142421424,
+        "supported_columns": 481
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            235,
+            812,
+            265
+          ]
+        ],
+        "coverage": 1.0,
+        "extraction_mode": "guided_group_path",
+        "fused_unassigned_columns": 0,
+        "id": "simulation-a33",
+        "line_semantics": "solid",
+        "maximum_gap_columns": 0,
+        "maximum_gap_fraction": 0.0,
+        "mean_guide_residual_px": 1.2627471073223022,
+        "model_assisted_columns": 0,
+        "supported_columns": 545
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            365,
+            812,
+            397
+          ]
+        ],
+        "coverage": 0.6912878787878788,
+        "extraction_mode": "guided_group_path",
+        "fused_unassigned_columns": 0,
+        "id": "uct-test-a33",
+        "line_semantics": "dashed",
+        "maximum_gap_columns": 12,
+        "maximum_gap_fraction": 0.022727272727272728,
+        "mean_guide_residual_px": 1.4251760816875927,
+        "model_assisted_columns": 0,
+        "supported_columns": 365
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            280,
+            812,
+            310
+          ]
+        ],
+        "coverage": 0.8931159420289855,
+        "extraction_mode": "guided_path",
+        "id": "uct-test-a11",
+        "maximum_gap_columns": 23,
+        "maximum_gap_fraction": 0.041666666666666664,
+        "mean_guide_residual_px": 2.123059444983171,
+        "supported_columns": 493
+      },
+      {
+        "ambiguous_columns": 0,
+        "applied_exclusions_px": [
+          [
+            575,
+            323,
+            812,
+            353
+          ]
+        ],
+        "coverage": 0.8514492753623188,
+        "extraction_mode": "guided_path",
+        "id": "uct-test-a22",
+        "maximum_gap_columns": 14,
+        "maximum_gap_fraction": 0.025362318840579712,
+        "mean_guide_residual_px": 3.0758477121082177,
+        "supported_columns": 470
+      }
+    ]
+  },
+  "limitations": "仅包含有颜色像素证据的可见标记；不会推断隐藏、粘连或遮挡数据。",
+  "numeric_output_authorized": false,
+  "plot_box": [
+    124,
+    17,
+    821,
+    439
+  ],
+  "quality_gates": {
+    "checks": [
+      {
+        "name": "x_axis.anchor_count",
+        "observed": 6,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "x_axis.normalized_rmse",
+        "observed": 0.0003428230301646308,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "y_axis.anchor_count",
+        "observed": 6,
+        "status": "pass",
+        "threshold": ">=3"
+      },
+      {
+        "evaluable": true,
+        "name": "y_axis.normalized_rmse",
+        "observed": 0.0007322854016366785,
+        "status": "pass",
+        "threshold": "<=0.003"
+      },
+      {
+        "name": "simulation-a11.coverage",
+        "observed": 0.7934782608695652,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "simulation-a11.maximum_gap_fraction",
+        "observed": 0.07608695652173914,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "simulation-a22.coverage",
+        "observed": 0.8713768115942029,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "simulation-a22.maximum_gap_fraction",
+        "observed": 0.034420289855072464,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "simulation-a33.coverage",
+        "observed": 1.0,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "simulation-a33.maximum_gap_fraction",
+        "observed": 0.0,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "uct-test-a33.coverage",
+        "observed": 0.6912878787878788,
+        "status": "pass",
+        "threshold": ">=0.25"
+      },
+      {
+        "name": "uct-test-a33.maximum_gap_fraction",
+        "observed": 0.022727272727272728,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "uct-test-a11.coverage",
+        "observed": 0.8931159420289855,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "uct-test-a11.maximum_gap_fraction",
+        "observed": 0.041666666666666664,
+        "status": "pass",
+        "threshold": "<=0.08"
+      },
+      {
+        "name": "uct-test-a22.coverage",
+        "observed": 0.8514492753623188,
+        "status": "pass",
+        "threshold": ">=0.7"
+      },
+      {
+        "name": "uct-test-a22.maximum_gap_fraction",
+        "observed": 0.025362318840579712,
+        "status": "pass",
+        "threshold": "<=0.08"
+      }
+    ],
+    "status": "pass",
+    "说明": "质量门槛只用于筛查风险，不能替代人工语义复核。"
+  },
+  "required_next": "查看 AI 综合评估与异常组；风险允许时由用户通过对话批量确认，之后才能创建正式 data.csv。",
+  "review_status": "not_run",
+  "rows": 2792,
+  "schema": "more-sci-figure.extraction-report.v1",
+  "source": {
+    "height": 546,
+    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/source-image.jpeg",
+    "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+    "width": 843
+  },
+  "specification_confirmation": {
+    "confirmation": "确认四张图规格，继续提取",
+    "confirmed_at": "2026-07-26T07:29:44.880004+00:00",
+    "confirmed_by": "Bing（Codex 对话用户）",
+    "record_sha256": "4eef5bd2aea23a121e30be91db547d135a7d64d18f53376a72d61881b24060a7",
+    "status": "confirmed"
+  },
+  "status": "pass"
+}

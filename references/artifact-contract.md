@@ -20,7 +20,7 @@
 - `assessment.acceptance_profile`：趋势预览、工程分析或论文定量数据的操作门槛；
 - `render`：数据列映射、标签、标题和可选坐标尺度。
 
-曲线系列还可声明 `extraction_mode=guided_path`、`shared_color_group`、引导点、搜索走廊和局部排除框。`polar_line` 另行声明中心、角度轴、径向轴、内外半径和 `polar_radial` 角度走廊。重绘可声明固定画布、逐系列样式与派生展示几何。
+曲线系列还可声明 `extraction_mode=guided_path`、`guided_group_path` 或 `marker_centers`、`shared_color_group`、引导点、搜索走廊、标记形状和局部排除框。`marker_centers` 的最低标记数只作质量门，不代表完整性。`polar_line` 另行声明中心、角度轴、径向轴、内外半径和 `polar_radial` 角度走廊。重绘可声明固定画布、逐系列样式与派生展示几何。
 
 ## 坐标标定
 
@@ -36,6 +36,10 @@
 算法输出和正式数据必须分开：
 
 ```text
+project.json ── SHA-256 ──> spec-review.json + spec-review.png
+                                  │
+                                  └── 用户明确确认 ──> spec-confirmation.json
+                                                            │
 candidates.csv
       │
       ├── SHA-256 ──> review-assessment.json ──> review-anomalies.csv
@@ -47,6 +51,9 @@ candidates.csv
       └─────────────────────────┴──> data.csv
 ```
 
+- `spec-review.json` 绑定项目、来源与测量栅格哈希；`spec-review.png` 只显示提取规格，不含候选值；
+- `spec-confirmation.json` 保存确认人、用户原始确认语句、项目/来源/测量栅格/叠图哈希；项目规格或来源声明变化后不得继续使用；
+- `extract` 和 `pipeline` 必须拒绝缺失、无效或过期的提取前规格确认；
 - `candidates.csv` 可以包含自动质量门未完全通过的可见候选；
 - `review-assessment.json` 融合七个可重复证据维度，给出综合评分、最低维度、硬门、用途阈值、系列摘要、异常组、判定和下一步指令；不得把评分冒充新的像素证据；
 - `review-anomalies.csv` 只承载异常深挖清单，不要求用户逐点复核全部候选；
@@ -69,6 +76,7 @@ candidates.csv
 
 ```text
 来源哈希
+  → 提取前规格叠图与用户确认
   → 坐标标定
   → 像素证据与质量门
   → candidates.csv

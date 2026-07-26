@@ -1,0 +1,543 @@
+{
+  "acceptance": {
+    "decision": "not_qualified",
+    "dimension_floor_pass": false,
+    "hard_gates": {
+      "automatic_quality_gates": false,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": false,
+    "next_instruction": "暂不接受：修复未通过的自动质量门并重新提取，然后再次评估。",
+    "profile": "publication",
+    "profile_label": "论文定量数据",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "responsibility": {
+      "agent_completed": [
+        "七维质量评估",
+        "锚点留一扰动稳定性检查",
+        "定位 52 个高不确定候选并合并为 5 个区间"
+      ],
+      "agent_next": [
+        "查看失败的项目质量门，修复对应覆盖率、缺口或组件条件后重新提取。",
+        "保留当前候选作为基线，比较重提取前后的最低维度和局部不确定区间。"
+      ],
+      "user_not_required": [
+        "运行命令",
+        "选择保存路径",
+        "调整算法参数",
+        "逐点复核全部普通候选"
+      ],
+      "user_required_now": false,
+      "user_tasks": [
+        "如有更高分辨率原图、矢量 PDF 或作者原始数据则提供。",
+        "若自动改进仍不达标，只判断高不确定区间是否影响科研结论，或降低用途等级/拒绝使用。"
+      ],
+      "user_trigger": "仅当 Agent 完成自动诊断与安全重提取后仍不达标。",
+      "workflow_order": "agent_first_then_targeted_user_judgment"
+    },
+    "score_threshold_pass": false,
+    "technical_eligibility": false,
+    "thresholds": {
+      "minimum_dimension_score": 90.0,
+      "overall_score": 95.0
+    },
+    "unresolved_anomaly_count": 9,
+    "unresolved_anomaly_ids": [
+      "line-test-0deg-000001",
+      "line-test-0deg-000005",
+      "line-test-0deg-000031",
+      "line-test-0deg-000037",
+      "line-test-0deg-000039",
+      "line-test-0deg-000041",
+      "line-test-0deg-000042",
+      "line-test-0deg-000043",
+      "line-test-0deg-000049"
+    ]
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 9,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 411
+  },
+  "candidate_count": 1000,
+  "candidate_sha256": "c7a332c357dec47776787e65b709adba43f1578b7713b7b8923cab630591a3cb",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "model_assisted_exclusive_assignment": 411,
+    "visible_pixel_support": 589
+  },
+  "generated_at": "2026-07-26T07:34:51.008283+00:00",
+  "high_risk_issues": [
+    "自动提取质量门仅部分通过",
+    "10 项自动质量检查未通过"
+  ],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      3.1784484118033985e-16,
+      0.000643820993121427
+    ],
+    "extraction_status": "partial",
+    "high_anomalies": 0,
+    "medium_anomalies": 9,
+    "model_assisted_candidates": 411,
+    "model_assisted_ratio": 0.411,
+    "quality_checks_failed": 10,
+    "quality_checks_total": 16
+  },
+  "minimum_dimension_score": 37.5,
+  "overall_score": 78.8,
+  "project_id": "jiang-tian-2021-figure7-stress-strain-reextract-01",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/project.json",
+  "recommended_action": "re_extract",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "high",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.009,
+          "total_high_anomalies": 0,
+          "total_medium_anomalies": 9,
+          "unresolved_high_anomalies": 0,
+          "unresolved_medium_anomalies": 9
+        },
+        "score": 99.1,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 7,
+              "axis": "x_axis",
+              "normalized_rmse": 3.1784484118033985e-16,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 7,
+              "axis": "y_axis",
+              "normalized_rmse": 0.000643820993121427,
+              "operational_tolerance": 0.003,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.411,
+          "support_evaluable": true,
+          "valid_support_ratio": 1.0
+        },
+        "score": 93.4,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 10,
+          "checks_total": 16
+        },
+        "score": 37.5,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 53.8,
+          "worst_series_score": 21.7
+        },
+        "score": 37.7,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": 0.015628734289409415,
+          "high_uncertainty_candidate_count": 52,
+          "high_uncertainty_group_count": 5,
+          "normalized_uncertainty_p95": 0.012790697674418604,
+          "operational_threshold": 0.02,
+          "perturbation_stability": {
+            "axes": [
+              {
+                "anchor_count": 7,
+                "axis": "x_axis",
+                "candidate_count": 1000,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 1.186576652712761e-15,
+                "normalized_shift_p95": 1.186576652712761e-15,
+                "score": 100.0,
+                "status": "measured",
+                "trials": 7,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              },
+              {
+                "anchor_count": 7,
+                "axis": "y_axis",
+                "candidate_count": 1000,
+                "method": "leave_one_anchor_out",
+                "normalized_shift_max": 0.0008149693536562585,
+                "normalized_shift_p95": 0.0006233623221491325,
+                "score": 99.4,
+                "status": "measured",
+                "trials": 7,
+                "说明": "逐次移除一个标定锚点并重新拟合；分数反映标定对锚点选择的敏感性。"
+              }
+            ],
+            "method": "leave_one_anchor_out",
+            "score": 99.4,
+            "status": "measured",
+            "说明": "已自动完成锚点留一扰动；该检查不改写候选数据。"
+          },
+          "uncertainty_proxy_score": 92.9
+        },
+        "score": 92.9,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "quality_gate_compliance",
+    "worst_series_score": 21.7
+  },
+  "series_assessment": [
+    {
+      "candidates": 57,
+      "coverage": 0.19655172413793104,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.5241379310344828,
+      "mean_guide_residual_px": 4.811604397745373,
+      "model_assisted": 0,
+      "series": "mfh-0deg",
+      "series_quality_score": 21.7
+    },
+    {
+      "candidates": 76,
+      "coverage": 0.21902017291066284,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.43515850144092216,
+      "mean_guide_residual_px": 2.3398505279989705,
+      "model_assisted": 76,
+      "series": "mfh-45deg",
+      "series_quality_score": 63.8
+    },
+    {
+      "candidates": 33,
+      "coverage": 0.09510086455331412,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.8587896253602305,
+      "mean_guide_residual_px": 1.5182959824549946,
+      "model_assisted": 0,
+      "series": "mfh-90deg",
+      "series_quality_score": 33.4
+    },
+    {
+      "candidates": 126,
+      "coverage": 0.45323741007194246,
+      "flagged_anomalies": 9,
+      "maximum_gap_fraction": 0.1474820143884892,
+      "mean_guide_residual_px": 2.5153717785480514,
+      "model_assisted": 0,
+      "series": "test-0deg",
+      "series_quality_score": 59.5
+    },
+    {
+      "candidates": 463,
+      "coverage": 0.8589981447124304,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.11688311688311688,
+      "mean_guide_residual_px": 2.6387545081478887,
+      "model_assisted": 257,
+      "series": "test-45deg",
+      "series_quality_score": 84.2
+    },
+    {
+      "candidates": 245,
+      "coverage": 0.5072463768115942,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.16770186335403728,
+      "mean_guide_residual_px": 5.506926717549889,
+      "model_assisted": 78,
+      "series": "test-90deg",
+      "series_quality_score": 60.1
+    }
+  ],
+  "source_sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
+  "tool_version": "0.3.1",
+  "top_anomalies": [
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000001",
+      "observed": 10.0,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000005",
+      "observed": 9.0123,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000031",
+      "observed": 8.163,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000037",
+      "observed": 9.0392,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000039",
+      "observed": 8.7221,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000041",
+      "observed": 8.1371,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000042",
+      "observed": 8.3299,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000043",
+      "observed": 8.5124,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    },
+    {
+      "anomaly_type": "guide_residual_outlier",
+      "candidate_id": "line-test-0deg-000049",
+      "observed": 8.7444,
+      "reason": "系列 test-0deg 的引导残差显著高于稳健阈值 7.84px",
+      "recommended_action": "batch_review",
+      "series": "test-0deg",
+      "severity": "medium"
+    }
+  ],
+  "uncertainty_review": {
+    "candidate_count": 52,
+    "default_owner": "agent",
+    "group_count": 5,
+    "groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 33,
+        "end_candidate_id": "line-mfh-90deg-000033",
+        "group_id": "mfh-90deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.84848485,
+        "peak_normalized_uncertainty": 1.0,
+        "representative_candidate_id": "line-mfh-90deg-000001",
+        "series": "mfh-90deg",
+        "start_candidate_id": "line-mfh-90deg-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.07999999999999996",
+        "x_start": "0.07165217391304343"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-test-90deg-000014",
+        "group_id": "test-90deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02806122,
+        "peak_normalized_uncertainty": 0.03214286,
+        "representative_candidate_id": "line-test-90deg-000008",
+        "series": "test-90deg",
+        "start_candidate_id": "line-test-90deg-000008",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.002434782608695646",
+        "x_start": "0.0013913043478260834"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 6,
+        "end_candidate_id": "line-test-45deg-000463",
+        "group_id": "test-45deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02679623,
+        "peak_normalized_uncertainty": 0.03003534,
+        "representative_candidate_id": "line-test-45deg-000461",
+        "series": "test-45deg",
+        "start_candidate_id": "line-test-45deg-000458",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.09373913043478255",
+        "x_start": "0.09286956521739126"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 5,
+        "end_candidate_id": "line-mfh-45deg-000047",
+        "group_id": "mfh-45deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02245989,
+        "peak_normalized_uncertainty": 0.02673797,
+        "representative_candidate_id": "line-mfh-45deg-000047",
+        "series": "mfh-45deg",
+        "start_candidate_id": "line-mfh-45deg-000043",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.06921739130434779",
+        "x_start": "0.06852173913043474"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 1,
+        "end_candidate_id": "line-test-90deg-000242",
+        "group_id": "test-90deg-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02142857,
+        "peak_normalized_uncertainty": 0.02142857,
+        "representative_candidate_id": "line-test-90deg-000242",
+        "series": "test-90deg",
+        "start_candidate_id": "line-test-90deg-000242",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.08278260869565213",
+        "x_start": "0.08278260869565213"
+      }
+    ],
+    "priority_group_count": 5,
+    "priority_groups": [
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 33,
+        "end_candidate_id": "line-mfh-90deg-000033",
+        "group_id": "mfh-90deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.84848485,
+        "peak_normalized_uncertainty": 1.0,
+        "representative_candidate_id": "line-mfh-90deg-000001",
+        "series": "mfh-90deg",
+        "start_candidate_id": "line-mfh-90deg-000001",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.07999999999999996",
+        "x_start": "0.07165217391304343"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 7,
+        "end_candidate_id": "line-test-90deg-000014",
+        "group_id": "test-90deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02806122,
+        "peak_normalized_uncertainty": 0.03214286,
+        "representative_candidate_id": "line-test-90deg-000008",
+        "series": "test-90deg",
+        "start_candidate_id": "line-test-90deg-000008",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.002434782608695646",
+        "x_start": "0.0013913043478260834"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 6,
+        "end_candidate_id": "line-test-45deg-000463",
+        "group_id": "test-45deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02679623,
+        "peak_normalized_uncertainty": 0.03003534,
+        "representative_candidate_id": "line-test-45deg-000461",
+        "series": "test-45deg",
+        "start_candidate_id": "line-test-45deg-000458",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.09373913043478255",
+        "x_start": "0.09286956521739126"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 5,
+        "end_candidate_id": "line-mfh-45deg-000047",
+        "group_id": "mfh-45deg-uncertainty-001",
+        "mean_normalized_uncertainty": 0.02245989,
+        "peak_normalized_uncertainty": 0.02673797,
+        "representative_candidate_id": "line-mfh-45deg-000047",
+        "series": "mfh-45deg",
+        "start_candidate_id": "line-mfh-45deg-000043",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.06921739130434779",
+        "x_start": "0.06852173913043474"
+      },
+      {
+        "agent_action": "先检查图源分辨率、标定锚点和自动稳定性结果。",
+        "candidate_count": 1,
+        "end_candidate_id": "line-test-90deg-000242",
+        "group_id": "test-90deg-uncertainty-002",
+        "mean_normalized_uncertainty": 0.02142857,
+        "peak_normalized_uncertainty": 0.02142857,
+        "representative_candidate_id": "line-test-90deg-000242",
+        "series": "test-90deg",
+        "start_candidate_id": "line-test-90deg-000242",
+        "threshold": 0.02,
+        "user_action": "仅在 Agent 无法消除该区间不确定性时复核代表性局部证据。",
+        "x_end": "0.08278260869565213",
+        "x_start": "0.08278260869565213"
+      }
+    ],
+    "user_review_policy": "Agent 先完成自动稳定性诊断和安全重提取；仅把仍未解决的代表性区间交给用户，不得要求逐点复核全部高不确定候选。"
+  },
+  "warnings": [
+    "411 个候选使用模型辅助排他分配，已按系列汇总，不要求逐点点击"
+  ]
+}
