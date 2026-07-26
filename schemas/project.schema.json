@@ -29,9 +29,9 @@
     },
     "chart": {
       "type": "object",
-      "required": ["type", "plot_box", "x_axis", "y_axis", "series"],
+      "required": ["type", "plot_box", "series"],
       "properties": {
-        "type": {"enum": ["line", "scatter", "bar", "histogram"], "description": "图表类型。"},
+        "type": {"enum": ["line", "polar_line", "scatter", "bar", "histogram"], "description": "图表类型。"},
         "plot_box": {
           "type": "array",
           "prefixItems": [
@@ -46,6 +46,7 @@
         },
         "x_axis": {"$ref": "#/$defs/axis"},
         "y_axis": {"$ref": "#/$defs/axis"},
+        "polar": {"$ref": "#/$defs/polar"},
         "baseline_pixel": {"type": "number", "description": "柱图显式基线像素。"},
         "series": {
           "type": "array",
@@ -53,6 +54,13 @@
           "items": {"$ref": "#/$defs/series"}
         }
       },
+      "allOf": [
+        {
+          "if": {"properties": {"type": {"const": "polar_line"}}},
+          "then": {"required": ["polar"]},
+          "else": {"required": ["x_axis", "y_axis"]}
+        }
+      ],
       "additionalProperties": true
     },
     "quality_gates": {
@@ -60,11 +68,22 @@
       "description": "项目声明的自动风险筛查阈值；不能替代人工复核。",
       "additionalProperties": true
     },
+    "assessment": {
+      "type": "object",
+      "description": "综合评分的用途等级；阈值是操作门槛，不等同于统计准确率。",
+      "properties": {
+        "acceptance_profile": {
+          "enum": ["exploratory", "engineering", "publication"],
+          "default": "engineering"
+        }
+      },
+      "additionalProperties": false
+    },
     "render": {
       "type": "object",
       "required": ["plot_type", "x", "y"],
       "properties": {
-        "plot_type": {"enum": ["line", "scatter", "bar", "histogram"]},
+        "plot_type": {"enum": ["line", "polar_line", "scatter", "bar", "histogram"]},
         "x": {"type": "string"},
         "y": {"type": "string"},
         "group": {"type": ["string", "null"]},
@@ -133,7 +152,7 @@
         "max_aspect_ratio": {"type": "number", "minimum": 1},
         "min_rectangularity": {"type": "number", "minimum": 0, "maximum": 1},
         "baseline_tolerance": {"type": "number", "minimum": 0},
-        "extraction_mode": {"enum": ["color_column_median", "guided_path", "guided_group_path"]},
+        "extraction_mode": {"enum": ["color_column_median", "guided_path", "guided_group_path", "polar_radial"]},
         "shared_color_group": {"type": "string"},
         "guide_interpolation": {"enum": ["linear", "shape_preserving"]},
         "line_semantics": {"enum": ["solid", "dashed"]},
@@ -142,6 +161,7 @@
         "continuity_weight": {"type": "number", "minimum": 0},
         "search_half_width_px": {"type": "integer", "minimum": 0},
         "max_track_gap_px": {"type": "integer", "minimum": 0},
+        "angular_half_width_deg": {"type": "number", "exclusiveMinimum": 0, "maximum": 10},
         "guide_points_px": {
           "type": "array",
           "minItems": 2,
@@ -159,6 +179,43 @@
         }
       },
       "additionalProperties": true
+    },
+    "polar": {
+      "type": "object",
+      "required": ["center_px", "angle_axis", "radius_axis", "inner_radius_px", "outer_radius_px"],
+      "properties": {
+        "center_px": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+        "angle_axis": {
+          "type": "object",
+          "required": ["anchors"],
+          "properties": {
+            "unit": {"const": "degree"},
+            "zero_bearing_deg": {"type": "number"},
+            "direction": {"enum": ["clockwise", "counterclockwise"]},
+            "anchors": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": ["pixel", "value"],
+                "properties": {
+                  "pixel": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "minItems": 2, "maxItems": 2},
+                  "value": {"type": "number"}
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "radius_axis": {"$ref": "#/$defs/axis"},
+        "inner_radius_px": {"type": "number", "minimum": 0},
+        "outer_radius_px": {"type": "number", "exclusiveMinimum": 0},
+        "angle_start_deg": {"type": "number"},
+        "angle_end_deg": {"type": "number"},
+        "angle_step_deg": {"type": "number", "exclusiveMinimum": 0}
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

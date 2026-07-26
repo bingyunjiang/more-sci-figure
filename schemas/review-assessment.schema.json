@@ -9,8 +9,11 @@
     "candidate_sha256",
     "candidate_count",
     "overall_score",
+    "minimum_dimension_score",
     "risk_level",
     "recommended_action",
+    "scorecard",
+    "acceptance",
     "indicator_summary",
     "series_assessment",
     "anomaly_groups",
@@ -23,13 +26,107 @@
     "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
     "risk_level": {"enum": ["low", "medium", "high", "critical"]},
     "recommended_action": {
-      "enum": ["batch_confirm", "review_anomaly_groups", "stop"]
+      "enum": ["batch_confirm", "review_anomaly_groups", "re_extract", "apply_review", "render_validate", "accept", "stop"]
+    },
+    "minimum_dimension_score": {"type": "number", "minimum": 0, "maximum": 100},
+    "scorecard": {
+      "type": "object",
+      "required": ["method", "dimensions", "worst_dimension", "worst_series_score"],
+      "properties": {
+        "method": {"const": "weighted_dimensions_with_non_compensable_hard_gates"},
+        "dimensions": {
+          "type": "object",
+          "required": [
+            "provenance_integrity",
+            "calibration_quality",
+            "pixel_evidence",
+            "series_separation_continuity",
+            "uncertainty_stability",
+            "anomaly_health",
+            "quality_gate_compliance"
+          ],
+          "additionalProperties": {"$ref": "#/$defs/dimension"}
+        },
+        "worst_dimension": {"type": "string"},
+        "worst_series_score": {"type": "number", "minimum": 0, "maximum": 100}
+      },
+      "additionalProperties": true
+    },
+    "acceptance": {
+      "type": "object",
+      "required": [
+        "profile",
+        "profile_label",
+        "thresholds",
+        "hard_gates",
+        "hard_gates_pass",
+        "score_threshold_pass",
+        "dimension_floor_pass",
+        "technical_eligibility",
+        "decision",
+        "next_instruction",
+        "qualification_note"
+      ],
+      "properties": {
+        "profile": {"enum": ["exploratory", "engineering", "publication"]},
+        "profile_label": {"type": "string", "minLength": 1},
+        "thresholds": {
+          "type": "object",
+          "required": ["overall_score", "minimum_dimension_score"],
+          "properties": {
+            "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
+            "minimum_dimension_score": {"type": "number", "minimum": 0, "maximum": 100}
+          },
+          "additionalProperties": false
+        },
+        "hard_gates": {
+          "type": "object",
+          "required": [
+            "source_and_hash_integrity",
+            "automatic_quality_gates",
+            "no_unresolved_high_anomalies",
+            "candidate_ids_complete"
+          ],
+          "additionalProperties": {"type": "boolean"}
+        },
+        "hard_gates_pass": {"type": "boolean"},
+        "score_threshold_pass": {"type": "boolean"},
+        "dimension_floor_pass": {"type": "boolean"},
+        "technical_eligibility": {"type": "boolean"},
+        "decision": {
+          "enum": [
+            "blocked",
+            "not_qualified",
+            "targeted_review_required",
+            "eligible_for_user_confirmation",
+            "review_record_ready",
+            "extraction_accepted",
+            "accepted"
+          ]
+        },
+        "next_instruction": {"type": "string", "minLength": 1},
+        "qualification_note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
     },
     "indicator_summary": {"type": "object"},
     "series_assessment": {"type": "array", "items": {"type": "object"}},
     "anomaly_groups": {"type": "object"},
     "top_anomalies": {"type": "array", "items": {"type": "object"}},
     "review_policy": {"type": "object"}
+  },
+  "$defs": {
+    "dimension": {
+      "type": "object",
+      "required": ["label", "weight", "score", "metrics"],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "weight": {"type": "number", "exclusiveMinimum": 0},
+        "score": {"type": "number", "minimum": 0, "maximum": 100},
+        "metrics": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true
 }

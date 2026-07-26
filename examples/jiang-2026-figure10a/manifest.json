@@ -1,0 +1,62 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 274798,
+      "path": "examples/jiang-2026-figure10a/candidates.csv",
+      "sha256": "1682151c479028bdd761a72f8aa450eab64e4c010a3b6c8007207313927072b7"
+    },
+    "extraction_report": {
+      "bytes": 6105,
+      "path": "examples/jiang-2026-figure10a/extraction-report.json",
+      "sha256": "097a0cb327052260368976b6a6ab107414f784d47c8ae645242712d466a50ece"
+    },
+    "overlay": {
+      "bytes": 230208,
+      "path": "examples/jiang-2026-figure10a/overlay.png",
+      "sha256": "750955d74bb32ba96c1f7fbd9ab605df37af8646a6190a3de91cfe392d8aa9c3"
+    },
+    "project_spec": {
+      "bytes": 3867,
+      "path": "examples/jiang-2026-figure10a/project.json",
+      "sha256": "13a09006a82370152caec4cb361908fd62c78cb1ed2e59145dbe745d1f39ecf0"
+    },
+    "review_anomalies": {
+      "bytes": 0,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10a/review-anomalies.csv",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review_assessment": {
+      "bytes": 6151,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10a/review-assessment.json",
+      "sha256": "5464a5f820de2333bec9312abe1f69d5a653e9884d3ac8c97d4ea70c20d8d363"
+    },
+    "review_html": {
+      "bytes": 2597961,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10a/review.html",
+      "sha256": "02d658c082ce232c3322cba5772bd4520b924d385db9d3eea25427b6b4519497"
+    },
+    "review_template": {
+      "bytes": 231639,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10a/review-template.json",
+      "sha256": "32e4c72d27dd5a989aaf1137b88b9a8691f2187ba8814b1dfb490f51615fd1d0"
+    },
+    "source_report": {
+      "bytes": 2049,
+      "path": "examples/jiang-2026-figure10a/source-report.json",
+      "sha256": "37da3bec4440ed024837035c743109dde618c914e530ebf7d3c6fd811f52164e"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "pass",
+  "project_id": "jiang-2026-figure10a-spl-spectrum",
+  "project_spec": {
+    "bytes": 3867,
+    "path": "examples/jiang-2026-figure10a/project.json",
+    "sha256": "13a09006a82370152caec4cb361908fd62c78cb1ed2e59145dbe745d1f39ecf0"
+  },
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "tool_version": "0.3.1"
+}

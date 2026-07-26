@@ -59,6 +59,9 @@
       "max_rejected_ratio": null
     }
   },
+  "assessment": {
+    "acceptance_profile": "engineering"
+  },
   "render": {
     "plot_type": "line",
     "x": "x",

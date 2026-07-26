@@ -1,0 +1,62 @@
+{
+  "artifacts": {
+    "candidates": {
+      "bytes": 84993,
+      "path": "examples/jiang-2026-figure10b/candidates.csv",
+      "sha256": "31c31e573c2023a054e07a72fcbf3dc3415a09ce8e616f6382db5ed5f73b99e4"
+    },
+    "extraction_report": {
+      "bytes": 4674,
+      "path": "examples/jiang-2026-figure10b/extraction-report.json",
+      "sha256": "93dd81ec880c202ad34c8537a3cd8661a91d3ff9e2450e4bffc99f34c8285f1d"
+    },
+    "overlay": {
+      "bytes": 52077,
+      "path": "examples/jiang-2026-figure10b/overlay.png",
+      "sha256": "d972fa97bcd7a43f53b2c5ce4293fa691ed4e277b244ec748487da7669a8f34d"
+    },
+    "project_spec": {
+      "bytes": 3312,
+      "path": "examples/jiang-2026-figure10b/project.json",
+      "sha256": "8d7418f6b0fbabde673e6cb89a5776900148a9243024db2050065d8323cb98a9"
+    },
+    "review_anomalies": {
+      "bytes": 0,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-anomalies.csv",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "review_assessment": {
+      "bytes": 5290,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-assessment.json",
+      "sha256": "acefbb3023c792e517a85bd514e2539fbc5fa88c8dfa064d16ac39e0adb45a1f"
+    },
+    "review_html": {
+      "bytes": 546672,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review.html",
+      "sha256": "777b8ba60cb954d0164ded6923b763621225681b33afefb6c9449c9d2df9f498"
+    },
+    "review_template": {
+      "bytes": 50190,
+      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/review-template.json",
+      "sha256": "edbd0a8b49bed56bf2e7d9ec3349b86c001bb88f8d9f0a3527ea672b81987473"
+    },
+    "source_report": {
+      "bytes": 2052,
+      "path": "examples/jiang-2026-figure10b/source-report.json",
+      "sha256": "7c3dd48e7daba22b0124fa323d9d8898cea8510c00c7b843864125b83b53d7bc"
+    }
+  },
+  "delivery_status": "not_run",
+  "extraction_status": "pass",
+  "project_id": "jiang-2026-figure10b-spl-directivity",
+  "project_spec": {
+    "bytes": 3312,
+    "path": "examples/jiang-2026-figure10b/project.json",
+    "sha256": "8d7418f6b0fbabde673e6cb89a5776900148a9243024db2050065d8323cb98a9"
+  },
+  "render_status": "not_run",
+  "review_status": "not_run",
+  "schema": "more-sci-figure.manifest.v1",
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "tool_version": "0.3.1"
+}

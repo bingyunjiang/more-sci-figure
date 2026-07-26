@@ -1,0 +1,52 @@
+{
+  "axis_scales": {
+    "x": "circular_degree",
+    "y": "linear"
+  },
+  "canvas_px": null,
+  "display_geometry": {
+    "mode": "none",
+    "path": "examples/jiang-2026-figure10b/candidate-preview/candidate-preview-display-geometry.csv",
+    "provenance": "derived display geometry never overwrites data.csv",
+    "rows": 361
+  },
+  "formal_render": false,
+  "geometry_sources": {
+    "sound-pressure-level-directivity": "accepted_observation_geometry"
+  },
+  "input_status": "unreviewed_candidates",
+  "mapping": {
+    "group": "series",
+    "x": "x",
+    "y": "y"
+  },
+  "outputs": {
+    "pdf": {
+      "bytes": 23681,
+      "path": "examples/jiang-2026-figure10b/candidate-preview/candidate-preview.pdf",
+      "sha256": "3b364d30ac2adbb45a34a927a3e03cafed7003f2d63c8596039b8d5a75ae412f"
+    },
+    "png": {
+      "bytes": 201360,
+      "path": "examples/jiang-2026-figure10b/candidate-preview/candidate-preview.png",
+      "sha256": "d1a6587af27ab42a12747d09e9f54bdb9b22fbff10c56cd9c1fa93c96fa7c1eb"
+    },
+    "svg": {
+      "bytes": 72795,
+      "path": "examples/jiang-2026-figure10b/candidate-preview/candidate-preview.svg",
+      "sha256": "52ec674ea65b8858a024f14a04da111c58c8bcd71cdcb6f03387ae6af3e3274e"
+    }
+  },
+  "plot_type": "polar_line",
+  "project_spec": {
+    "bytes": 3312,
+    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/project.json",
+    "sha256": "8d7418f6b0fbabde673e6cb89a5776900148a9243024db2050065d8323cb98a9"
+  },
+  "rendered_segments": {
+    "sound-pressure-level-directivity": 1
+  },
+  "rows": 360,
+  "schema": "more-sci-figure.render-report.v1",
+  "status": "pass"
+}

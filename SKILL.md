@@ -1,6 +1,6 @@
 ---
 name: more-sci-figure
-description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可审计的科研图表工作流。适用于检查图源、标定坐标轴、提取可见曲线/散点/柱形数据、人工复核候选值、论文级重绘、导出 PNG/SVG/PDF、比较参考图并分别验证提取、复核、重绘和交付状态。
+description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可审计的科研图表工作流。适用于检查图源、锁定 PDF 嵌入图像、标定笛卡尔或极坐标轴、提取可见曲线/散点/柱形数据、人工复核候选值、论文级重绘、导出 PNG/SVG/PDF、比较参考图并分别验证提取、复核、重绘和交付状态。
 ---
 
 # More Sci Figure
@@ -35,6 +35,16 @@ python scripts/more_sci_figure.py inspect \
   --input figure.png --chart-type line --out-dir evidence
 ```
 
+PDF 页内包含独立栅格图对象时，优先锁定原始嵌入对象而不是重采样整页；索引来自声明页面且从 0 开始：
+
+```bash
+python scripts/more_sci_figure.py inspect \
+  --input article.pdf --page 9 --pdf-image-index 1 \
+  --chart-type line --out-dir evidence
+```
+
+`source-report.json` 会同时记录 PDF 哈希、页码、对象索引、xref、编码、尺寸和测量栅格哈希。
+
 检查 `source-report.json`，补全生成的 `project.json`。如果图表类型、绘图区、坐标变换或锚点仍不确定，应在提取前停止。
 
 ### 2. 提取候选值
@@ -46,7 +56,7 @@ python scripts/more_sci_figure.py extract \
   --spec evidence/project.json --out-dir evidence
 ```
 
-支持颜色可区分的 `line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
+支持颜色可区分的 `line`、单值径向 `polar_line`、紧凑实心 `scatter`、竖直实色 `bar` 和 `histogram`。`polar_line` 必须声明中心、内外半径、至少两个角度锚点、至少两个径向锚点、零度方位和增角方向；候选按声明角度采样，并保留真实颜色像素支持。同色曲线可声明 `guided_path` 独立引导，或使用 `guided_group_path` 对同一颜色组执行排他式联合分配；后者结合 `line_semantics=solid|dashed`、形状保持引导、连续性代价和局部排除框，避免同一像素同时进入两个物理系列。每个候选仍必须有真实像素支持，引导线本身不是数据。模型辅助分配标记为 `model_assisted_exclusive_assignment`。该命令生成候选数据、证据叠图、质量报告和本地复核页面，但不会直接授权正式数值。
 
 需要在复核前检查整体轨迹时，只能生成带水印候选预览：
 
@@ -62,6 +72,10 @@ python scripts/more_sci_figure.py preview \
 ### 3. AI 综合评判与对话确认
 
 默认流程不得要求用户逐点校对大量候选。`extract` 自动生成 `review-assessment.json` 和 `review-anomalies.csv`；Agent 应读取综合评分、风险等级、逐系列覆盖率/缺口/引导残差、模型辅助比例和异常组，只向用户汇报关键结论。
+
+综合评分由七个维度组成：来源与证据完整性 10%、坐标标定质量 15%、像素证据质量 20%、系列分离与连续性 20%、不确定度与稳定性代理 15%、异常负担 10%、项目质量门符合度 10%。必须同时报告总分、最低维度分、最差维度、最差曲线、硬门结果和下一步指令，不能只报总分。
+
+`project.assessment.acceptance_profile` 定义用途门槛：`exploratory` 为总分 85/单项 75，`engineering` 为 90/85（默认），`publication` 为 95/90。来源与哈希、自动质量门、候选编号完整性和未决高危异常是不可补偿硬门。分数是 v0.3.1 的保守操作基线，不是统计准确率；论文用途尤其不得把高分当作真值验证。
 
 综合评估使用可重复的本地证据指标，Agent 负责压缩与解释结果。它不会把 AI 判断冒充新的像素证据：来源哈希、候选哈希、质量门和异常记录仍保留。风险处理规则：
 
@@ -82,6 +96,8 @@ python scripts/more_sci_figure.py review-confirm \
 ```
 
 `review-confirm` 只有在综合评估允许批量确认且 `review-anomalies.csv` 为空时，才会生成固定路径的 `review-decisions.json`。存在异常时必须使用页面独立处理异常项；页面把普通候选预置为批量接受，异常候选保持待决策，只有全部异常都有明确决定后才生成覆盖全部候选的复核文件。然后应用复核：
+
+若综合评估返回 `recommended_action=apply_review`，表示完整复核记录已经保存；Agent 应直接执行应用与哈希校验，不得再次要求用户批量确认。
 
 ```bash
 python scripts/more_sci_figure.py review-apply \
@@ -113,6 +129,8 @@ python scripts/more_sci_figure.py validate \
 ```
 
 验证来源与交付物哈希、产物完整性、清单一致性，并在画布相同时计算全图及绘图区残差、输出残差热图。
+
+`validation-report.json` 还包含独立的重绘技术交付评分：交付物与哈希完整性 30%、三格式完整性 20%、数据到图形可追溯性 25%、重绘规格符合度 25%。它不抬升 `extraction_status` 或 `review_status`，参考图像素残差也只作诊断，不冒充数据准确率或视觉审美评分。
 
 ### 6. 门控管线
 

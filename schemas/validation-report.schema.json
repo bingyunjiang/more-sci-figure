@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:more-sci-figure:validation-report:v1",
+  "title": "More Sci Figure 重绘与交付验证报告",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "delivery_status",
+    "stage_statuses",
+    "artifact_checks",
+    "visual_comparison",
+    "delivery_assessment",
+    "errors",
+    "warnings"
+  ],
+  "properties": {
+    "schema": {"const": "more-sci-figure.validation-report.v1"},
+    "status": {"enum": ["pass", "failed"]},
+    "delivery_status": {"enum": ["pass", "partial", "failed"]},
+    "stage_statuses": {"type": "object"},
+    "artifact_checks": {"type": "object"},
+    "visual_comparison": {"type": "object"},
+    "delivery_assessment": {
+      "type": "object",
+      "required": [
+        "method",
+        "profile",
+        "profile_label",
+        "overall_score",
+        "minimum_dimension_score",
+        "thresholds",
+        "dimensions",
+        "worst_dimension",
+        "hard_gates",
+        "hard_gates_pass",
+        "score_threshold_pass",
+        "dimension_floor_pass",
+        "decision",
+        "next_instruction",
+        "qualification_note"
+      ],
+      "properties": {
+        "method": {
+          "const": "weighted_render_delivery_dimensions_with_non_compensable_hard_gates"
+        },
+        "profile": {"enum": ["exploratory", "engineering", "publication"]},
+        "profile_label": {"type": "string", "minLength": 1},
+        "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
+        "minimum_dimension_score": {"type": "number", "minimum": 0, "maximum": 100},
+        "thresholds": {
+          "type": "object",
+          "required": ["overall_score", "minimum_dimension_score"]
+        },
+        "dimensions": {
+          "type": "object",
+          "required": [
+            "artifact_integrity",
+            "format_completeness",
+            "data_geometry_traceability",
+            "render_spec_compliance"
+          ],
+          "additionalProperties": {"$ref": "#/$defs/dimension"}
+        },
+        "worst_dimension": {"type": "string"},
+        "hard_gates": {
+          "type": "object",
+          "required": [
+            "artifact_hashes_valid",
+            "required_formats_complete",
+            "stage_status_allows_delivery"
+          ],
+          "additionalProperties": {"type": "boolean"}
+        },
+        "hard_gates_pass": {"type": "boolean"},
+        "score_threshold_pass": {"type": "boolean"},
+        "dimension_floor_pass": {"type": "boolean"},
+        "decision": {
+          "enum": ["blocked", "not_qualified", "conditional_acceptance", "accepted"]
+        },
+        "next_instruction": {"type": "string", "minLength": 1},
+        "qualification_note": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "dimension": {
+      "type": "object",
+      "required": ["label", "weight", "score", "metrics"],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "weight": {"type": "number", "exclusiveMinimum": 0},
+        "score": {"type": "number", "minimum": 0, "maximum": 100},
+        "metrics": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

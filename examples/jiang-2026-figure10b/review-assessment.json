@@ -1,0 +1,173 @@
+{
+  "acceptance": {
+    "decision": "not_qualified",
+    "dimension_floor_pass": false,
+    "hard_gates": {
+      "automatic_quality_gates": true,
+      "candidate_ids_complete": true,
+      "no_unresolved_high_anomalies": true,
+      "source_and_hash_integrity": true
+    },
+    "hard_gates_pass": true,
+    "next_instruction": "暂不接受：优先修复最低分维度并重新提取，然后再次评估。",
+    "profile": "engineering",
+    "profile_label": "工程分析",
+    "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    "score_threshold_pass": true,
+    "technical_eligibility": false,
+    "thresholds": {
+      "minimum_dimension_score": 85.0,
+      "overall_score": 90.0
+    },
+    "unresolved_anomaly_count": 0,
+    "unresolved_anomaly_ids": []
+  },
+  "anomaly_groups": {
+    "ambiguous_assignment": 0,
+    "guide_residual_outlier": 0,
+    "invalid_or_non_finite": 0,
+    "model_assisted_assignment": 0
+  },
+  "candidate_count": 360,
+  "candidate_sha256": "31c31e573c2023a054e07a72fcbf3dc3415a09ce8e616f6382db5ed5f73b99e4",
+  "critical_issues": [],
+  "evidence_status_counts": {
+    "visible_pixel_support": 360
+  },
+  "generated_at": "2026-07-26T05:23:14.946400+00:00",
+  "high_risk_issues": [],
+  "indicator_summary": {
+    "ambiguous_candidates": 0,
+    "calibration_normalized_rmse": [
+      0.0,
+      0.0014554477365308631
+    ],
+    "extraction_status": "pass",
+    "high_anomalies": 0,
+    "medium_anomalies": 0,
+    "model_assisted_candidates": 0,
+    "model_assisted_ratio": 0.0,
+    "quality_checks_failed": 0,
+    "quality_checks_total": 6
+  },
+  "minimum_dimension_score": 74.3,
+  "overall_score": 96.1,
+  "project_id": "jiang-2026-figure10b-spl-directivity",
+  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/project.json",
+  "recommended_action": "re_extract",
+  "review_policy": {
+    "batch_confirmation_allowed": false,
+    "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
+    "formal_data_requires_confirmation": true,
+    "point_table_role": "仅用于异常深挖或用户主动抽查。"
+  },
+  "risk_level": "medium",
+  "schema": "more-sci-figure.review-assessment.v1",
+  "scorecard": {
+    "dimensions": {
+      "anomaly_health": {
+        "label": "异常负担",
+        "metrics": {
+          "anomaly_rate": 0.0,
+          "high_anomalies": 0,
+          "medium_anomalies": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "calibration_quality": {
+        "label": "坐标标定质量",
+        "metrics": {
+          "axes": [
+            {
+              "anchor_count": 4,
+              "axis": "angle_axis",
+              "normalized_rmse": 0.0,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            },
+            {
+              "anchor_count": 7,
+              "axis": "radius_axis",
+              "normalized_rmse": 0.0014554477365308631,
+              "operational_tolerance": 0.002,
+              "rmse_evaluable": true,
+              "score": 100.0
+            }
+          ]
+        },
+        "score": 100.0,
+        "weight": 15
+      },
+      "pixel_evidence": {
+        "label": "像素证据质量",
+        "metrics": {
+          "ambiguous_ratio": 0.0,
+          "model_assisted_ratio": 0.0,
+          "support_evaluable": true,
+          "valid_support_ratio": 1.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "provenance_integrity": {
+        "label": "来源与证据完整性",
+        "metrics": {
+          "candidate_hash_matches_manifest": true,
+          "critical_issue_count": 0,
+          "provenance_warning_count": 0
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "quality_gate_compliance": {
+        "label": "项目质量门符合度",
+        "metrics": {
+          "checks_failed": 0,
+          "checks_total": 6
+        },
+        "score": 100.0,
+        "weight": 10
+      },
+      "series_separation_continuity": {
+        "label": "系列分离与连续性",
+        "metrics": {
+          "mean_series_score": 100.0,
+          "worst_series_score": 100.0
+        },
+        "score": 100.0,
+        "weight": 20
+      },
+      "uncertainty_stability": {
+        "label": "不确定度与稳定性代理",
+        "metrics": {
+          "guide_residual_p95_fraction": null,
+          "normalized_uncertainty_p95": 0.0514092265019659,
+          "perturbation_stability": "not_run"
+        },
+        "score": 74.3,
+        "weight": 15
+      }
+    },
+    "method": "weighted_dimensions_with_non_compensable_hard_gates",
+    "worst_dimension": "uncertainty_stability",
+    "worst_series_score": 100.0
+  },
+  "series_assessment": [
+    {
+      "candidates": 360,
+      "coverage": 1.0,
+      "flagged_anomalies": 0,
+      "maximum_gap_fraction": 0.0,
+      "mean_guide_residual_px": null,
+      "model_assisted": 0,
+      "series": "sound-pressure-level-directivity",
+      "series_quality_score": 100.0
+    }
+  ],
+  "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
+  "tool_version": "0.3.1",
+  "top_anomalies": [],
+  "warnings": []
+}

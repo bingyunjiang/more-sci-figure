@@ -17,9 +17,10 @@
 - `source`：来源路径、哈希、PDF 页码和测量栅格；
 - `chart`：图表类型、绘图区、坐标轴锚点和系列检测参数；
 - `quality_gates`：按项目声明的自动质量门；
+- `assessment.acceptance_profile`：趋势预览、工程分析或论文定量数据的操作门槛；
 - `render`：数据列映射、标签、标题和可选坐标尺度。
 
-曲线系列还可声明 `extraction_mode=guided_path`、`shared_color_group`、引导点、搜索走廊和局部排除框。重绘可声明固定画布、逐系列样式与派生展示几何。
+曲线系列还可声明 `extraction_mode=guided_path`、`shared_color_group`、引导点、搜索走廊和局部排除框。`polar_line` 另行声明中心、角度轴、径向轴、内外半径和 `polar_radial` 角度走廊。重绘可声明固定画布、逐系列样式与派生展示几何。
 
 ## 坐标标定
 
@@ -47,7 +48,7 @@ candidates.csv
 ```
 
 - `candidates.csv` 可以包含自动质量门未完全通过的可见候选；
-- `review-assessment.json` 融合可重复的证据指标，给出综合评分、风险等级、系列摘要、异常组和建议动作；不得把评分冒充新的像素证据；
+- `review-assessment.json` 融合七个可重复证据维度，给出综合评分、最低维度、硬门、用途阈值、系列摘要、异常组、判定和下一步指令；不得把评分冒充新的像素证据；
 - `review-anomalies.csv` 只承载异常深挖清单，不要求用户逐点复核全部候选；
 - `review-decisions.json` 必须覆盖全部候选编号并绑定候选文件哈希；
 - `data.csv` 只能包含人工明确接受的记录；
@@ -99,3 +100,5 @@ candidates.csv
 - `not_applicable`：使用外部提供数据，不涉及图像候选复核。
 
 `delivery_status=pass` 只表示用户要求的阶段与交付物通过，并不表示隐藏或歧义数据被恢复。图像提取项目未经人工复核不得交付为 `pass`。
+
+`validation-report.json.delivery_assessment` 单独评价重绘技术交付的文件/哈希、格式、数据映射和规格执行。它不得改变或抬升提取、复核、重绘、交付四类正式状态；参考图残差只作诊断。

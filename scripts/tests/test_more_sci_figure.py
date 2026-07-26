@@ -146,6 +146,10 @@ class WorkflowTests(unittest.TestCase):
         waiting = msf.pipeline_command(spec_path, output)
         self.assertEqual("awaiting_confirmation", waiting["review"])
         self.assertIn("综合评分", waiting)
+        self.assertIn("最低维度分", waiting)
+        self.assertEqual("工程分析", waiting["用途等级"])
+        self.assertEqual("eligible_for_user_confirmation", waiting["判定"])
+        self.assertTrue(waiting["硬门通过"])
         self.assertEqual("batch_confirm", waiting["建议动作"])
         self.assertEqual("not_run", waiting["render"])
         self.assertTrue((output / "candidates.csv").is_file())
@@ -154,6 +158,11 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue((output / "review-anomalies.csv").is_file())
         review_html = (output / "review.html").read_text(encoding="utf-8")
         self.assertIn("AI 综合评判", review_html)
+        self.assertIn("用途等级", review_html)
+        self.assertIn("合格线", review_html)
+        self.assertIn("当前最低维度", review_html)
+        self.assertIn("下一步指令", review_html)
+        self.assertIn("坐标标定质量", review_html)
         self.assertIn("普通候选可批量确认", review_html)
         self.assertIn("异常候选独立复核", review_html)
         self.assertIn("普通候选批量区", review_html)
@@ -243,6 +252,21 @@ class WorkflowTests(unittest.TestCase):
         assessment = msf.review_assess_command(output)
         self.assertEqual("pass", assessment["status"])
         self.assertEqual("batch_confirm", assessment["recommended_action"])
+        assessment_payload = msf.read_json(output / "review-assessment.json")
+        self.assertEqual(7, len(assessment_payload["scorecard"]["dimensions"]))
+        self.assertEqual("engineering", assessment_payload["acceptance"]["profile"])
+        self.assertEqual(90.0, assessment_payload["acceptance"]["thresholds"]["overall_score"])
+        self.assertEqual(
+            85.0,
+            assessment_payload["acceptance"]["thresholds"]["minimum_dimension_score"],
+        )
+        self.assertTrue(assessment_payload["acceptance"]["hard_gates_pass"])
+        self.assertEqual(
+            "eligible_for_user_confirmation",
+            assessment_payload["acceptance"]["decision"],
+        )
+        self.assertGreaterEqual(assessment_payload["minimum_dimension_score"], 85.0)
+        self.assertTrue(assessment_payload["acceptance"]["next_instruction"])
         self.assertTrue((output / "review-assessment.json").is_file())
         self.assertTrue((output / "review-anomalies.csv").is_file())
         manifest_before = msf.read_json(output / "manifest.json")
@@ -263,6 +287,12 @@ class WorkflowTests(unittest.TestCase):
         )
         self.assertEqual("下一步", decisions["anomaly_acknowledgement"]["confirmation"])
         self.assertFalse((output / "data.csv").exists())
+
+        ready = msf.review_assess_command(output)
+        self.assertEqual("apply_review", ready["recommended_action"])
+        self.assertEqual("review_record_ready", ready["acceptance_decision"])
+        review_page = msf.review_command(output)
+        self.assertIn("应用", review_page["下一步"])
 
         applied = msf.review_apply_command(output, output / "review-decisions.json")
         self.assertEqual("accepted", applied["review_status"])
@@ -341,6 +371,28 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(msf.FigureError, "不得一键批量确认"):
             msf.review_confirm_command(output, "Dr.Jiang", "继续")
         self.assertFalse((output / "review-decisions.json").exists())
+
+    def test_publication_profile_requires_a_higher_dimension_floor(self) -> None:
+        spec_path = self.make_line_project()
+        spec = msf.read_json(spec_path)
+        spec["assessment"] = {"acceptance_profile": "publication"}
+        msf.write_json(spec_path, spec)
+        output = self.root / "evidence"
+
+        msf.extract_command(spec_path, output)
+        assessment = msf.read_json(output / "review-assessment.json")
+
+        self.assertEqual("publication", assessment["acceptance"]["profile"])
+        self.assertEqual(95.0, assessment["acceptance"]["thresholds"]["overall_score"])
+        self.assertEqual(
+            90.0, assessment["acceptance"]["thresholds"]["minimum_dimension_score"]
+        )
+        self.assertFalse(assessment["acceptance"]["dimension_floor_pass"])
+        self.assertEqual("not_qualified", assessment["acceptance"]["decision"])
+        self.assertEqual("re_extract", assessment["recommended_action"])
+        review_page = msf.review_command(output)
+        self.assertIn("重新提取", review_page["下一步"])
+        self.assertNotIn("批量确认", review_page["下一步"])
 
     def test_extract_rebases_relative_source_paths_in_project_copy(self) -> None:
         spec_path = self.make_line_project()
@@ -848,6 +900,11 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual("not_applicable", manifest["extraction_status"])
         self.assertEqual("not_applicable", manifest["review_status"])
         self.assertEqual("pass", validation["delivery_status"])
+        delivery_assessment = validation["delivery_assessment"]
+        self.assertEqual("accepted", delivery_assessment["decision"])
+        self.assertEqual(4, len(delivery_assessment["dimensions"]))
+        self.assertEqual(100.0, delivery_assessment["overall_score"])
+        self.assertTrue(delivery_assessment["hard_gates_pass"])
 
     def test_validation_fails_if_review_artifact_is_missing(self) -> None:
         spec_path = self.make_line_project()
@@ -859,6 +916,8 @@ class WorkflowTests(unittest.TestCase):
         (output / "review-decisions.json").unlink()
         validation = msf.validate_command(output)
         self.assertEqual("failed", validation["delivery_status"])
+        self.assertEqual("blocked", validation["delivery_assessment"]["decision"])
+        self.assertFalse(validation["delivery_assessment"]["hard_gates_pass"])
         self.assertTrue(any("review_decisions" in error for error in validation["errors"]))
 
     def test_canvas_mismatch_is_reported_without_resizing(self) -> None:
@@ -921,6 +980,142 @@ class WorkflowTests(unittest.TestCase):
             {"color": "#0072b2", "color_space": "lab", "tolerance": 3},
         )
         self.assertEqual([True, False], mask[0].tolist())
+
+    def test_inspect_can_lock_original_pdf_embedded_raster(self) -> None:
+        try:
+            import fitz
+        except ImportError:
+            self.skipTest("PyMuPDF unavailable")
+        raster = self.root / "embedded.png"
+        Image.new("RGB", (73, 41), "#d62728").save(raster)
+        pdf = self.root / "embedded.pdf"
+        document = fitz.open()
+        page = document.new_page(width=200, height=120)
+        page.insert_image(fitz.Rect(20, 20, 166, 102), filename=str(raster))
+        document.save(pdf)
+        document.close()
+        evidence = self.root / "pdf-evidence"
+
+        msf.inspect_command(
+            pdf,
+            "line",
+            evidence,
+            1,
+            pdf_image_index=0,
+        )
+
+        report = msf.read_json(evidence / "source-report.json")
+        measurement = report["measurement_raster"]
+        self.assertEqual("pdf_embedded_raster", measurement["measurement_kind"])
+        self.assertEqual([73, 41], [measurement["width"], measurement["height"]])
+        self.assertIsInstance(measurement["pdf_xref"], int)
+        project = msf.read_json(evidence / "project.json")
+        locked = (evidence / project["source"]["measurement_raster"]).resolve()
+        self.assertTrue(locked.is_file())
+        self.assertEqual(digest(locked), project["source"]["measurement_sha256"])
+
+    def test_polar_line_extractor_produces_overlay_and_redraw(self) -> None:
+        source = self.root / "polar.png"
+        image = Image.new("RGB", (240, 240), "white")
+        draw = ImageDraw.Draw(image)
+        center = (120.0, 120.0)
+        points: list[tuple[float, float]] = []
+        for angle in range(361):
+            radius = 60.0 + 10.0 * np.cos(np.deg2rad(3.0 * angle))
+            radians = np.deg2rad(angle)
+            points.append(
+                (
+                    center[0] + radius * np.cos(radians),
+                    center[1] + radius * np.sin(radians),
+                )
+            )
+        draw.line(points, fill="#d62728", width=3, joint="curve")
+        image.save(source)
+        spec = {
+            "schema": msf.SCHEMA,
+            "project_id": "polar-fixture",
+            "source": {
+                "path": str(source),
+                "sha256": digest(source),
+                "page": None,
+                "measurement_raster": str(source),
+                "measurement_sha256": digest(source),
+            },
+            "chart": {
+                "type": "polar_line",
+                "plot_box": [20, 20, 220, 220],
+                "polar": {
+                    "center_px": [120, 120],
+                    "angle_axis": {
+                        "unit": "degree",
+                        "zero_bearing_deg": 0,
+                        "direction": "clockwise",
+                        "anchors": [
+                            {"pixel": [200, 120], "value": 0},
+                            {"pixel": [120, 200], "value": 90},
+                            {"pixel": [40, 120], "value": 180},
+                            {"pixel": [120, 40], "value": 270},
+                        ],
+                    },
+                    "radius_axis": {
+                        "scale": "linear",
+                        "anchors": [
+                            {"pixel": 30, "value": 30},
+                            {"pixel": 60, "value": 60},
+                            {"pixel": 90, "value": 90},
+                        ],
+                    },
+                    "inner_radius_px": 25,
+                    "outer_radius_px": 95,
+                    "angle_start_deg": 0,
+                    "angle_end_deg": 360,
+                    "angle_step_deg": 1,
+                },
+                "series": [
+                    {
+                        "id": "directivity",
+                        "color": "#d62728",
+                        "color_space": "lab",
+                        "tolerance": 8,
+                        "extraction_mode": "polar_radial",
+                        "angular_half_width_deg": 0.8,
+                    }
+                ],
+            },
+            "quality_gates": {
+                "calibration": {"require_three_anchors": True, "max_normalized_rmse": 0.001},
+                "polar_line": {"min_coverage": 0.95, "max_gap_fraction": 0.03},
+            },
+            "render": {
+                "plot_type": "polar_line",
+                "x": "x",
+                "y": "y",
+                "group": "series",
+                "x_ticks": list(range(0, 360, 45)),
+                "y_limits": [20, 80],
+                "y_ticks": [30, 40, 50, 60, 70, 80],
+                "series_styles": {"directivity": {"color": "#d62728"}},
+            },
+        }
+        spec_path = self.root / "polar-project.json"
+        msf.write_json(spec_path, spec)
+        evidence = self.root / "polar-evidence"
+
+        report = msf.extract_command(spec_path, evidence)
+
+        self.assertEqual("pass", report["status"])
+        self.assertGreater(report["rows"], 340)
+        self.assertTrue((evidence / "overlay.png").is_file())
+        candidates = msf.read_tabular_rows(evidence / "candidates.csv")
+        angle_zero = min(candidates, key=lambda row: abs(float(row["x"])))
+        self.assertAlmostEqual(70.0, float(angle_zero["y"]), delta=2.0)
+        preview = msf.preview_command(
+            evidence / "project.json",
+            evidence / "candidates.csv",
+            evidence / "candidate-preview",
+        )
+        self.assertEqual("polar_line", preview["plot_type"])
+        self.assertTrue((evidence / "candidate-preview" / "candidate-preview.svg").is_file())
 
     def test_elongated_scatter_component_is_rejected(self) -> None:
         image = Image.new("RGB", (100, 80), "white")

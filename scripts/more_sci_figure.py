@@ -27,8 +27,25 @@ SCHEMA = "more-sci-figure.project.v1"
 MANIFEST_SCHEMA = "more-sci-figure.manifest.v1"
 REVIEW_SCHEMA = "more-sci-figure.review-decisions.v1"
 ASSESSMENT_SCHEMA = "more-sci-figure.review-assessment.v1"
-SUPPORTED_CHARTS = {"line", "scatter", "bar", "histogram"}
+SUPPORTED_CHARTS = {"line", "polar_line", "scatter", "bar", "histogram"}
 VERSION = "0.3.1"
+ACCEPTANCE_PROFILES = {
+    "exploratory": {
+        "label": "趋势预览",
+        "overall_threshold": 85.0,
+        "minimum_dimension_score": 75.0,
+    },
+    "engineering": {
+        "label": "工程分析",
+        "overall_threshold": 90.0,
+        "minimum_dimension_score": 85.0,
+    },
+    "publication": {
+        "label": "论文定量数据",
+        "overall_threshold": 95.0,
+        "minimum_dimension_score": 90.0,
+    },
+}
 
 
 class FigureError(RuntimeError):
@@ -155,10 +172,66 @@ def render_pdf_page(path: Path, page_number: int, output: Path, dpi: int = 144) 
         }
 
 
-def inspect_command(input_path: Path, chart_type: str | None, out_dir: Path, page: int) -> None:
+def extract_pdf_embedded_image(
+    path: Path, page_number: int, image_index: int, output_stem: Path
+) -> dict[str, Any]:
+    """Extract one declared PDF image object without rasterizing or rescaling the page."""
+    try:
+        import fitz
+    except ImportError as exc:
+        raise FigureError("提取 PDF 嵌入图像需要安装 PyMuPDF") from exc
+    with fitz.open(path) as document:
+        if page_number < 1 or page_number > document.page_count:
+            raise FigureError(f"PDF 页码必须位于 1 到 {document.page_count} 之间")
+        images = document[page_number - 1].get_images(full=True)
+        if not images:
+            raise FigureError(f"PDF 第 {page_number} 页没有可提取的嵌入栅格对象")
+        if image_index < 0 or image_index >= len(images):
+            raise FigureError(
+                f"PDF 第 {page_number} 页的 image_index 必须位于 0 到 {max(0, len(images) - 1)} 之间"
+            )
+        xref = int(images[image_index][0])
+        extracted = document.extract_image(xref)
+    extension = str(extracted.get("ext") or "bin").lower()
+    output = output_stem.with_suffix(f".{extension}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(extracted["image"])
+    try:
+        with Image.open(output) as image:
+            width, height = image.size
+            mode = image.mode
+    except Exception as exc:
+        raise FigureError(f"PDF 嵌入对象 {xref} 不是可测量栅格：{exc}") from exc
+    return {
+        "path": str(output),
+        "sha256": sha256_file(output),
+        "width": int(width),
+        "height": int(height),
+        "mode": mode,
+        "page": page_number,
+        "pdf_image_index": image_index,
+        "pdf_xref": xref,
+        "encoding": extension,
+        "measurement_kind": "pdf_embedded_raster",
+    }
+
+
+def inspect_command(
+    input_path: Path,
+    chart_type: str | None,
+    out_dir: Path,
+    page: int,
+    *,
+    dpi: int = 144,
+    pdf_image_index: int | None = None,
+) -> None:
     input_path = input_path.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     metadata = source_metadata(input_path)
+    if dpi <= 0:
+        raise FigureError("PDF 页面渲染 DPI 必须为正整数")
+    if pdf_image_index is not None and metadata["kind"] != "pdf":
+        raise FigureError("--pdf-image-index 只适用于 PDF 输入")
     report: dict[str, Any] = {
         "schema": "more-sci-figure.source-report.v1",
         "tool_version": VERSION,
@@ -170,7 +243,12 @@ def inspect_command(input_path: Path, chart_type: str | None, out_dir: Path, pag
     }
     measurement: dict[str, Any] | None = None
     if metadata["kind"] == "pdf":
-        measurement = render_pdf_page(input_path, page, out_dir / "source-page.png")
+        if pdf_image_index is None:
+            measurement = render_pdf_page(input_path, page, out_dir / "source-page.png", dpi=dpi)
+        else:
+            measurement = extract_pdf_embedded_image(
+                input_path, page, pdf_image_index, out_dir / "source-image"
+            )
         report["measurement_raster"] = measurement
     elif metadata["kind"] == "raster":
         measurement = {
@@ -183,6 +261,59 @@ def inspect_command(input_path: Path, chart_type: str | None, out_dir: Path, pag
     write_json(out_dir / "source-report.json", report)
 
     relative_source = os.path.relpath(input_path, out_dir.resolve())
+    measurement_path = Path(str(measurement["path"])) if measurement else input_path
+    chart: dict[str, Any] = {
+        "type": chart_type or "unknown",
+        "plot_box": [0, 0, 0, 0],
+        "x_axis": {
+            "scale": "linear",
+            "anchors": [{"pixel": 0, "value": 0}, {"pixel": 0, "value": 1}],
+        },
+        "y_axis": {
+            "scale": "linear",
+            "anchors": [{"pixel": 0, "value": 0}, {"pixel": 0, "value": 1}],
+        },
+        "series": [
+            {
+                "id": "series-a",
+                "color": "#d62728",
+                "color_space": "lab",
+                "tolerance": 12,
+                "min_area": 4,
+                "max_area": 500,
+                "min_fill_ratio": 0.25,
+                "max_aspect_ratio": 4.0,
+                "min_rectangularity": 0.8,
+                "baseline_tolerance": 3.0,
+            }
+        ],
+    }
+    if chart_type == "polar_line":
+        chart.pop("x_axis")
+        chart.pop("y_axis")
+        chart["polar"] = {
+            "center_px": [0, 0],
+            "angle_axis": {
+                "unit": "degree",
+                "zero_bearing_deg": 0,
+                "direction": "clockwise",
+                "anchors": [
+                    {"pixel": [0, 0], "value": 0},
+                    {"pixel": [0, 0], "value": 90},
+                ],
+            },
+            "radius_axis": {
+                "scale": "linear",
+                "anchors": [{"pixel": 0, "value": 0}, {"pixel": 0, "value": 1}],
+            },
+            "inner_radius_px": 0,
+            "outer_radius_px": 0,
+            "angle_start_deg": 0,
+            "angle_end_deg": 360,
+            "angle_step_deg": 1,
+        }
+        chart["series"][0]["extraction_mode"] = "polar_radial"
+        chart["series"][0]["angular_half_width_deg"] = 0.75
     project = {
         "schema": SCHEMA,
         "project_id": input_path.stem,
@@ -190,39 +321,12 @@ def inspect_command(input_path: Path, chart_type: str | None, out_dir: Path, pag
             "path": relative_source,
             "sha256": metadata["sha256"],
             "page": page if metadata["kind"] == "pdf" else None,
-            "measurement_raster": (
-                os.path.relpath(out_dir / "source-page.png", out_dir)
-                if metadata["kind"] == "pdf"
-                else relative_source
-            ),
+            "measurement_raster": os.path.relpath(measurement_path, out_dir.resolve()),
             "measurement_sha256": measurement["sha256"] if measurement else None,
+            "pdf_image_index": pdf_image_index,
+            "pdf_xref": measurement.get("pdf_xref") if measurement else None,
         },
-        "chart": {
-            "type": chart_type or "unknown",
-            "plot_box": [0, 0, 0, 0],
-            "x_axis": {
-                "scale": "linear",
-                "anchors": [{"pixel": 0, "value": 0}, {"pixel": 0, "value": 1}],
-            },
-            "y_axis": {
-                "scale": "linear",
-                "anchors": [{"pixel": 0, "value": 0}, {"pixel": 0, "value": 1}],
-            },
-            "series": [
-                {
-                    "id": "series-a",
-                    "color": "#d62728",
-                    "color_space": "lab",
-                    "tolerance": 12,
-                    "min_area": 4,
-                    "max_area": 500,
-                    "min_fill_ratio": 0.25,
-                    "max_aspect_ratio": 4.0,
-                    "min_rectangularity": 0.8,
-                    "baseline_tolerance": 3.0,
-                }
-            ],
-        },
+        "chart": chart,
         "quality_gates": {
             "calibration": {
                 "max_normalized_rmse": None,
@@ -298,7 +402,8 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
     ):
         errors.append("chart.plot_box 必须是具有正面积的 [left, top, right, bottom]")
     if extraction:
-        for axis_name in ("x_axis", "y_axis"):
+        axis_names = () if chart_type == "polar_line" else ("x_axis", "y_axis")
+        for axis_name in axis_names:
             axis = chart.get(axis_name)
             anchors = axis.get("anchors") if isinstance(axis, dict) else None
             if not isinstance(anchors, list) or len(anchors) < 2:
@@ -356,9 +461,24 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     "color_column_median",
                     "guided_path",
                     "guided_group_path",
+                    "polar_radial",
                 }:
                     errors.append(
-                        f"系列 {entry.get('id', '')} 的 extraction_mode 只支持 color_column_median、guided_path 或 guided_group_path"
+                        f"系列 {entry.get('id', '')} 的 extraction_mode 不受支持"
+                    )
+                if chart_type == "polar_line" and extraction_mode != "polar_radial":
+                    errors.append(
+                        f"极坐标系列 {entry.get('id', '')} 的 extraction_mode 必须为 polar_radial"
+                    )
+                angular_half_width = entry.get("angular_half_width_deg")
+                if angular_half_width is not None and (
+                    not isinstance(angular_half_width, (int, float))
+                    or not math.isfinite(float(angular_half_width))
+                    or float(angular_half_width) <= 0
+                    or float(angular_half_width) > 10
+                ):
+                    errors.append(
+                        f"系列 {entry.get('id', '')} 的 angular_half_width_deg 必须位于 0 到 10 度之间"
                     )
                 if extraction_mode in {"guided_path", "guided_group_path"}:
                     guide_points = parse_guide_points(entry)
@@ -434,6 +554,88 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 if len({str(item.get("color")) for item in group_entries}) != 1:
                     errors.append(f"guided_group_path 颜色组 {group_id!r} 的系列必须使用相同颜色")
 
+        if chart_type == "polar_line":
+            polar = chart.get("polar")
+            if not isinstance(polar, dict):
+                errors.append("polar_line 必须提供 chart.polar")
+            else:
+                center = polar.get("center_px")
+                if (
+                    not isinstance(center, list)
+                    or len(center) != 2
+                    or not all(
+                        isinstance(value, (int, float)) and math.isfinite(float(value))
+                        for value in center
+                    )
+                ):
+                    errors.append("chart.polar.center_px 必须是两个有限像素坐标")
+                inner = polar.get("inner_radius_px")
+                outer = polar.get("outer_radius_px")
+                if (
+                    not isinstance(inner, (int, float))
+                    or not isinstance(outer, (int, float))
+                    or not math.isfinite(float(inner))
+                    or not math.isfinite(float(outer))
+                    or float(inner) < 0
+                    or float(outer) <= float(inner)
+                ):
+                    errors.append("chart.polar 的内外半径必须满足 0 <= inner_radius_px < outer_radius_px")
+                angle_axis = polar.get("angle_axis")
+                angle_anchors = angle_axis.get("anchors") if isinstance(angle_axis, dict) else None
+                if not isinstance(angle_anchors, list) or len(angle_anchors) < 2:
+                    errors.append("chart.polar.angle_axis 至少需要两个角度锚点")
+                else:
+                    valid_angle_values: list[float] = []
+                    for anchor in angle_anchors:
+                        pixel = anchor.get("pixel") if isinstance(anchor, dict) else None
+                        value = anchor.get("value") if isinstance(anchor, dict) else None
+                        if (
+                            not isinstance(pixel, list)
+                            or len(pixel) != 2
+                            or not all(
+                                isinstance(item, (int, float)) and math.isfinite(float(item))
+                                for item in pixel
+                            )
+                            or not isinstance(value, (int, float))
+                            or not math.isfinite(float(value))
+                        ):
+                            errors.append("chart.polar.angle_axis 锚点必须包含有限 pixel=[x,y] 和 value")
+                        else:
+                            valid_angle_values.append(float(value))
+                    if len(set(valid_angle_values)) < 2:
+                        errors.append("chart.polar.angle_axis 锚点值必须至少包含两个不同角度")
+                if isinstance(angle_axis, dict):
+                    if angle_axis.get("unit", "degree") != "degree":
+                        errors.append("chart.polar.angle_axis.unit 只支持 degree")
+                    if angle_axis.get("direction", "clockwise") not in {
+                        "clockwise",
+                        "counterclockwise",
+                    }:
+                        errors.append("chart.polar.angle_axis.direction 只支持 clockwise 或 counterclockwise")
+                    zero = angle_axis.get("zero_bearing_deg", 0)
+                    if not isinstance(zero, (int, float)) or not math.isfinite(float(zero)):
+                        errors.append("chart.polar.angle_axis.zero_bearing_deg 必须是有限数值")
+                radius_axis = polar.get("radius_axis")
+                radius_anchors = radius_axis.get("anchors") if isinstance(radius_axis, dict) else None
+                if not isinstance(radius_anchors, list) or len(radius_anchors) < 2:
+                    errors.append("chart.polar.radius_axis 至少需要两个径向锚点")
+                else:
+                    try:
+                        AxisMap(radius_axis)
+                    except (FigureError, KeyError, TypeError, ValueError) as exc:
+                        errors.append(f"chart.polar.radius_axis 无效：{exc}")
+                start = polar.get("angle_start_deg", 0)
+                end = polar.get("angle_end_deg", 360)
+                step = polar.get("angle_step_deg", 1)
+                if (
+                    not all(isinstance(value, (int, float)) and math.isfinite(float(value)) for value in (start, end, step))
+                    or float(end) <= float(start)
+                    or float(end) - float(start) > 360
+                    or float(step) <= 0
+                    or float(step) > float(end) - float(start)
+                ):
+                    errors.append("chart.polar 的角度范围/步长无效，范围必须递增且不超过 360 度")
+
         quality = spec.get("quality_gates", {})
         if quality and not isinstance(quality, dict):
             errors.append("quality_gates 必须是对象")
@@ -444,7 +646,7 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                 not isinstance(maximum_rmse, (int, float)) or float(maximum_rmse) < 0
             ):
                 errors.append("quality_gates.calibration.max_normalized_rmse 必须为非负数或 null")
-            line_gates = quality.get("line", {})
+            line_gates = quality.get("polar_line" if chart_type == "polar_line" else "line", {})
             if isinstance(line_gates, dict):
                 for key in (
                     "min_coverage",
@@ -477,6 +679,15 @@ def validate_spec(spec: dict[str, Any], spec_path: Path, *, extraction: bool = T
                     errors.append(
                         f"quality_gates.{section}.min_accepted_components 必须是正整数"
                     )
+        assessment = spec.get("assessment", {})
+        if assessment and not isinstance(assessment, dict):
+            errors.append("assessment 必须是对象")
+        elif isinstance(assessment, dict):
+            profile = assessment.get("acceptance_profile", "engineering")
+            if profile not in ACCEPTANCE_PROFILES:
+                errors.append(
+                    "assessment.acceptance_profile 只支持 exploratory、engineering 或 publication"
+                )
     render = spec.get("render", {})
     if render and not isinstance(render, dict):
         errors.append("render 必须是对象")
@@ -609,6 +820,44 @@ class AxisMap:
                 else "仅有两个锚点，拟合残差必然接近零，不能独立证明标定准确。"
             ),
         }
+
+
+def circular_difference_degrees(left: float, right: float) -> float:
+    return float((float(left) - float(right) + 180.0) % 360.0 - 180.0)
+
+
+def polar_angle_from_pixel(
+    pixel_x: float, pixel_y: float, polar: dict[str, Any]
+) -> float:
+    center_x, center_y = [float(value) for value in polar["center_px"]]
+    bearing = math.degrees(math.atan2(float(pixel_y) - center_y, float(pixel_x) - center_x)) % 360.0
+    angle_axis = polar["angle_axis"]
+    zero = float(angle_axis.get("zero_bearing_deg", 0.0))
+    direction = 1.0 if angle_axis.get("direction", "clockwise") == "clockwise" else -1.0
+    return float((direction * (bearing - zero)) % 360.0)
+
+
+def polar_angle_calibration_report(polar: dict[str, Any]) -> dict[str, Any]:
+    anchors = polar["angle_axis"]["anchors"]
+    residuals = [
+        circular_difference_degrees(
+            polar_angle_from_pixel(float(anchor["pixel"][0]), float(anchor["pixel"][1]), polar),
+            float(anchor["value"]),
+        )
+        for anchor in anchors
+    ]
+    rmse = float(np.sqrt(np.mean(np.square(residuals))))
+    return {
+        "scale": "circular_degree",
+        "zero_bearing_deg": float(polar["angle_axis"].get("zero_bearing_deg", 0.0)),
+        "direction": str(polar["angle_axis"].get("direction", "clockwise")),
+        "anchor_count": len(anchors),
+        "anchor_residuals_degrees": residuals,
+        "rmse_degrees": rmse,
+        "normalized_rmse": rmse / 360.0,
+        "rmse_evaluable": len(anchors) >= 3,
+        "说明": "角度锚点以声明中心、零度方位和方向进行圆周残差核验。",
+    }
 
 
 def color_mask(array: np.ndarray, color: tuple[int, int, int], tolerance: float) -> np.ndarray:
@@ -1181,6 +1430,112 @@ def extract_line(
     return rows, diagnostics
 
 
+def extract_polar_line(
+    array: np.ndarray,
+    box: tuple[int, int, int, int],
+    series: list[dict[str, Any]],
+    polar: dict[str, Any],
+    radius_map: AxisMap,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Sample a single-valued radial trace by declared angle with real colour-pixel support."""
+    left, top, right, bottom = box
+    crop = array[top : bottom + 1, left : right + 1]
+    center_x, center_y = [float(value) for value in polar["center_px"]]
+    inner_radius = float(polar["inner_radius_px"])
+    outer_radius = float(polar["outer_radius_px"])
+    angle_start = float(polar.get("angle_start_deg", 0.0))
+    angle_end = float(polar.get("angle_end_deg", 360.0))
+    angle_step = float(polar.get("angle_step_deg", 1.0))
+    sample_angles = np.arange(angle_start, angle_end, angle_step, dtype=float)
+    pixel_y_grid, pixel_x_grid = np.indices(crop.shape[:2], dtype=float)
+    pixel_x_grid += left
+    pixel_y_grid += top
+    radii = np.hypot(pixel_x_grid - center_x, pixel_y_grid - center_y)
+    bearings = np.degrees(np.arctan2(pixel_y_grid - center_y, pixel_x_grid - center_x)) % 360.0
+    angle_axis = polar["angle_axis"]
+    zero = float(angle_axis.get("zero_bearing_deg", 0.0))
+    direction = 1.0 if angle_axis.get("direction", "clockwise") == "clockwise" else -1.0
+    angles = (direction * (bearings - zero)) % 360.0
+    annulus = (radii >= inner_radius) & (radii <= outer_radius)
+    rows: list[dict[str, Any]] = []
+    diagnostics: dict[str, Any] = {
+        "series": [],
+        "angle_axis": polar_angle_calibration_report(polar),
+        "radius_axis": radius_map.report(),
+    }
+    for entry in series:
+        mask, applied_exclusions = apply_series_exclusions(series_mask(crop, entry), entry, box)
+        mask &= annulus
+        half_width = float(entry.get("angular_half_width_deg", max(0.75, angle_step * 0.75)))
+        supported = 0
+        maximum_gap = 0
+        current_gap = 0
+        previous_supported = False
+        for sample_angle in sample_angles:
+            angle_distance = np.abs((angles - sample_angle + 180.0) % 360.0 - 180.0)
+            accepted = mask & (angle_distance <= half_width)
+            if not np.any(accepted):
+                current_gap += 1
+                maximum_gap = max(maximum_gap, current_gap)
+                previous_supported = False
+                continue
+            accepted_radii = radii[accepted]
+            accepted_angles = angles[accepted]
+            accepted_x = pixel_x_grid[accepted]
+            accepted_y = pixel_y_grid[accepted]
+            weights = np.exp(-0.5 * np.square(
+                np.asarray(
+                    [circular_difference_degrees(value, sample_angle) for value in accepted_angles],
+                    dtype=float,
+                )
+                / max(0.25, half_width / 2.0)
+            ))
+            radius = weighted_median(accepted_radii, weights)
+            closest = int(np.argmin(np.abs(accepted_radii - radius)))
+            pixel_x = float(accepted_x[closest])
+            pixel_y = float(accepted_y[closest])
+            radial_half_width = max(
+                0.5,
+                (float(np.max(accepted_radii)) - float(np.min(accepted_radii))) / 2.0,
+            )
+            rows.append(
+                {
+                    "series": str(entry["id"]),
+                    "x": float(sample_angle),
+                    "y": radius_map.value(radius),
+                    "x_uncertainty": max(angle_step / 2.0, half_width),
+                    "y_uncertainty": radius_map.uncertainty(radius, radial_half_width),
+                    "pixel_x": pixel_x,
+                    "pixel_y": pixel_y,
+                    "pixel_radius": radius,
+                    "pixel_half_height": radial_half_width,
+                    "support_pixels": int(np.count_nonzero(accepted)),
+                    "angular_half_width_deg": half_width,
+                    "evidence_status": "visible_pixel_support",
+                    "segment_break": not previous_supported,
+                    "status": "visible_candidate",
+                }
+            )
+            supported += 1
+            current_gap = 0
+            previous_supported = True
+        sample_count = max(1, len(sample_angles))
+        diagnostics["series"].append(
+            {
+                "id": str(entry["id"]),
+                "extraction_mode": "polar_radial",
+                "line_semantics": "solid",
+                "supported_columns": supported,
+                "coverage": supported / sample_count,
+                "maximum_gap_columns": maximum_gap,
+                "maximum_gap_fraction": maximum_gap / sample_count,
+                "angular_half_width_deg": half_width,
+                "applied_exclusions_px": applied_exclusions,
+            }
+        )
+    return rows, diagnostics
+
+
 def extract_scatter(
     array: np.ndarray,
     box: tuple[int, int, int, int],
@@ -1344,7 +1699,7 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 def draw_overlay(image: Image.Image, chart_type: str, rows: list[dict[str, Any]], output: Path) -> None:
     overlay = image.copy()
     draw = ImageDraw.Draw(overlay)
-    if chart_type == "line":
+    if chart_type in {"line", "polar_line"}:
         grouped: dict[str, list[tuple[float, float]]] = {}
         for row in rows:
             grouped.setdefault(str(row["series"]), []).append((float(row["pixel_x"]), float(row["pixel_y"])))
@@ -1404,8 +1759,9 @@ def evaluate_quality_gates(
     chart_type: str,
     rows: list[dict[str, Any]],
     diagnostics: dict[str, Any],
-    x_map: AxisMap,
+    x_map: AxisMap | None,
     y_map: AxisMap,
+    calibration_reports: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     configured = spec.get("quality_gates", {})
     checks: list[dict[str, Any]] = []
@@ -1413,7 +1769,12 @@ def evaluate_quality_gates(
     calibration = configured.get("calibration", {})
     require_three = bool(calibration.get("require_three_anchors", False))
     maximum_rmse = calibration.get("max_normalized_rmse")
-    for axis_name, mapping in (("x_axis", x_map), ("y_axis", y_map)):
+    mappings = (
+        (("radius_axis", y_map),)
+        if x_map is None
+        else (("x_axis", x_map), ("y_axis", y_map))
+    )
+    for axis_name, mapping in mappings:
         if require_three:
             checks.append(
                 {
@@ -1438,9 +1799,37 @@ def evaluate_quality_gates(
                     "evaluable": mapping.rmse_evaluable,
                 }
             )
+    if calibration_reports:
+        for axis_name, report in calibration_reports.items():
+            anchor_count = int(report.get("anchor_count", 0))
+            evaluable = bool(report.get("rmse_evaluable", anchor_count >= 3))
+            normalized_rmse = float(report.get("normalized_rmse", math.inf))
+            if require_three:
+                checks.append(
+                    {
+                        "name": f"{axis_name}.anchor_count",
+                        "status": "pass" if evaluable else "failed",
+                        "observed": anchor_count,
+                        "threshold": ">=3",
+                    }
+                )
+            if maximum_rmse is not None:
+                checks.append(
+                    {
+                        "name": f"{axis_name}.normalized_rmse",
+                        "status": (
+                            "pass"
+                            if evaluable and normalized_rmse <= float(maximum_rmse)
+                            else "failed"
+                        ),
+                        "observed": normalized_rmse,
+                        "threshold": f"<={float(maximum_rmse)}",
+                        "evaluable": evaluable,
+                    }
+                )
 
     chart_gates = configured.get("bar" if chart_type == "histogram" else chart_type, {})
-    if chart_type == "line":
+    if chart_type in {"line", "polar_line"}:
         for series in diagnostics["series"]:
             semantics = str(series.get("line_semantics", "solid"))
             minimum_coverage = float(
@@ -1532,14 +1921,29 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
     left, top, right, bottom = box
     if left < 0 or top < 0 or right >= image.width or bottom >= image.height:
         raise FigureError("chart.plot_box 超出测量栅格范围")
-    x_map = AxisMap(spec["chart"]["x_axis"])
-    y_map = AxisMap(spec["chart"]["y_axis"])
     chart_type = spec["chart"]["type"]
+    calibration_reports: dict[str, dict[str, Any]] = {}
+    if chart_type == "polar_line":
+        polar = spec["chart"]["polar"]
+        x_map = None
+        y_map = AxisMap(polar["radius_axis"])
+        rows, diagnostics = extract_polar_line(
+            array, box, spec["chart"]["series"], polar, y_map
+        )
+        calibration_reports = {
+            "angle_axis": diagnostics["angle_axis"],
+            "radius_axis": diagnostics["radius_axis"],
+        }
+    else:
+        x_map = AxisMap(spec["chart"]["x_axis"])
+        y_map = AxisMap(spec["chart"]["y_axis"])
     extractors: dict[str, Callable[..., tuple[list[dict[str, Any]], dict[str, Any]]]] = {
         "line": extract_line,
         "scatter": extract_scatter,
     }
-    if chart_type in extractors:
+    if chart_type == "polar_line":
+        pass
+    elif chart_type in extractors:
         rows, diagnostics = extractors[chart_type](
             array, box, spec["chart"]["series"], x_map, y_map
         )
@@ -1548,7 +1952,17 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
             array, box, spec["chart"]["series"], x_map, y_map, spec["chart"]
         )
     assign_candidate_ids(chart_type, rows)
-    quality = evaluate_quality_gates(spec, chart_type, rows, diagnostics, x_map, y_map)
+    quality = evaluate_quality_gates(
+        spec,
+        chart_type,
+        rows,
+        diagnostics,
+        x_map,
+        y_map,
+        {"angle_axis": calibration_reports["angle_axis"]}
+        if chart_type == "polar_line"
+        else None,
+    )
     status = quality["status"]
     candidates_path = out_dir / "candidates.csv"
     overlay_path = out_dir / "overlay.png"
@@ -1568,7 +1982,11 @@ def extract_command(spec_path: Path, out_dir: Path) -> dict[str, Any]:
         },
         "chart_type": chart_type,
         "plot_box": list(box),
-        "calibration": {"x_axis": x_map.report(), "y_axis": y_map.report()},
+        "calibration": (
+            calibration_reports
+            if chart_type == "polar_line"
+            else {"x_axis": x_map.report(), "y_axis": y_map.report()}
+        ),
         "rows": len(rows),
         "diagnostics": diagnostics,
         "quality_gates": quality,
@@ -1627,6 +2045,7 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     critical_issues: list[str] = []
     high_risk_issues: list[str] = []
     warnings: list[str] = []
+    provenance_warnings: list[str] = []
 
     expected_project_id = str(manifest.get("project_id", ""))
     expected_source_hash = str(manifest.get("source_sha256", ""))
@@ -1695,9 +2114,14 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         )
         project_path, project, _ = preferred
         if project_path != (project_dir / "project.json").resolve():
-            warnings.append("同级项目规格无效；已按来源哈希唯一匹配相邻目录中的有效规格")
+            provenance_warnings.append(
+                "同级项目规格无效；已按来源哈希唯一匹配相邻目录中的有效规格"
+            )
     if invalid_project_reasons:
-        warnings.append("已排除无效项目规格：" + "；".join(invalid_project_reasons))
+        provenance_warnings.append(
+            "已排除无效项目规格：" + "；".join(invalid_project_reasons)
+        )
+    warnings.extend(provenance_warnings)
 
     manifest_candidate = manifest.get("artifacts", {}).get("candidates", {})
     expected_candidate_hash = str(manifest_candidate.get("sha256", ""))
@@ -1748,7 +2172,11 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
             }
         )
 
-    numeric_fields = ("x", "y") if report.get("chart_type") in {"line", "scatter"} else ()
+    numeric_fields = (
+        ("x", "y")
+        if report.get("chart_type") in {"line", "polar_line", "scatter"}
+        else ()
+    )
     for row in rows:
         series_rows.setdefault(str(row.get("series", "")), []).append(row)
         evidence = str(row.get("evidence_status", row.get("status", "unknown")))
@@ -1805,41 +2233,59 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     medium_anomalies = sum(item["severity"] == "medium" for item in anomaly_rows)
     high_anomalies = sum(item["severity"] == "high" for item in anomaly_rows)
     model_ratio = model_assisted / len(rows)
-    score = 100.0
-    score -= min(35.0, len(critical_issues) * 25.0)
-    score -= min(25.0, len(high_risk_issues) * 8.0 + high_anomalies * 1.5)
-    score -= min(12.0, model_ratio * 18.0)
-    score -= min(8.0, medium_anomalies / max(1, len(rows)) * 100.0)
-    calibration = report.get("calibration", {})
-    normalized_rmse_values = [
-        float(axis.get("normalized_rmse", 0.0))
-        for axis in calibration.values()
-        if isinstance(axis, dict)
-        and isinstance(axis.get("normalized_rmse"), (int, float))
-        and math.isfinite(float(axis.get("normalized_rmse")))
-    ]
-    score -= min(8.0, sum(normalized_rmse_values) * 1000.0)
-    score = round(max(0.0, min(100.0, score)), 1)
-
-    if critical_issues:
-        risk_level = "critical"
-        recommendation = "stop"
-    elif high_risk_issues or high_anomalies:
-        risk_level = "high"
-        recommendation = "review_anomaly_groups"
-    elif medium_anomalies:
-        risk_level = "medium"
-        recommendation = "review_anomaly_groups"
-    elif model_assisted or score < 90:
-        risk_level = "medium"
-        recommendation = "batch_confirm"
-    else:
-        risk_level = "low"
-        recommendation = "batch_confirm"
     if model_assisted:
         warnings.append(
             f"{model_assisted} 个候选使用模型辅助排他分配，已按系列汇总，不要求逐点点击"
         )
+
+    reviewed_anomaly_ids: set[str] = set()
+    review_record_ready = False
+    decisions_path = project_dir / "review-decisions.json"
+    if decisions_path.is_file():
+        try:
+            decisions_payload = read_json(decisions_path)
+            if decisions_payload.get("candidate_sha256") == candidate_hash:
+                decision_items = [
+                    item
+                    for item in decisions_payload.get("decisions", [])
+                    if isinstance(item, dict)
+                ]
+                decision_by_id = {
+                    str(item.get("candidate_id", "")): item for item in decision_items
+                }
+                completed_decisions = {
+                    "accepted",
+                    "rejected",
+                    "corrected",
+                    "reassigned",
+                }
+                reviewed_anomaly_ids = {
+                    candidate_id
+                    for candidate_id, item in decision_by_id.items()
+                    if item.get("decision") in completed_decisions
+                }
+                review_record_ready = (
+                    bool(str(decisions_payload.get("reviewed_by", "")).strip())
+                    and set(candidate_ids) == set(decision_by_id)
+                    and all(
+                        item.get("decision") in completed_decisions
+                        for item in decision_by_id.values()
+                    )
+                )
+            else:
+                warnings.append("已有复核文件的候选哈希不匹配；不得作为已解决证据")
+        except (OSError, json.JSONDecodeError):
+            warnings.append("已有复核文件无法读取；不计为异常已解决")
+    anomaly_candidate_ids = {str(item["candidate_id"]) for item in anomaly_rows}
+    unresolved_anomaly_ids = sorted(anomaly_candidate_ids - reviewed_anomaly_ids)
+    unresolved_high_anomalies = sum(
+        item["severity"] == "high" and str(item["candidate_id"]) in unresolved_anomaly_ids
+        for item in anomaly_rows
+    )
+    unresolved_medium_anomalies = sum(
+        item["severity"] == "medium" and str(item["candidate_id"]) in unresolved_anomaly_ids
+        for item in anomaly_rows
+    )
 
     series_assessment: list[dict[str, Any]] = []
     diagnostics = {
@@ -1847,14 +2293,65 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         for item in report.get("diagnostics", {}).get("series", [])
         if isinstance(item, dict)
     }
+    project_quality = project.get("quality_gates", {}) if isinstance(project, dict) else {}
+    chart_type = str(report.get("chart_type", "line"))
+    chart_gate_name = "bar" if chart_type == "histogram" else chart_type
+    chart_gates = (
+        project_quality.get(chart_gate_name, {})
+        if isinstance(project_quality, dict)
+        else {}
+    )
+    series_scores: list[float] = []
     for series, grouped_rows in sorted(series_rows.items()):
         diagnostic = diagnostics.get(series, {})
+        coverage = diagnostic.get("coverage")
+        maximum_gap = diagnostic.get("maximum_gap_fraction")
+        semantics = str(diagnostic.get("line_semantics", "solid"))
+        if chart_type in {"line", "polar_line"}:
+            minimum_coverage = float(
+                chart_gates.get(
+                    f"min_coverage_{semantics}", chart_gates.get("min_coverage", 0.5)
+                )
+            )
+            maximum_gap_threshold = chart_gates.get(
+                f"max_gap_fraction_{semantics}", chart_gates.get("max_gap_fraction")
+            )
+            maximum_gap_threshold = (
+                float(maximum_gap_threshold) if maximum_gap_threshold is not None else 0.25
+            )
+            coverage_score = (
+                min(100.0, float(coverage) / max(minimum_coverage, 1e-9) * 100.0)
+                if isinstance(coverage, (int, float))
+                else 85.0
+            )
+            gap_score = (
+                100.0
+                if isinstance(maximum_gap, (int, float))
+                and float(maximum_gap) <= maximum_gap_threshold
+                else min(
+                    100.0,
+                    maximum_gap_threshold / max(float(maximum_gap), 1e-9) * 100.0,
+                )
+                if isinstance(maximum_gap, (int, float))
+                else 85.0
+            )
+            current_series_score = round((coverage_score + gap_score) / 2.0, 1)
+        else:
+            accepted_components = int(diagnostic.get("accepted_components", len(grouped_rows)))
+            rejected_components = int(diagnostic.get("rejected_components", 0))
+            current_series_score = round(
+                accepted_components
+                / max(1, accepted_components + rejected_components)
+                * 100.0,
+                1,
+            )
+        series_scores.append(current_series_score)
         series_assessment.append(
             {
                 "series": series,
                 "candidates": len(grouped_rows),
-                "coverage": diagnostic.get("coverage"),
-                "maximum_gap_fraction": diagnostic.get("maximum_gap_fraction"),
+                "coverage": coverage,
+                "maximum_gap_fraction": maximum_gap,
                 "mean_guide_residual_px": diagnostic.get("mean_guide_residual_px"),
                 "model_assisted": sum(
                     str(row.get("evidence_status", ""))
@@ -1862,8 +2359,325 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
                     for row in grouped_rows
                 ),
                 "flagged_anomalies": sum(item["series"] == series for item in anomaly_rows),
+                "series_quality_score": current_series_score,
             }
         )
+
+    def bounded_score(value: float) -> float:
+        return round(max(0.0, min(100.0, float(value))), 1)
+
+    calibration = report.get("calibration", {})
+    calibration_tolerance = 0.01
+    configured_calibration = (
+        project_quality.get("calibration", {}) if isinstance(project_quality, dict) else {}
+    )
+    if isinstance(configured_calibration, dict) and isinstance(
+        configured_calibration.get("max_normalized_rmse"), (int, float)
+    ):
+        calibration_tolerance = max(
+            1e-9, float(configured_calibration["max_normalized_rmse"])
+        )
+    calibration_metrics: list[dict[str, Any]] = []
+    calibration_scores: list[float] = []
+    normalized_rmse_values: list[float] = []
+    for axis_name, axis in calibration.items():
+        if not isinstance(axis, dict):
+            continue
+        anchors = int(axis.get("anchor_count", 0))
+        evaluable = bool(axis.get("rmse_evaluable", anchors >= 3))
+        rmse_value = axis.get("normalized_rmse")
+        rmse = (
+            float(rmse_value)
+            if isinstance(rmse_value, (int, float)) and math.isfinite(float(rmse_value))
+            else None
+        )
+        if rmse is not None:
+            normalized_rmse_values.append(rmse)
+        axis_score = (
+            bounded_score(100.0 * min(1.0, calibration_tolerance / max(rmse, 1e-12)))
+            if evaluable and rmse is not None
+            else 85.0
+            if anchors >= 2
+            else 0.0
+        )
+        calibration_scores.append(axis_score)
+        calibration_metrics.append(
+            {
+                "axis": axis_name,
+                "anchor_count": anchors,
+                "rmse_evaluable": evaluable,
+                "normalized_rmse": rmse,
+                "operational_tolerance": calibration_tolerance,
+                "score": axis_score,
+            }
+        )
+    calibration_score = min(calibration_scores) if calibration_scores else 0.0
+
+    support_values: list[float] = []
+    for row in rows:
+        value = row.get("support_pixels")
+        if value in {None, ""}:
+            continue
+        try:
+            numeric_value = float(value)
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(numeric_value):
+            support_values.append(numeric_value)
+    valid_support_ratio = (
+        sum(value > 0 for value in support_values) / len(support_values)
+        if support_values
+        else None
+    )
+    support_score = valid_support_ratio * 100.0 if valid_support_ratio is not None else 85.0
+    assignment_score = 100.0 - model_ratio * 40.0 - ambiguous / len(rows) * 100.0
+    pixel_evidence_score = bounded_score(support_score * 0.6 + assignment_score * 0.4)
+
+    worst_series_score = min(series_scores) if series_scores else 0.0
+    mean_series_score = float(np.mean(series_scores)) if series_scores else 0.0
+    series_quality_score = bounded_score((worst_series_score + mean_series_score) / 2.0)
+
+    normalized_uncertainties: list[float] = []
+    for value_key, uncertainty_key in (
+        ("x", "x_uncertainty"),
+        ("y", "y_uncertainty"),
+        ("value", "value_uncertainty"),
+    ):
+        numeric_values: list[float] = []
+        uncertainty_values: list[float] = []
+        for row in rows:
+            try:
+                numeric_value = float(row[value_key])
+                uncertainty_value = float(row[uncertainty_key])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if math.isfinite(numeric_value) and math.isfinite(uncertainty_value):
+                numeric_values.append(numeric_value)
+                uncertainty_values.append(abs(uncertainty_value))
+        if numeric_values:
+            span = max(numeric_values) - min(numeric_values)
+            if span > 0:
+                normalized_uncertainties.extend(value / span for value in uncertainty_values)
+    uncertainty_p95 = (
+        float(np.percentile(np.asarray(normalized_uncertainties), 95))
+        if normalized_uncertainties
+        else None
+    )
+    guide_residuals = []
+    for row in rows:
+        try:
+            value = float(row.get("guide_residual_px", ""))
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(value):
+            guide_residuals.append(abs(value))
+    plot_box = report.get("plot_box", [])
+    plot_height = (
+        abs(float(plot_box[3]) - float(plot_box[1]))
+        if isinstance(plot_box, list) and len(plot_box) == 4
+        else 0.0
+    )
+    guide_residual_p95_fraction = (
+        float(np.percentile(np.asarray(guide_residuals), 95)) / plot_height
+        if guide_residuals and plot_height > 0
+        else None
+    )
+    uncertainty_components = [
+        bounded_score(100.0 - value * 500.0)
+        for value in (uncertainty_p95, guide_residual_p95_fraction)
+        if value is not None
+    ]
+    uncertainty_score = (
+        bounded_score(float(np.mean(uncertainty_components)))
+        if uncertainty_components
+        else 85.0
+    )
+
+    anomaly_rate = len(unresolved_anomaly_ids) / len(rows)
+    anomaly_health_score = bounded_score(
+        100.0
+        - unresolved_high_anomalies / len(rows) * 500.0
+        - unresolved_medium_anomalies / len(rows) * 100.0
+    )
+    quality_gate_score = (
+        bounded_score(
+            sum(check.get("status") == "pass" for check in quality_checks)
+            / len(quality_checks)
+            * 100.0
+        )
+        if quality_checks
+        else 85.0
+    )
+    provenance_score = 0.0 if critical_issues else 95.0 if provenance_warnings else 100.0
+
+    dimensions = {
+        "provenance_integrity": {
+            "label": "来源与证据完整性",
+            "weight": 10,
+            "score": bounded_score(provenance_score),
+            "metrics": {
+                "critical_issue_count": len(critical_issues),
+                "provenance_warning_count": len(provenance_warnings),
+                "candidate_hash_matches_manifest": expected_candidate_hash in {"", candidate_hash},
+            },
+        },
+        "calibration_quality": {
+            "label": "坐标标定质量",
+            "weight": 15,
+            "score": bounded_score(calibration_score),
+            "metrics": {"axes": calibration_metrics},
+        },
+        "pixel_evidence": {
+            "label": "像素证据质量",
+            "weight": 20,
+            "score": pixel_evidence_score,
+            "metrics": {
+                "support_evaluable": valid_support_ratio is not None,
+                "valid_support_ratio": valid_support_ratio,
+                "model_assisted_ratio": round(model_ratio, 6),
+                "ambiguous_ratio": round(ambiguous / len(rows), 6),
+            },
+        },
+        "series_separation_continuity": {
+            "label": "系列分离与连续性",
+            "weight": 20,
+            "score": series_quality_score,
+            "metrics": {
+                "worst_series_score": bounded_score(worst_series_score),
+                "mean_series_score": bounded_score(mean_series_score),
+            },
+        },
+        "uncertainty_stability": {
+            "label": "不确定度与稳定性代理",
+            "weight": 15,
+            "score": uncertainty_score,
+            "metrics": {
+                "normalized_uncertainty_p95": uncertainty_p95,
+                "guide_residual_p95_fraction": guide_residual_p95_fraction,
+                "perturbation_stability": "not_run",
+            },
+        },
+        "anomaly_health": {
+            "label": "异常负担",
+            "weight": 10,
+            "score": anomaly_health_score,
+            "metrics": {
+                "anomaly_rate": round(anomaly_rate, 6),
+                "total_high_anomalies": high_anomalies,
+                "total_medium_anomalies": medium_anomalies,
+                "unresolved_high_anomalies": unresolved_high_anomalies,
+                "unresolved_medium_anomalies": unresolved_medium_anomalies,
+            },
+        },
+        "quality_gate_compliance": {
+            "label": "项目质量门符合度",
+            "weight": 10,
+            "score": quality_gate_score,
+            "metrics": {
+                "checks_total": len(quality_checks),
+                "checks_failed": len(failed_checks),
+            },
+        },
+    }
+    score = round(
+        sum(float(item["score"]) * float(item["weight"]) for item in dimensions.values())
+        / sum(float(item["weight"]) for item in dimensions.values()),
+        1,
+    )
+    minimum_dimension_score = min(float(item["score"]) for item in dimensions.values())
+
+    profile_name = str(
+        project.get("assessment", {}).get("acceptance_profile", "engineering")
+        if isinstance(project.get("assessment", {}), dict)
+        else "engineering"
+    )
+    profile = ACCEPTANCE_PROFILES.get(profile_name, ACCEPTANCE_PROFILES["engineering"])
+    hard_gates = {
+        "source_and_hash_integrity": not critical_issues,
+        "automatic_quality_gates": extraction_status == "pass" and not failed_checks,
+        "no_unresolved_high_anomalies": unresolved_high_anomalies == 0,
+        "candidate_ids_complete": bool(candidate_ids) and not duplicate_ids and all(candidate_ids),
+    }
+    hard_gates_pass = all(hard_gates.values())
+    score_threshold_pass = score >= float(profile["overall_threshold"])
+    dimension_floor_pass = minimum_dimension_score >= float(
+        profile["minimum_dimension_score"]
+    )
+    technical_eligibility = hard_gates_pass and score_threshold_pass and dimension_floor_pass
+    formal_review_status = str(manifest.get("review_status", "not_run"))
+    render_status = str(manifest.get("render_status", "not_run"))
+    worst_dimension_key = min(
+        dimensions,
+        key=lambda key: float(dimensions[key]["score"]),
+    )
+    repair_instructions = {
+        "provenance_integrity": "重新锁定来源、项目规格和候选哈希后再评估。",
+        "calibration_quality": "补充或核对坐标锚点，优先使用至少三个独立刻度后重新提取。",
+        "pixel_evidence": "调整系列颜色容差、排除框或像素分离设置后重新提取。",
+        "series_separation_continuity": "检查最差曲线的引导走廊、系列归属、覆盖率和真实缺口后重新提取。",
+        "uncertainty_stability": "优先使用更高分辨率图源、补充标定锚点并降低引导残差后重新提取。",
+        "anomaly_health": "先处理独立异常组；若异常集中成片，再调整提取参数。",
+        "quality_gate_compliance": "查看失败的项目质量门，修复对应覆盖率、缺口或组件条件后重新提取。",
+    }
+    if not hard_gates["source_and_hash_integrity"] or not hard_gates["candidate_ids_complete"]:
+        risk_level = "critical"
+        recommendation = "stop"
+        decision = "blocked"
+        next_instruction = "停止：修复来源、项目规格或候选哈希问题后重新评估。"
+    elif not hard_gates["automatic_quality_gates"]:
+        risk_level = "high" if score < 80 or high_risk_issues else "medium"
+        recommendation = "re_extract"
+        decision = "not_qualified"
+        next_instruction = "暂不接受：修复未通过的自动质量门并重新提取，然后再次评估。"
+    elif unresolved_anomaly_ids:
+        risk_level = "high" if unresolved_high_anomalies else "medium"
+        recommendation = "review_anomaly_groups"
+        decision = "targeted_review_required"
+        next_instruction = f"复核 {len(unresolved_anomaly_ids)} 个独立异常候选；普通候选保持批量区。"
+    elif not score_threshold_pass or not dimension_floor_pass:
+        risk_level = "high" if score < 80 or high_risk_issues else "medium"
+        recommendation = "re_extract"
+        decision = "not_qualified"
+        next_instruction = "暂不接受：" + repair_instructions[worst_dimension_key]
+    elif review_record_ready and formal_review_status not in {"accepted", "partial"}:
+        risk_level = "low"
+        recommendation = "apply_review"
+        decision = "review_record_ready"
+        next_instruction = "复核记录已完整保存；请 Agent 校验哈希与覆盖后应用，生成正式 data.csv。"
+    elif formal_review_status not in {"accepted", "partial"}:
+        risk_level = "medium" if model_assisted else "low"
+        recommendation = "batch_confirm"
+        decision = "eligible_for_user_confirmation"
+        next_instruction = "指标达到所选用途阈值且无未决异常；请用户确认后生成正式复核记录。"
+    elif render_status != "pass":
+        risk_level = "low"
+        recommendation = "render_validate"
+        decision = "extraction_accepted"
+        next_instruction = "提取与复核已满足要求；继续生成 PNG/SVG/PDF 并执行 validate。"
+    else:
+        risk_level = "low"
+        recommendation = "accept"
+        decision = "accepted"
+        next_instruction = "提取、复核和重绘均已通过；执行最终交付验证或接受当前版本。"
+
+    acceptance = {
+        "profile": profile_name,
+        "profile_label": profile["label"],
+        "thresholds": {
+            "overall_score": profile["overall_threshold"],
+            "minimum_dimension_score": profile["minimum_dimension_score"],
+        },
+        "hard_gates": hard_gates,
+        "hard_gates_pass": hard_gates_pass,
+        "score_threshold_pass": score_threshold_pass,
+        "dimension_floor_pass": dimension_floor_pass,
+        "technical_eligibility": technical_eligibility,
+        "unresolved_anomaly_count": len(unresolved_anomaly_ids),
+        "unresolved_anomaly_ids": unresolved_anomaly_ids,
+        "decision": decision,
+        "next_instruction": next_instruction,
+        "qualification_note": "分数是操作门槛，不等同于统计准确率；硬门失败时高分也不得接受。",
+    }
 
     severity_order = {"high": 0, "medium": 1, "low": 2}
     anomaly_rows.sort(
@@ -1879,8 +2693,19 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         "source_sha256": project.get("source", {}).get("sha256"),
         "candidate_count": len(rows),
         "overall_score": score,
+        "minimum_dimension_score": round(minimum_dimension_score, 1),
         "risk_level": risk_level,
         "recommended_action": recommendation,
+        "scorecard": {
+            "method": "weighted_dimensions_with_non_compensable_hard_gates",
+            "dimensions": dimensions,
+            "worst_dimension": min(
+                dimensions,
+                key=lambda key: float(dimensions[key]["score"]),
+            ),
+            "worst_series_score": bounded_score(worst_series_score),
+        },
+        "acceptance": acceptance,
         "indicator_summary": {
             "extraction_status": extraction_status,
             "quality_checks_total": len(quality_checks),
@@ -1912,7 +2737,7 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
         },
         "top_anomalies": anomaly_rows[:20],
         "review_policy": {
-            "default": "用户只需查看综合评分、系列摘要和异常组；无需逐点点击。",
+            "default": "先看用途阈值、硬门、最低维度和异常，再决定下一步；总分不能覆盖失败硬门。",
             "batch_confirmation_allowed": recommendation == "batch_confirm",
             "formal_data_requires_confirmation": True,
             "point_table_role": "仅用于异常深挖或用户主动抽查。",
@@ -1927,19 +2752,22 @@ def review_assess_command(project_dir: Path) -> dict[str, Any]:
     manifest["artifacts"]["review_anomalies"] = artifact_entry(anomalies_path)
     write_json(project_dir / "manifest.json", manifest)
     return {
-        "status": "pass" if recommendation == "batch_confirm" else "attention_required",
+        "status": (
+            "pass"
+            if recommendation in {"batch_confirm", "apply_review", "render_validate", "accept"}
+            else "attention_required"
+        ),
         "overall_score": score,
         "risk_level": risk_level,
         "recommended_action": recommendation,
         "candidate_count": len(rows),
         "anomaly_count": len(anomaly_rows),
+        "acceptance_decision": decision,
+        "acceptance_profile": profile_name,
+        "minimum_dimension_score": round(minimum_dimension_score, 1),
         "assessment": str(assessment_path),
         "anomalies": str(anomalies_path),
-        "下一步": (
-            "向用户汇报综合评分和异常组；用户回复“下一步”或“继续”后执行 review-confirm。"
-            if recommendation == "batch_confirm"
-            else "只展示异常组并请求用户处理；不得批量确认。"
-        ),
+        "下一步": next_instruction,
     }
 
 
@@ -2048,8 +2876,96 @@ def review_command(project_dir: Path) -> dict[str, Any]:
     }
     assessment_score = escape(str(assessment.get("overall_score", "—")))
     assessment_risk = escape(str(assessment.get("risk_level", "unknown")))
-    assessment_action = escape(str(assessment.get("recommended_action", "unknown")))
+    assessment_action_raw = str(assessment.get("recommended_action", "unknown"))
+    action_labels = {
+        "batch_confirm": "请用户批量确认",
+        "apply_review": "应用已保存复核",
+        "review_anomaly_groups": "只复核异常组",
+        "re_extract": "修复后重新提取",
+        "render_validate": "继续重绘并验证",
+        "accept": "接受当前版本",
+        "stop": "停止",
+    }
+    assessment_action = escape(
+        f"{action_labels.get(assessment_action_raw, '需要处理')}（{assessment_action_raw}）"
+    )
     assessment_anomalies = len(anomaly_rows)
+    scorecard = assessment.get("scorecard", {})
+    acceptance = assessment.get("acceptance", {})
+    unresolved_assessment_anomalies = int(
+        acceptance.get("unresolved_anomaly_count", assessment_anomalies)
+    )
+    dimensions = scorecard.get("dimensions", {}) if isinstance(scorecard, dict) else {}
+    thresholds = acceptance.get("thresholds", {}) if isinstance(acceptance, dict) else {}
+    try:
+        dimension_floor = float(thresholds.get("minimum_dimension_score", 0.0))
+    except (TypeError, ValueError):
+        dimension_floor = 0.0
+
+    def dimension_passes(item: dict[str, Any]) -> bool:
+        try:
+            return float(item.get("score", 0.0)) >= dimension_floor
+        except (TypeError, ValueError):
+            return False
+
+    dimension_rows = "".join(
+        "<tr>"
+        f"<td>{escape(str(item.get('label', key)))}</td>"
+        f"<td><strong>{escape(str(item.get('score', '—')))}</strong></td>"
+        f"<td>{escape(str(item.get('weight', '—')))}%</td>"
+        f"<td class='{'status-good' if dimension_passes(item) else 'status-error'}'>"
+        f"{'达标' if dimension_passes(item) else '不足'}</td>"
+        "</tr>"
+        for key, item in dimensions.items()
+        if isinstance(item, dict)
+    )
+    acceptance_decision = str(acceptance.get("decision", "unknown"))
+    acceptance_labels = {
+        "blocked": "停止",
+        "not_qualified": "暂不合格",
+        "targeted_review_required": "需要异常复核",
+        "eligible_for_user_confirmation": "可以请用户确认",
+        "review_record_ready": "复核记录已就绪",
+        "extraction_accepted": "提取已接受，等待重绘验证",
+        "accepted": "可以接受",
+    }
+    decision_class = (
+        "status-good"
+        if acceptance_decision in {
+            "eligible_for_user_confirmation",
+            "review_record_ready",
+            "extraction_accepted",
+            "accepted",
+        }
+        else "status-error"
+        if acceptance_decision in {"blocked", "not_qualified"}
+        else "status-warn"
+    )
+    hard_gates_pass = bool(acceptance.get("hard_gates_pass", False))
+    next_instruction = escape(str(acceptance.get("next_instruction", "请查看异常与质量门。")))
+    worst_dimension_key = str(scorecard.get("worst_dimension", ""))
+    worst_dimension = dimensions.get(worst_dimension_key, {})
+    worst_dimension_label = escape(
+        str(worst_dimension.get("label", worst_dimension_key or "—"))
+    )
+    scorecard_html = (
+        "<div class='scorecard-grid'>"
+        "<div class='acceptance-result'>"
+        f"<span>用途等级：{escape(str(acceptance.get('profile_label', acceptance.get('profile', '工程分析'))))}</span>"
+        f"<strong class='{decision_class}'>判定：{escape(acceptance_labels.get(acceptance_decision, acceptance_decision))}</strong>"
+        f"<span>合格线：总分 ≥ {escape(str(thresholds.get('overall_score', '—')))}；"
+        f"单项最低 ≥ {escape(str(thresholds.get('minimum_dimension_score', '—')))}</span>"
+        f"<span>当前最低维度：{escape(str(assessment.get('minimum_dimension_score', '—')))}；"
+        f"硬门：{'通过' if hard_gates_pass else '未通过'}</span>"
+        f"<span>最弱项：{worst_dimension_label}；"
+        f"最差曲线分：{escape(str(scorecard.get('worst_series_score', '—')))}</span>"
+        f"<p><strong>下一步指令：</strong>{next_instruction}</p>"
+        "</div>"
+        "<div class='dimension-table-wrap'><table class='dimension-table'>"
+        "<thead><tr><th>细化指标</th><th>得分</th><th>权重</th><th>判定</th></tr></thead>"
+        f"<tbody>{dimension_rows}</tbody></table></div>"
+        "</div>"
+    )
     assessment_hash = sha256_file(assessment_path)
     current_manifest = load_manifest(project_dir)
     formal_review_status = str(current_manifest.get("review_status", "not_run"))
@@ -2078,14 +2994,23 @@ def review_command(project_dir: Path) -> dict[str, Any]:
             f"复核人：{reviewed_by_existing or '已记录'}。为保护证据链，现有正式记录只读。</span>"
             "</div>"
         )
-    elif assessment_anomalies:
+    elif unresolved_assessment_anomalies:
         normal_count = len(rows) - assessment_anomalies
         assessment_confirmation = (
             "<div class='assessment-confirm attention'>"
             "<h3>先复核异常候选</h3>"
-            f"<p><strong>{assessment_anomalies} 个异常候选</strong>已在下方独立列出；"
+            f"<p><strong>{unresolved_assessment_anomalies} 个未决异常候选</strong>已在下方独立列出；"
             f"其余 {normal_count} 个普通候选位于单独的批量区。</p>"
             "<strong>异常项未全部接受、拒绝、校正或重归属前，不能生成正式复核文件。</strong>"
+            "</div>"
+        )
+    elif assessment_action_raw == "apply_review":
+        assessment_confirmation = (
+            "<div class='assessment-confirm confirmed'>"
+            "<h3>复核记录已保存</h3>"
+            f"<p>复核人：<strong>{reviewed_by_existing or '已记录'}</strong>；"
+            "候选哈希和决策覆盖将在正式应用时再次强制校验。</p>"
+            "<strong>下一步请让 Agent 应用复核并生成正式 data.csv；无需再次批量确认。</strong>"
             "</div>"
         )
     elif assessment.get("recommended_action") == "batch_confirm":
@@ -2115,6 +3040,7 @@ def review_command(project_dir: Path) -> dict[str, Any]:
         f"<p><strong>风险等级：</strong>{assessment_risk}　"
         f"<strong>建议动作：</strong>{assessment_action}　"
         f"<strong>异常候选：</strong>{assessment_anomalies}</p>"
+        f"{scorecard_html}"
         "<p>普通候选可批量确认；异常候选必须在独立区域查看局部证据并逐项决定，"
         "两者不会混在同一个批次中。只有没有异常项时，<code>batch_confirm</code> 才能直接完成。</p>"
         f"{assessment_confirmation}"
@@ -2339,6 +3265,12 @@ button:disabled { background: #8c959f; cursor: not-allowed; opacity: .72; }
 .assessment-card h2 { margin: 0 0 8px; }
 .assessment-score { float: right; margin: -42px 0 8px 18px; color: #0969da; font-size: 32px; font-weight: 800; }
 .assessment-score small { font-size: 14px; font-weight: 600; }
+.scorecard-grid { clear: both; display: grid; grid-template-columns: minmax(300px, .9fr) minmax(380px, 1.1fr); gap: 14px; margin: 14px 0; }
+.acceptance-result, .dimension-table-wrap { padding: 12px; border: 1px solid #8c959f; border-radius: 8px; background: #fff; }
+.acceptance-result { display: grid; gap: 7px; }
+.acceptance-result p { margin: 4px 0 0; padding: 9px; border-left: 4px solid #0969da; background: #ddf4ff; }
+.dimension-table { font-size: 13px; }
+.dimension-table th { position: static; }
 .assessment-confirm { clear: both; display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #54aeff; border-radius: 8px; background: #fff; }
 .assessment-confirm h3, .assessment-confirm p { margin: 0; }
 .assessment-confirm.confirmed { border-color: #16844b; background: #dafbe1; }
@@ -2369,7 +3301,9 @@ button:disabled { background: #8c959f; cursor: not-allowed; opacity: .72; }
 .command-card { margin: 14px 0; padding: 12px; border: 1px solid #d0d7de; border-radius: 8px; background: #f6f8fa; }
 pre { margin: 8px 0; padding: 12px; overflow: auto; border-radius: 6px; background: #24292f; color: #f0f6fc; white-space: pre-wrap; overflow-wrap: anywhere; }
 button.neutral { background: #57606a; }
-@media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 980px) {
+  .layout, .scorecard-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -2844,11 +3778,14 @@ exportButton.addEventListener("click", async () => {
         "复核页面": str(html_path),
         "复核模板": str(template_path),
         "下一步": (
-            "在独立异常区完成每个异常候选的决定；普通候选保持在单独批量区。"
-            if assessment_anomalies and formal_review_status == "not_run"
-            else "当前已有正式复核记录；页面分别展示异常候选决定与普通候选批次。"
+            "当前已有正式复核记录；页面分别展示异常候选决定与普通候选批次。"
             if formal_review_status in {"accepted", "partial", "rejected"}
-            else "异常清单为空，可由 Agent 批量确认普通候选。"
+            else str(
+                acceptance.get(
+                    "next_instruction",
+                    "请按综合评估判定处理后再继续。",
+                )
+            )
         ),
     }
 
@@ -3371,10 +4308,19 @@ def display_segments(
     outlier_window: int = 1,
     max_outlier_pixel_residual: float | None = None,
     knot_stride: int = 1,
+    sort_by_data_x: bool = False,
 ) -> list[tuple[np.ndarray, np.ndarray, int, int, int]]:
     ordered = sorted(
         group_rows,
-        key=lambda row: numeric(row, "pixel_x") if row.get("pixel_x") not in {None, ""} else numeric(row, x_key),
+        key=(
+            (lambda row: numeric(row, x_key))
+            if sort_by_data_x
+            else (
+                lambda row: numeric(row, "pixel_x")
+                if row.get("pixel_x") not in {None, ""}
+                else numeric(row, x_key)
+            )
+        ),
     )
     raw_segments: list[list[dict[str, Any]]] = []
     current: list[dict[str, Any]] = []
@@ -3565,8 +4511,16 @@ def render_command(
     plot_type = render.get("plot_type") or spec.get("chart", {}).get("type")
     if plot_type not in SUPPORTED_CHARTS:
         raise FigureError(f"不支持的重绘类型：{plot_type}")
-    x_key = str(render.get("x", "x" if plot_type in {"line", "scatter"} else "category_index"))
-    y_key = str(render.get("y", "y" if plot_type in {"line", "scatter"} else "value"))
+    polar_plot = plot_type == "polar_line"
+    x_key = str(
+        render.get(
+            "x",
+            "x" if plot_type in {"line", "polar_line", "scatter"} else "category_index",
+        )
+    )
+    y_key = str(
+        render.get("y", "y" if plot_type in {"line", "polar_line", "scatter"} else "value")
+    )
     group_key = render.get("group")
     groups: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
@@ -3587,13 +4541,19 @@ def render_command(
                     (canvas_height - bottom_px) / canvas_height,
                     (right_px - left_px) / canvas_width,
                     (bottom_px - top_px) / canvas_height,
-                ]
+                ],
+                projection="polar" if polar_plot else None,
             )
         else:
-            axis = fig.add_subplot(111)
+            axis = fig.add_subplot(111, projection="polar" if polar_plot else None)
     else:
         canvas_width = canvas_height = None
-        fig, axis = plt.subplots(figsize=(7.2, 4.8), dpi=output_dpi, constrained_layout=True)
+        fig, axis = plt.subplots(
+            figsize=(6.4, 6.0) if polar_plot else (7.2, 4.8),
+            dpi=output_dpi,
+            constrained_layout=True,
+            subplot_kw={"projection": "polar"} if polar_plot else None,
+        )
     fallback = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9"]
     rendered_segments: dict[str, int] = {}
     geometry_sources: dict[str, str] = {}
@@ -3612,15 +4572,19 @@ def render_command(
         for item in chart.get("series", [])
         if isinstance(item, dict) and item.get("id")
     }
-    if plot_type in {"line", "scatter"}:
+    if plot_type in {"line", "polar_line", "scatter"}:
         for index, (group, group_rows) in enumerate(groups.items()):
             style = styles.get(group, {}) if isinstance(styles.get(group, {}), dict) else {}
             color = str(style.get("color", colors.get(group, fallback[index % len(fallback)])))
             label = str(style.get("label", group))
-            if plot_type == "line":
+            if plot_type in {"line", "polar_line"}:
                 max_bridge_gap_px = float(style.get("max_bridge_gap_px", display_policy.get("max_bridge_gap_px", 0.0)))
                 geometry_source = str(style.get("geometry_source", "observations"))
-                if geometry_source == "guide_constrained" and group in series_specs:
+                if (
+                    plot_type == "line"
+                    and geometry_source == "guide_constrained"
+                    and group in series_specs
+                ):
                     if len(parse_guide_points(series_specs[group])) < 2:
                         raise FigureError(
                             f"系列 {group} 使用 guide_constrained 时至少需要两个 guide_points_px"
@@ -3655,6 +4619,7 @@ def render_command(
                             else None
                         ),
                         knot_stride=knot_stride,
+                        sort_by_data_x=polar_plot,
                     )
                     geometry_provenance = (
                         "derived_display_geometry"
@@ -3670,8 +4635,16 @@ def render_command(
                     retained_count,
                     derived_count,
                 ) in enumerate(segments):
+                    if (
+                        polar_plot
+                        and len(segment_x) > 1
+                        and float(segment_x[-1]) - float(segment_x[0]) >= 300.0
+                    ):
+                        segment_x = np.append(segment_x, float(segment_x[0]) + 360.0)
+                        segment_y = np.append(segment_y, float(segment_y[0]))
+                    plot_x = np.deg2rad(segment_x) if polar_plot else segment_x
                     axis.plot(
-                        segment_x,
+                        plot_x,
                         segment_y,
                         color=color,
                         linewidth=float(style.get("linewidth", 1.8)),
@@ -3696,8 +4669,9 @@ def render_command(
                 if marker:
                     marker_every = max(1, int(style.get("marker_every", max(1, len(group_rows) // 16))))
                     marker_rows = sorted(group_rows, key=lambda row: numeric(row, x_key))[::marker_every]
+                    marker_x = [numeric(row, x_key) for row in marker_rows]
                     axis.plot(
-                        [numeric(row, x_key) for row in marker_rows],
+                        np.deg2rad(marker_x) if polar_plot else marker_x,
                         [numeric(row, y_key) for row in marker_rows],
                         linestyle="none",
                         marker=str(marker),
@@ -3727,21 +4701,42 @@ def render_command(
             )
         axis.set_xticks(category_values)
     x_scale = str(render.get("x_scale") or chart.get("x_axis", {}).get("scale", "linear"))
-    y_scale = str(render.get("y_scale") or chart.get("y_axis", {}).get("scale", "linear"))
-    axis.set_xscale("log" if x_scale == "log10" else "linear")
-    axis.set_yscale("log" if y_scale == "log10" else "linear")
-    if isinstance(render.get("x_limits"), list) and len(render["x_limits"]) == 2:
-        axis.set_xlim(float(render["x_limits"][0]), float(render["x_limits"][1]))
+    y_scale = str(
+        render.get("y_scale")
+        or (
+            chart.get("polar", {}).get("radius_axis", {}).get("scale", "linear")
+            if polar_plot
+            else chart.get("y_axis", {}).get("scale", "linear")
+        )
+    )
+    if polar_plot:
+        polar = chart.get("polar", {})
+        angle_axis = polar.get("angle_axis", {})
+        axis.set_theta_offset(math.radians(-float(angle_axis.get("zero_bearing_deg", 0.0))))
+        axis.set_theta_direction(
+            -1 if angle_axis.get("direction", "clockwise") == "clockwise" else 1
+        )
+        x_scale = "circular_degree"
+        axis.set_yscale("log" if y_scale == "log10" else "linear")
+    else:
+        axis.set_xscale("log" if x_scale == "log10" else "linear")
+        axis.set_yscale("log" if y_scale == "log10" else "linear")
+        if isinstance(render.get("x_limits"), list) and len(render["x_limits"]) == 2:
+            axis.set_xlim(float(render["x_limits"][0]), float(render["x_limits"][1]))
     if isinstance(render.get("y_limits"), list) and len(render["y_limits"]) == 2:
         axis.set_ylim(float(render["y_limits"][0]), float(render["y_limits"][1]))
     if isinstance(render.get("x_ticks"), list):
-        axis.set_xticks([float(value) for value in render["x_ticks"]])
+        x_ticks = [float(value) for value in render["x_ticks"]]
+        axis.set_xticks(np.deg2rad(x_ticks) if polar_plot else x_ticks)
     if isinstance(render.get("y_ticks"), list):
         axis.set_yticks([float(value) for value in render["y_ticks"]])
-    axis.set_xlabel(str(render.get("x_label", "")), fontsize=float(render.get("label_fontsize", 12)))
-    axis.set_ylabel(str(render.get("y_label", "")), fontsize=float(render.get("label_fontsize", 12)))
+    if not polar_plot:
+        axis.set_xlabel(str(render.get("x_label", "")), fontsize=float(render.get("label_fontsize", 12)))
+        axis.set_ylabel(str(render.get("y_label", "")), fontsize=float(render.get("label_fontsize", 12)))
+    elif render.get("radial_label_position_deg") is not None:
+        axis.set_rlabel_position(float(render["radial_label_position_deg"]))
     axis.set_title(str(render.get("title", "")))
-    if not bool(render.get("boxed_axes", False)):
+    if not polar_plot and not bool(render.get("boxed_axes", False)):
         axis.spines["top"].set_visible(False)
         axis.spines["right"].set_visible(False)
     grid = render.get("grid", "y")
@@ -3888,6 +4883,7 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
     required = {
         "project_spec": project_path,
         "data": project_dir / "data.csv",
+        "render_report": project_dir / "render" / "render-report.json",
         "render_png": project_dir / "render" / "render.png",
         "render_svg": project_dir / "render" / "render.svg",
         "render_pdf": project_dir / "render" / "render.pdf",
@@ -3902,8 +4898,10 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
             }
         )
     project_path = required["project_spec"]
+    project: dict[str, Any] = {}
     if project_path.is_file():
-        project_errors = validate_spec(read_json(project_path), project_path, extraction=False)
+        project = read_json(project_path)
+        project_errors = validate_spec(project, project_path, extraction=False)
         errors.extend(f"项目规格验证失败：{error}" for error in project_errors)
     artifact_checks: dict[str, Any] = {}
     for name, path in required.items():
@@ -3939,7 +4937,6 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
                     mae = float(np.mean(absolute) / 255.0)
                     plot_mae: float | None = None
                     if project_path.is_file():
-                        project = read_json(project_path)
                         box = project.get("chart", {}).get("plot_box")
                         if (
                             isinstance(box, list)
@@ -3987,6 +4984,182 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
         delivery = "partial"
     else:
         delivery = "failed"
+
+    def bounded_delivery_score(value: float) -> float:
+        return round(max(0.0, min(100.0, float(value))), 1)
+
+    verified_artifacts = sum(
+        bool(check.get("exists"))
+        and bool(check.get("sha256"))
+        and manifest.get("artifacts", {}).get(name, {}).get("sha256")
+        == check.get("sha256")
+        for name, check in artifact_checks.items()
+    )
+    artifact_integrity_score = bounded_delivery_score(
+        verified_artifacts / max(1, len(artifact_checks)) * 100.0
+    )
+    render_formats = ("render_png", "render_svg", "render_pdf")
+    complete_formats = sum(
+        bool(artifact_checks.get(name, {}).get("exists"))
+        and Path(str(artifact_checks[name]["path"])).stat().st_size > 0
+        for name in render_formats
+    )
+    format_completeness_score = bounded_delivery_score(
+        complete_formats / len(render_formats) * 100.0
+    )
+
+    render_report_path = required["render_report"]
+    render_report = read_json(render_report_path) if render_report_path.is_file() else {}
+    mapping = render_report.get("mapping", {}) if isinstance(render_report, dict) else {}
+    traceability_checks = {
+        "formal_data_present": required["data"].is_file(),
+        "project_spec_present": project_path.is_file(),
+        "render_report_pass": render_report.get("status") == "pass",
+        "positive_rendered_rows": isinstance(render_report.get("rows"), int)
+        and int(render_report.get("rows", 0)) > 0,
+        "declared_xy_mapping": bool(mapping.get("x")) and bool(mapping.get("y")),
+    }
+    data_geometry_traceability_score = bounded_delivery_score(
+        sum(traceability_checks.values()) / len(traceability_checks) * 100.0
+    )
+
+    declared_render = project.get("render", {}) if isinstance(project, dict) else {}
+    expected_plot_type = str(declared_render.get("plot_type", ""))
+    expected_x_scale = str(
+        declared_render.get("x_scale")
+        or project.get("chart", {}).get("x_axis", {}).get("scale", "linear")
+    )
+    expected_y_scale = str(
+        declared_render.get("y_scale")
+        or (
+            project.get("chart", {})
+            .get("polar", {})
+            .get("radius_axis", {})
+            .get("scale", "linear")
+            if expected_plot_type == "polar_line"
+            else project.get("chart", {}).get("y_axis", {}).get("scale", "linear")
+        )
+    )
+    reported_scales = (
+        render_report.get("axis_scales", {}) if isinstance(render_report, dict) else {}
+    )
+    expected_canvas = declared_render.get("canvas_px")
+    reported_canvas = render_report.get("canvas_px") if isinstance(render_report, dict) else None
+    spec_checks = {
+        "plot_type_matches": bool(expected_plot_type)
+        and render_report.get("plot_type") == expected_plot_type,
+        "x_mapping_matches": bool(declared_render.get("x"))
+        and mapping.get("x") == declared_render.get("x"),
+        "y_mapping_matches": bool(declared_render.get("y"))
+        and mapping.get("y") == declared_render.get("y"),
+        "x_scale_matches": reported_scales.get("x")
+        == ("circular_degree" if expected_plot_type == "polar_line" else expected_x_scale),
+        "y_scale_matches": reported_scales.get("y") == expected_y_scale,
+        "canvas_matches_when_declared": expected_canvas is None
+        or expected_canvas == []
+        or reported_canvas == expected_canvas,
+    }
+    render_spec_compliance_score = bounded_delivery_score(
+        sum(spec_checks.values()) / len(spec_checks) * 100.0
+    )
+    delivery_dimensions = {
+        "artifact_integrity": {
+            "label": "交付物与哈希完整性",
+            "weight": 30,
+            "score": artifact_integrity_score,
+            "metrics": {
+                "verified_artifacts": verified_artifacts,
+                "required_artifacts": len(artifact_checks),
+            },
+        },
+        "format_completeness": {
+            "label": "PNG/SVG/PDF 格式完整性",
+            "weight": 20,
+            "score": format_completeness_score,
+            "metrics": {
+                name: artifact_checks.get(name, {}).get("exists", False)
+                for name in render_formats
+            },
+        },
+        "data_geometry_traceability": {
+            "label": "数据到图形可追溯性",
+            "weight": 25,
+            "score": data_geometry_traceability_score,
+            "metrics": traceability_checks,
+        },
+        "render_spec_compliance": {
+            "label": "重绘规格符合度",
+            "weight": 25,
+            "score": render_spec_compliance_score,
+            "metrics": spec_checks,
+        },
+    }
+    delivery_score = round(
+        sum(
+            float(item["score"]) * float(item["weight"])
+            for item in delivery_dimensions.values()
+        )
+        / sum(float(item["weight"]) for item in delivery_dimensions.values()),
+        1,
+    )
+    delivery_minimum_dimension_score = min(
+        float(item["score"]) for item in delivery_dimensions.values()
+    )
+    profile_name = str(
+        project.get("assessment", {}).get("acceptance_profile", "engineering")
+        if isinstance(project.get("assessment", {}), dict)
+        else "engineering"
+    )
+    profile = ACCEPTANCE_PROFILES.get(profile_name, ACCEPTANCE_PROFILES["engineering"])
+    delivery_hard_gates = {
+        "artifact_hashes_valid": artifact_integrity_score == 100.0,
+        "required_formats_complete": format_completeness_score == 100.0,
+        "stage_status_allows_delivery": delivery in {"pass", "partial"},
+    }
+    delivery_hard_gates_pass = all(delivery_hard_gates.values())
+    delivery_threshold_pass = delivery_score >= float(profile["overall_threshold"])
+    delivery_dimension_floor_pass = delivery_minimum_dimension_score >= float(
+        profile["minimum_dimension_score"]
+    )
+    if not delivery_hard_gates_pass:
+        delivery_decision = "blocked"
+        delivery_next_instruction = "停止交付：先修复缺失文件、哈希或阶段状态，再重新验证。"
+    elif not delivery_threshold_pass or not delivery_dimension_floor_pass:
+        delivery_decision = "not_qualified"
+        delivery_next_instruction = "暂不接受重绘：优先修复最低分维度，重新生成后再次 validate。"
+    elif delivery == "partial":
+        delivery_decision = "conditional_acceptance"
+        delivery_next_instruction = "交付仅部分通过：请用户确认已声明的提取或复核限制后再决定是否使用。"
+    else:
+        delivery_decision = "accepted"
+        delivery_next_instruction = "重绘技术交付达到所选用途阈值；可接受当前版本，或按需进行视觉审美复核。"
+    delivery_assessment = {
+        "method": "weighted_render_delivery_dimensions_with_non_compensable_hard_gates",
+        "profile": profile_name,
+        "profile_label": profile["label"],
+        "overall_score": delivery_score,
+        "minimum_dimension_score": round(delivery_minimum_dimension_score, 1),
+        "thresholds": {
+            "overall_score": profile["overall_threshold"],
+            "minimum_dimension_score": profile["minimum_dimension_score"],
+        },
+        "dimensions": delivery_dimensions,
+        "worst_dimension": min(
+            delivery_dimensions,
+            key=lambda key: float(delivery_dimensions[key]["score"]),
+        ),
+        "hard_gates": delivery_hard_gates,
+        "hard_gates_pass": delivery_hard_gates_pass,
+        "score_threshold_pass": delivery_threshold_pass,
+        "dimension_floor_pass": delivery_dimension_floor_pass,
+        "decision": delivery_decision,
+        "next_instruction": delivery_next_instruction,
+        "visual_reference_diagnostic": visual,
+        "qualification_note": (
+            "此分数评价文件、哈希、格式、数据映射和规格执行；参考图像素残差仅用于定位差异，"
+            "不等同于科研数据准确率或视觉审美评分。"
+        ),
+    }
     report = {
         "schema": "more-sci-figure.validation-report.v1",
         "status": "pass" if not errors else "failed",
@@ -3998,6 +5171,7 @@ def validate_command(project_dir: Path, reference: Path | None = None) -> dict[s
         },
         "artifact_checks": artifact_checks,
         "visual_comparison": visual,
+        "delivery_assessment": delivery_assessment,
         "errors": errors,
         "warnings": warnings,
     }
@@ -4022,25 +5196,29 @@ def pipeline_command(
     if review_decisions is None:
         assessment = read_json(out_dir / "review-assessment.json")
         recommendation = str(assessment.get("recommended_action", "stop"))
+        acceptance = assessment.get("acceptance", {})
+        review_waiting_status = {
+            "batch_confirm": "awaiting_confirmation",
+            "apply_review": "awaiting_review_apply",
+            "review_anomaly_groups": "awaiting_anomaly_review",
+            "re_extract": "re_extract_required",
+            "stop": "blocked",
+        }.get(recommendation, "attention_required")
         return {
             "extraction": extraction["status"],
-            "review": (
-                "awaiting_confirmation"
-                if recommendation == "batch_confirm"
-                else "attention_required"
-            ),
+            "review": review_waiting_status,
             "render": "not_run",
             "delivery": "not_run",
+            "用途等级": acceptance.get("profile_label", acceptance.get("profile")),
             "综合评分": assessment.get("overall_score"),
+            "最低维度分": assessment.get("minimum_dimension_score"),
+            "判定": acceptance.get("decision"),
+            "硬门通过": acceptance.get("hard_gates_pass"),
             "风险等级": assessment.get("risk_level"),
             "异常组": assessment.get("anomaly_groups"),
             "建议动作": recommendation,
             "综合评估": str(out_dir / "review-assessment.json"),
-            "下一步": (
-                "向用户汇报综合评判；用户回复“下一步/继续”后运行 review-confirm，再继续正式流程。"
-                if recommendation == "batch_confirm"
-                else "只处理异常组或停止；不得批量确认。"
-            ),
+            "下一步": acceptance.get("next_instruction", "请检查综合评估后再继续。"),
         }
     review = review_apply_command(out_dir, review_decisions)
     if review["review_status"] == "rejected":
@@ -4074,6 +5252,12 @@ def build_parser() -> argparse.ArgumentParser:
     inspect_parser.add_argument("--input", required=True, type=Path, help="图片、PDF 或数据文件")
     inspect_parser.add_argument("--chart-type", choices=sorted(SUPPORTED_CHARTS), help="图表类型")
     inspect_parser.add_argument("--page", type=int, default=1, help="PDF 页码，从 1 开始")
+    inspect_parser.add_argument("--dpi", type=int, default=144, help="PDF 整页测量栅格 DPI")
+    inspect_parser.add_argument(
+        "--pdf-image-index",
+        type=int,
+        help="直接锁定该页从 0 开始的嵌入栅格对象，避免整页重采样",
+    )
     inspect_parser.add_argument("--out-dir", required=True, type=Path, help="输出目录")
 
     extract_parser = subparsers.add_parser("extract", help="提取可见候选值并生成复核页面")
@@ -4159,7 +5343,14 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.command == "inspect":
-            inspect_command(args.input, args.chart_type, args.out_dir, args.page)
+            inspect_command(
+                args.input,
+                args.chart_type,
+                args.out_dir,
+                args.page,
+                dpi=args.dpi,
+                pdf_image_index=args.pdf_image_index,
+            )
             return 0
         if args.command == "extract":
             result = extract_command(args.spec, args.out_dir)

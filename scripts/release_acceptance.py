@@ -46,6 +46,7 @@ def main() -> int:
         "schemas/project.schema.json",
         "schemas/review-assessment.schema.json",
         "schemas/review-decisions.schema.json",
+        "schemas/validation-report.schema.json",
         "scripts/more_sci_figure.py",
     ]
     structure = {
