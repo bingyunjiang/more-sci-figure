@@ -22,6 +22,19 @@ More Sci Figure 是一个面向科研人员、工程师和论文作者的 Agent 
 
 **关键词 / Keywords：** 科研图表数字化 · scientific chart digitization · PDF 图表数据提取 · 曲线/散点/柱图 · polar plot · AI 质量评估 · anomaly-first review · 论文级重绘 · SVG/PDF · local-first · auditable workflow
 
+## More 系列
+
+More 系列是一组面向真实创作与研究任务的开源 Agent Skills。每个项目都强调本地优先、过程透明和结果可追溯。
+
+| 项目 | 主要用途 |
+| --- | --- |
+| [**more-sci-figure**](https://github.com/bingyunjiang/more-sci-figure) · 当前项目 | 科研图表数据提取、异常优先复核、论文级重绘与验证 |
+| [more-paper-workflow](https://github.com/bingyunjiang/more-paper-workflow) | 从选题、检索、文献管理到写作与引用审计的论文证据闭环 |
+| [more-news-briefing](https://github.com/bingyunjiang/more-news-briefing) | 新闻和行业信息的收集、去重、核验与结构化简报 |
+| [more-comic-digitizer](https://github.com/bingyunjiang/more-comic-digitizer) | 保护原作、作者权和隐私的儿童手绘漫画数字化工作流 |
+
+[查看 Dr. Jiang Bingyun 的全部开源项目](https://github.com/bingyunjiang)
+
 [查看正式案例](#正式案例) · [立即开始](#两分钟开始) · [了解核心能力](#你可以用它做什么) · [开发者文档](#开发者文档)
 
 ---

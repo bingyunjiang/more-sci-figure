@@ -36,6 +36,7 @@
 - 增加确定性 `build_case_showcase.py`：从论文原图、正式重绘、提取评估和交付验证报告生成左右等宽、不裁切的 PNG/SVG 案例图及哈希 sidecar；提取评估与重绘交付评分分开标注。
 - README 增加 Jiang 和 Tian (2021) Fig. 9 正式案例，左侧为锁定来源的论文原图，右侧为 `1429` 行正式 `data.csv` 重绘；交付评分 `100/100`，提取评估 `99.4/100`，复核状态 `accepted`。
 - README 重构为面向用户的宣传入口：先说明价值、适用人群、对话式开始方式和正式案例，再下沉 CLI、评分、Schema、交付物与开发验收；修复顶部跨仓库链接，并补充中英文关键词和 Agent 入口徽章。
+- README 首屏增加 More 系列导航，统一链接 `more-sci-figure`、`more-paper-workflow`、`more-news-briefing` 和 `more-comic-digitizer`，并突出当前项目与各自适用场景。
 
 ### 修正
 
