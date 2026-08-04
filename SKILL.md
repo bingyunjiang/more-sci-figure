@@ -9,6 +9,16 @@ description: 从栅格图片、PDF 图表、CSV、JSON 或 Excel 数据建立可
 
 当前版本：`0.3.1`
 
+## 独立使用边界
+
+本 skill 是科研图表来源锁定、候选提取、人工复核、正式数据生成、重绘和交付验证的独立工作流。
+它不依赖其他 `more-*` skill 完成核心任务；外部论文写作、新闻简报或漫画数字化流程不能替代本 skill
+的来源哈希、规格确认、候选复核和四阶段状态门。
+
+如果用户要把生成的 `data.csv`、SVG、PDF 或验证报告交给其他项目使用，只把它们当作已验收的交付物
+移交。不要在本 skill 内自动进入其他 skill，也不要因为下游需要图表就跳过 `candidates.csv →
+review-decisions.json → observations.csv → data.csv` 的本地证据链。
+
 ## 核心规则
 
 1. 测量前保留来源文件并记录 SHA-256。
