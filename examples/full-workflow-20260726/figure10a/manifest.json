@@ -22,27 +22,27 @@
     },
     "review_anomalies": {
       "bytes": 0,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/review-anomalies.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/review-anomalies.csv",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "review_assessment": {
-      "bytes": 45096,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/review-assessment.json",
-      "sha256": "65ffc806409af7652dc3fc24172c34955190eb47573547498d33eb59d2c62ca5"
+      "bytes": 45068,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/review-assessment.json",
+      "sha256": "7d8f7ec1f813f24ec0c3df8749da748d03b500662820d8f84a1bcf510294a350"
     },
     "review_html": {
       "bytes": 2601535,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/review.html",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/review.html",
       "sha256": "63f7d6930eef41d14c37ac0d2eded391153affdb2dd205a798e173a193cff18f"
     },
     "review_template": {
       "bytes": 231655,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/review-template.json",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/review-template.json",
       "sha256": "ae071799fb12a6dbd9be3858b1728f7f9628d4484b0466b42a9cf5b3a3838903"
     },
     "review_uncertainty": {
       "bytes": 91643,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/review-uncertainty.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/review-uncertainty.csv",
       "sha256": "01ff03082036e934440af3788c3260c301edf63d324c552e01e2eb9d61b326db"
     },
     "source_report": {
@@ -56,13 +56,13 @@
       "sha256": "202f16ed920faf73bbde0cf210c3b1097164ffcaefb71c69d20863cde7b9819c"
     },
     "spec_review": {
-      "bytes": 2327,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/spec-review.json",
-      "sha256": "eda5ded654f3d9096b710480147760b51d362d932417b9040d960378a6eec4ed"
+      "bytes": 2271,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/spec-review.json",
+      "sha256": "c31dff661b2df90a1ed2d16e039dfd685a8f230390e69fc4939fd17d9345e8df"
     },
     "spec_review_overlay": {
       "bytes": 232984,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/spec-review.png",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/spec-review.png",
       "sha256": "11cd34a7b33848cf6edcf23ec53b157f54244f2750d9b68d48e8a551212f765e"
     }
   },

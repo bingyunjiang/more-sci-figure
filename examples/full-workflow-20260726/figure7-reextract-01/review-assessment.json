@@ -91,7 +91,7 @@
   "minimum_dimension_score": 37.5,
   "overall_score": 78.8,
   "project_id": "jiang-tian-2021-figure7-stress-strain-reextract-01",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/project.json",
   "recommended_action": "re_extract",
   "review_policy": {
     "batch_confirmation_allowed": false,

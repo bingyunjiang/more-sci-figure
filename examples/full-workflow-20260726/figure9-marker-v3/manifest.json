@@ -6,9 +6,9 @@
       "sha256": "ad4beba6cf9d85988e06e2f0efe2c9ba37b82c5f6ba433c88601a62ba892bc5e"
     },
     "data": {
-      "bytes": 523990,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
-      "sha256": "1658f0652e1e1277829206cc397494f4633c26a3b29805a0b57751b9241e4e7f"
+      "bytes": 486836,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
+      "sha256": "f9b43413e32cd42c15338087df6a0377f8940e9d9dd1574eabc3895bc544d03b"
     },
     "display_geometry": {
       "bytes": 133639,
@@ -16,19 +16,19 @@
       "sha256": "192c57aeab01013a2af6d12e617f97e744e53c9ce0d15943a474c6e3b8a54865"
     },
     "extraction_report": {
-      "bytes": 9375,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/extraction-report.json",
-      "sha256": "cb0df6ea7033591b18881d339fb7f126d97d3b62ec3a13b8c105a9aa4da14927"
+      "bytes": 9225,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/extraction-report.json",
+      "sha256": "dfd6a622441378477ae1158f4b76108fb78207a9a06103e944191ab9918a4f74"
     },
     "formal_data_report": {
-      "bytes": 3240,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
-      "sha256": "4f4ef10710bb516514bf3d513f282257f7231d2a320be6d9bbcd51681d22fca6"
+      "bytes": 3100,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
+      "sha256": "4dbff830946775ec14789b1918c9b481c1c015cdc51047b88dc04c0c84064941"
     },
     "observations": {
-      "bytes": 374145,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
-      "sha256": "919544ecc59dbb8b8b09caeef93c158b467f56df885e1c987ee2d05a6ed832b2"
+      "bytes": 336991,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
+      "sha256": "f52d86860372bc2acf7c8e209dd7a191011d0b410f0539753f49095ba4159fc8"
     },
     "overlay": {
       "bytes": 238038,
@@ -37,7 +37,7 @@
     },
     "project_spec": {
       "bytes": 12406,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/project.json",
       "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
     },
     "render_pdf": {
@@ -62,32 +62,32 @@
     },
     "review_anomalies": {
       "bytes": 546,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-anomalies.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review-anomalies.csv",
       "sha256": "996de6ba9ccd3533ad06203cd3b9de6437d454faef9f44056e5e1a5ce1176421"
     },
     "review_assessment": {
-      "bytes": 10475,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-assessment.json",
-      "sha256": "cc34d5027a62c7271be6f50580f8ae9831fb3a8b5b23e2d5f5d6f0cf49a2d617"
+      "bytes": 10447,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review-assessment.json",
+      "sha256": "c4d96adea9a4112fd7f3a319f7e0884d287b9b22ad5aa0c6fca69af4e4ae3ffc"
     },
     "review_decisions": {
-      "bytes": 161700,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-decisions.json",
-      "sha256": "4c9d08021933c25397e2e2c4235a03fffd49949a50d9f5c613c94e2f431601fd"
+      "bytes": 161674,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review-decisions.json",
+      "sha256": "cdc06abca1b6a2c3b6923057052347cd945e9841670e6aa3472644c7098bc66c"
     },
     "review_html": {
-      "bytes": 2103802,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review.html",
-      "sha256": "9fc323ece25a65ca318d32d1f5d0a4e00cd2bc303ed90999aab004f11df359e4"
+      "bytes": 2103750,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review.html",
+      "sha256": "49989c4b1ed515513cdb9de2c131b9ba58a0ff9821cdaa396a7b91640da1f714"
     },
     "review_template": {
       "bytes": 160784,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-template.json",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review-template.json",
       "sha256": "b67f9bfa3db6d14f96b321ec8806dea3d802e582f76ca27fd6452f291104840c"
     },
     "review_uncertainty": {
       "bytes": 0,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/review-uncertainty.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/review-uncertainty.csv",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "spec_confirmation": {
@@ -96,19 +96,19 @@
       "sha256": "39f0dc1883b91ec68156ceeac11aca8de7d15555bf64ec2c2fc9dae87279f668"
     },
     "spec_review": {
-      "bytes": 3156,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/spec-review.json",
-      "sha256": "8be22ffb94064ae5d30e81a0b6c97663561c93ada98f17189ac4c686ea8c0b08"
+      "bytes": 3100,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/spec-review.json",
+      "sha256": "3754e5e0139064cc8b71727912d98ca5b567fa7a40231719abab20d586d56113"
     },
     "spec_review_overlay": {
       "bytes": 238977,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/spec-review.png",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/spec-review.png",
       "sha256": "3326c429e3897dd78faa60d75093cfe64a089a9b0f8443f2a4648c3a0ebb6764"
     },
     "validation_report": {
-      "bytes": 5814,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/validation-report.json",
-      "sha256": "39ba3c127741f0ad173d8f3721387c776bba3602f84288d2dee27aa0456cc48b"
+      "bytes": 5745,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/validation-report.json",
+      "sha256": "873f3f8f07f831b042a1b6659dfe4973e43aab7dd1525b035a0361c4a9bae5b7"
     }
   },
   "delivery_status": "pass",
@@ -116,7 +116,7 @@
   "project_id": "jiang-tian-2021-figure9-marker-v2",
   "project_spec": {
     "bytes": 12406,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/project.json",
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/project.json",
     "sha256": "f02c29024cfc7df15ec773b961a21c3901488ae4e286d024d2bbbe97026692a6"
   },
   "render_status": "pass",

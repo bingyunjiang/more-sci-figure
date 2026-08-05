@@ -73,7 +73,7 @@
   "minimum_dimension_score": 98.3,
   "overall_score": 99.7,
   "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
   "recommended_action": "apply_review",
   "review_policy": {
     "batch_confirmation_allowed": false,

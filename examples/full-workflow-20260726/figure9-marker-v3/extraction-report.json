@@ -170,19 +170,19 @@
   },
   "formal_data": {
     "data": {
-      "bytes": 523990,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
-      "sha256": "1658f0652e1e1277829206cc397494f4633c26a3b29805a0b57751b9241e4e7f"
+      "bytes": 486836,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/data.csv",
+      "sha256": "f9b43413e32cd42c15338087df6a0377f8940e9d9dd1574eabc3895bc544d03b"
     },
     "observations": {
-      "bytes": 374145,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
-      "sha256": "919544ecc59dbb8b8b09caeef93c158b467f56df885e1c987ee2d05a6ed832b2"
+      "bytes": 336991,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/observations.csv",
+      "sha256": "f52d86860372bc2acf7c8e209dd7a191011d0b410f0539753f49095ba4159fc8"
     },
     "report": {
-      "bytes": 3240,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
-      "sha256": "4f4ef10710bb516514bf3d513f282257f7231d2a320be6d9bbcd51681d22fca6"
+      "bytes": 3100,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v3/formal-data-report.json",
+      "sha256": "4dbff830946775ec14789b1918c9b481c1c015cdc51047b88dc04c0c84064941"
     },
     "rows": 1429
   },
@@ -293,17 +293,18 @@
   "rows": 1429,
   "schema": "more-sci-figure.extraction-report.v1",
   "source": {
+    "bytes": 1783762,
     "height": 546,
-    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9-marker-v2/source-image.jpeg",
+    "measurement_raster": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9-marker-v2/source-image.jpeg",
     "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "path": "<PROJECT_DIR>/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
     "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
     "width": 843
   },
   "specification_confirmation": {
     "confirmation": "用户要求：优化此 skill，走正确的绘图路径；此前已授权 Agent 查看规格截图自行判断。",
     "confirmed_at": "2026-07-26T11:36:22.322403+00:00",
-    "confirmed_by": "Codex agent, user-authorized workflow correction",
+    "confirmed_by": "example-reviewer",
     "record_sha256": "39f0dc1883b91ec68156ceeac11aca8de7d15555bf64ec2c2fc9dae87279f668",
     "status": "confirmed"
   },

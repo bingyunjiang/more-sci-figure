@@ -1,7 +1,7 @@
 {
   "confirmation": "确认四张图规格，继续提取",
   "confirmed_at": "2026-07-26T07:29:44.556559+00:00",
-  "confirmed_by": "Bing（Codex 对话用户）",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
   "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
   "project_sha256": "73fda03c2c0a7eb3fa086b96ed51adc74050785473900988caa8a3c953672bcd",

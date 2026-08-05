@@ -144,17 +144,18 @@
   "rows": 360,
   "schema": "more-sci-figure.extraction-report.v1",
   "source": {
+    "bytes": 3396751,
     "height": 620,
-    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b/source-image.png",
+    "measurement_raster": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b/source-image.png",
     "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "path": "<PROJECT_DIR>/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
     "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
     "width": 645
   },
   "specification_confirmation": {
     "confirmation": "确认四张图规格，继续提取",
     "confirmed_at": "2026-07-26T07:29:44.556559+00:00",
-    "confirmed_by": "Bing（Codex 对话用户）",
+    "confirmed_by": "example-reviewer",
     "record_sha256": "d42bb5982a6908659aabd9dec529ce7747ff9939dcfb66a4f2acc400e248af93",
     "status": "confirmed"
   },

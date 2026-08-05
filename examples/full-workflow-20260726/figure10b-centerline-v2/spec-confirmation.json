@@ -1,7 +1,7 @@
 {
   "confirmation": "用户要求：优化此 skill，走正确的绘图路径；此前已授权 Agent 查看规格截图自行判断。",
   "confirmed_at": "2026-07-26T11:36:21.042032+00:00",
-  "confirmed_by": "Codex agent, user-authorized workflow correction",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
   "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
   "project_sha256": "f2d51afd74e786354b4933cf06ed5bad175d73a3199b40e2f0b349bf17f63753",

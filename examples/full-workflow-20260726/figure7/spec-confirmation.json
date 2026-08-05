@@ -1,7 +1,7 @@
 {
   "confirmation": "确认四张图规格，继续提取",
   "confirmed_at": "2026-07-26T07:29:44.718210+00:00",
-  "confirmed_by": "Bing（Codex 对话用户）",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
   "project_id": "jiang-tian-2021-figure7-stress-strain",
   "project_sha256": "8304b7b68d0ad25391b16bf182d11320d2d62d8b58962d955484b9e83514b3fa",

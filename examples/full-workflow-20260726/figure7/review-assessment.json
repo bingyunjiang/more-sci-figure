@@ -119,7 +119,7 @@
   "minimum_dimension_score": 31.2,
   "overall_score": 77.8,
   "project_id": "jiang-tian-2021-figure7-stress-strain",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7/project.json",
   "recommended_action": "re_extract",
   "review_policy": {
     "batch_confirmation_allowed": false,

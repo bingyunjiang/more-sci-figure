@@ -273,17 +273,18 @@
   "rows": 2792,
   "schema": "more-sci-figure.extraction-report.v1",
   "source": {
+    "bytes": 1783762,
     "height": 546,
-    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/source-image.jpeg",
+    "measurement_raster": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9/source-image.jpeg",
     "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
+    "path": "<PROJECT_DIR>/examples/Jiang和Tian - 2021 - Integrated Prediction of Mechanical Behavior for the Non-Aligned Fiber Composites With Experimental.pdf",
     "sha256": "cd23603fcbf263c00ead3d69f0cf9eb5d40432db3637d84ad00d9c0f54e90387",
     "width": 843
   },
   "specification_confirmation": {
     "confirmation": "确认四张图规格，继续提取",
     "confirmed_at": "2026-07-26T07:29:44.880004+00:00",
-    "confirmed_by": "Bing（Codex 对话用户）",
+    "confirmed_by": "example-reviewer",
     "record_sha256": "4eef5bd2aea23a121e30be91db547d135a7d64d18f53376a72d61881b24060a7",
     "status": "confirmed"
   },

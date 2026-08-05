@@ -1823,7 +1823,7 @@
   "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
   "review_method": "ai_assisted_batch_confirmation",
   "reviewed_at": "2026-07-26T09:47:40.418848+00:00",
-  "reviewed_by": "user",
+  "reviewed_by": "example-reviewer",
   "schema": "more-sci-figure.review-decisions.v1",
   "source_sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
   "summary": {

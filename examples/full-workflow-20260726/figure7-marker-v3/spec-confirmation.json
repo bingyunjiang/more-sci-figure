@@ -1,7 +1,7 @@
 {
   "confirmation": "确认 Fig. 7/9 marker v2 规格，继续提取。",
   "confirmed_at": "2026-07-26T07:49:18.010739+00:00",
-  "confirmed_by": "user",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
   "project_id": "jiang-tian-2021-figure7-marker-v2",
   "project_sha256": "b84634410491ad932e56038516ad0e073289083d2e366b2ad441ff47c0529bc6",

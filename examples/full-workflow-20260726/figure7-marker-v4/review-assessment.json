@@ -74,7 +74,7 @@
   "minimum_dimension_score": 95.1,
   "overall_score": 99.3,
   "project_id": "jiang-tian-2021-figure7-marker-v2",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-marker-v4/project.json",
   "recommended_action": "apply_review",
   "review_policy": {
     "batch_confirmation_allowed": false,

@@ -211,10 +211,11 @@
   "rows": 2266,
   "schema": "more-sci-figure.extraction-report.v1",
   "source": {
+    "bytes": 3396751,
     "height": 619,
-    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10a/source-image.jpeg",
+    "measurement_raster": "<PROJECT_DIR>/examples/jiang-2026-figure10a/source-image.jpeg",
     "measurement_sha256": "c50dd7550159fd5013857ea202b03408abc8b6ea4b2becc14209472b54db374a",
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "path": "<PROJECT_DIR>/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
     "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
     "width": 757
   },

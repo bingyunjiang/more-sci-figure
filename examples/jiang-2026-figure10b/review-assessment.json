@@ -77,7 +77,7 @@
   "minimum_dimension_score": 74.3,
   "overall_score": 96.1,
   "project_id": "jiang-2026-figure10b-spl-directivity",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/jiang-2026-figure10b/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/jiang-2026-figure10b/project.json",
   "recommended_action": "re_extract",
   "review_policy": {
     "batch_confirmation_allowed": false,

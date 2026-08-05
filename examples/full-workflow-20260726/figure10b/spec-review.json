@@ -7,7 +7,7 @@
     "橙色排除框是否只覆盖图中文字、图例或坐标轴"
   ],
   "generated_at": "2026-07-26T07:28:23.704028+00:00",
-  "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b/source-image.png",
+  "measurement_raster": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b/source-image.png",
   "measurement_sha256": "ced251698368c046b517478105d0ddf0a55b86aa5ca0240da632046053d8a0aa",
   "measurement_size": [
     645,
@@ -25,7 +25,7 @@
     578
   ],
   "project_id": "jiang-2026-figure10b-full-workflow-rerun-20260726",
-  "project_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b/project.json",
+  "project_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b/project.json",
   "project_sha256": "73fda03c2c0a7eb3fa086b96ed51adc74050785473900988caa8a3c953672bcd",
   "required_next": "用户查看原图与 spec-review.png 后给出明确确认；再运行 spec-confirm。",
   "schema": "more-sci-figure.spec-review.v1",

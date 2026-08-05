@@ -124,19 +124,19 @@
   },
   "formal_data": {
     "data": {
-      "bytes": 533419,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a-centerline-v2/data.csv",
-      "sha256": "9a4eb6efbffd71bd45ae30bd28d60ec3e2b52796d807a0239330d02aaf093a4f"
+      "bytes": 560611,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a-centerline-v2/data.csv",
+      "sha256": "f01dddd2f216e036876b2216fa817141c84f704ff627936372b5c26f135f6936"
     },
     "observations": {
-      "bytes": 318485,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a-centerline-v2/observations.csv",
-      "sha256": "1fd098d32bf919b2d3813dd6c539a3aeff1358296ab26af4afde623ed5c7583a"
+      "bytes": 345677,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a-centerline-v2/observations.csv",
+      "sha256": "823978545eea39f06348b11f75694f78c7ef52c43cc25722bbc8d2b04fa107fe"
     },
     "report": {
-      "bytes": 2669,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a-centerline-v2/formal-data-report.json",
-      "sha256": "d3876cb3d647205ef050499a464b58209224529e8e14e7dd6139edd63591766d"
+      "bytes": 2529,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a-centerline-v2/formal-data-report.json",
+      "sha256": "e49c946af05259c36088204b3647cc2b115f0010896ec2681950299d9c7b698a"
     },
     "rows": 2266
   },
@@ -241,17 +241,18 @@
   "rows": 2266,
   "schema": "more-sci-figure.extraction-report.v1",
   "source": {
+    "bytes": 3396751,
     "height": 619,
-    "measurement_raster": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10a/source-image.jpeg",
+    "measurement_raster": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10a/source-image.jpeg",
     "measurement_sha256": "c50dd7550159fd5013857ea202b03408abc8b6ea4b2becc14209472b54db374a",
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
+    "path": "<PROJECT_DIR>/examples/Jiang 等 - 2026 - Experimental and numerical study on noise of electric vehicle charging pile.pdf",
     "sha256": "384bd0c35aff9c9b8e03ee472c5d13e7184f4a97940501101b6ae469224ecdd6",
     "width": 757
   },
   "specification_confirmation": {
     "confirmation": "用户要求：优化此 skill，走正确的绘图路径；此前已授权 Agent 查看规格截图自行判断。",
     "confirmed_at": "2026-07-26T11:36:20.627132+00:00",
-    "confirmed_by": "Codex agent, user-authorized workflow correction",
+    "confirmed_by": "example-reviewer",
     "record_sha256": "ae426d794ec716dc2015ebaa83d409ddf21ba1ca1803fc7c69f2d7dd373bd57f",
     "status": "confirmed"
   },

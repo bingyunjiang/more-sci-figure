@@ -1,7 +1,7 @@
 {
   "confirmation": "确认 Fig. 7 第二次提取规格，继续。",
   "confirmed_at": "2026-07-26T07:34:50.615718+00:00",
-  "confirmed_by": "Bing（Codex 对话用户）",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
   "project_id": "jiang-tian-2021-figure7-stress-strain-reextract-01",
   "project_sha256": "0c8fd53f3c20e3eefce80a48e94151eb57ac7ec4531d0c40eef1fa311f3a3b5e",

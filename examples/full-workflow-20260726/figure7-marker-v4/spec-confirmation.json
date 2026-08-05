@@ -1,7 +1,7 @@
 {
   "confirmation": "用户要求：优化此 skill，走正确的绘图路径；此前已授权 Agent 查看规格截图自行判断。",
   "confirmed_at": "2026-07-26T11:36:21.728163+00:00",
-  "confirmed_by": "Codex agent, user-authorized workflow correction",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "e82623277a29c55da960caadc4dda411c3cf21779c74c74e2fae10218619ffae",
   "project_id": "jiang-tian-2021-figure7-marker-v2",
   "project_sha256": "33929fbafe41ec9fedf8fdd4cd96b26960a51736bfe944653a9241ac85a27484",

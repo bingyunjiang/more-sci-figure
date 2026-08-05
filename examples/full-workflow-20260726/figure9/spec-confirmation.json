@@ -1,7 +1,7 @@
 {
   "confirmation": "确认四张图规格，继续提取",
   "confirmed_at": "2026-07-26T07:29:44.880004+00:00",
-  "confirmed_by": "Bing（Codex 对话用户）",
+  "confirmed_by": "example-reviewer",
   "measurement_sha256": "63b4b7a13525854ac34eaf9431f1e1db5d7f6e1f236063c803e90ab53cf58341",
   "project_id": "jiang-tian-2021-figure9-fiber-orientation",
   "project_sha256": "05ae25e181505e320c1cb55f1b12a9f08afbf1699bfaa5515aba2324e8e080f9",

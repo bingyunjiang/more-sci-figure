@@ -82,7 +82,7 @@
   "minimum_dimension_score": 62.5,
   "overall_score": 94.4,
   "project_id": "jiang-tian-2021-figure9-fiber-orientation",
-  "project_spec_path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure9/project.json",
+  "project_spec_path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure9/project.json",
   "recommended_action": "review_anomaly_groups",
   "review_policy": {
     "batch_confirmation_allowed": false,

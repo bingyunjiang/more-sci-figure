@@ -44,9 +44,9 @@
   },
   "plot_type": "line",
   "project_spec": {
-    "bytes": 12458,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-marker-v4/project.json",
-    "sha256": "c5b7d6bae21d5f9f506488a19b1cb58dd4d4fb0fde711bf287cd2e484b06b033"
+    "bytes": 12806,
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-marker-v4/project.json",
+    "sha256": "33929fbafe41ec9fedf8fdd4cd96b26960a51736bfe944653a9241ac85a27484"
   },
   "rendered_segments": {
     "mfh-0deg": 1,

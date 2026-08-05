@@ -1,31 +1,31 @@
 {
   "candidates": {
     "bytes": 85771,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/candidates.csv",
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/candidates.csv",
     "sha256": "40eb9f3039b051c41b71ff9ed13d47706a0eae6d5014336c02a3ced75d1e1b84"
   },
   "chart_type": "polar_line",
   "data": {
-    "bytes": 136210,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/data.csv",
-    "sha256": "33102767b408c35aab540d8a61384eea2122df6291032ed8f1766a33ba984b3c"
+    "bytes": 140530,
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/data.csv",
+    "sha256": "89a2b5f90795d6ac7ae97ba0170bbe4ecad6e39572ab16cf3d16d1c026714f34"
   },
   "formal_rows": 360,
   "observation_rows": 360,
   "observations": {
-    "bytes": 91213,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/observations.csv",
-    "sha256": "54a65a7a8da2a6f64d9881cab146f33e6e56db8aaa840aa1495f29c5f2f7b566"
+    "bytes": 95533,
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/observations.csv",
+    "sha256": "a74c78277263a56184e0d4a71d0a7cd363c46138f85db912904601912f3828d2"
   },
   "project_spec": {
     "bytes": 4067,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
     "sha256": "f2d51afd74e786354b4933cf06ed5bad175d73a3199b40e2f0b349bf17f63753"
   },
   "review_decisions": {
-    "bytes": 50996,
-    "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/review-decisions.json",
-    "sha256": "ff3240fe87a8521f4bb898c5a42d8783eaac8d8fe1c663fa14ee1377b79ecce2"
+    "bytes": 51008,
+    "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/review-decisions.json",
+    "sha256": "c53e3720b13ff59738e08cdb60b0f29cdd0792ea38980537fdeae5e55882047e"
   },
   "schema": "more-sci-figure.formal-data-report.v1",
   "series": [

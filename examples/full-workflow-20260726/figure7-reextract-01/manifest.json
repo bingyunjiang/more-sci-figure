@@ -22,27 +22,27 @@
     },
     "review_anomalies": {
       "bytes": 1398,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/review-anomalies.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/review-anomalies.csv",
       "sha256": "134beb1a506055210388fd481ccc27870acf44c2dd586f37eb733605f443086c"
     },
     "review_assessment": {
-      "bytes": 20446,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/review-assessment.json",
-      "sha256": "668fcf1f200d78483657b1eb586b1c2647f69d62431e5f1052c660e2263815c8"
+      "bytes": 20418,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/review-assessment.json",
+      "sha256": "4760cbfdde06bebfea96200783755ec649f5905c5cb53004e75c6fb50c99e580"
     },
     "review_html": {
       "bytes": 1431657,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/review.html",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/review.html",
       "sha256": "9c4cb03a4fddbc3945cb8115a412bf7cf15c32fcbf91b28aa30785d2576d37c4"
     },
     "review_template": {
       "bytes": 110456,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/review-template.json",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/review-template.json",
       "sha256": "1e45733dc8dd79133b45911f2093e1d3abd39338b86a3408095426e379ed7455"
     },
     "review_uncertainty": {
       "bytes": 7735,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/review-uncertainty.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/review-uncertainty.csv",
       "sha256": "6b10967a9e89bfc94dc201bf2f41e706b427791669966b97a0547f9e550d5673"
     },
     "source_report": {
@@ -56,13 +56,13 @@
       "sha256": "d6ee4044a7521d11a83c6e3d63abd653cfcf05fd07ecd057ccfebd369c44454c"
     },
     "spec_review": {
-      "bytes": 2741,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/spec-review.json",
-      "sha256": "90082ea7e6cb07f4c47949fdf55dd2387acfd839bccb9cfab2bc8b41208e966e"
+      "bytes": 2685,
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/spec-review.json",
+      "sha256": "8fa5de7bd2daaf88b244ade4fce289e42123eccd4ec02179ef0fbaf1c224ab57"
     },
     "spec_review_overlay": {
       "bytes": 223769,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure7-reextract-01/spec-review.png",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure7-reextract-01/spec-review.png",
       "sha256": "27f3aa25fd7719b78f83381c8ea892e24d97e4ecc2ed19672b386eba5d3428f1"
     }
   },

@@ -1,64 +1,76 @@
 {
   "artifact_checks": {
     "candidates": {
+      "bytes": 85771,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/candidates.csv",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/candidates.csv",
       "sha256": "40eb9f3039b051c41b71ff9ed13d47706a0eae6d5014336c02a3ced75d1e1b84"
     },
     "data": {
+      "bytes": 140530,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/data.csv",
-      "sha256": "33102767b408c35aab540d8a61384eea2122df6291032ed8f1766a33ba984b3c"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/data.csv",
+      "sha256": "89a2b5f90795d6ac7ae97ba0170bbe4ecad6e39572ab16cf3d16d1c026714f34"
     },
     "extraction_report": {
+      "bytes": 5938,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/extraction-report.json",
-      "sha256": "151578ac6dffa85c2f2038931d38bdeb024bbec809aa214779e7512331b1fb1f"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/extraction-report.json",
+      "sha256": "1eb3b8252e36678673197b0e07138a362ff60f6af683212b4e1a07904e384ab7"
     },
     "formal_data_report": {
+      "bytes": 1741,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/formal-data-report.json",
-      "sha256": "e69d3d1b723c3aea327a948af902ed30efcaa2cbd3779d9850ab3a9bc68b2864"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/formal-data-report.json",
+      "sha256": "733bf9598fdc37c8a48ceacb047501491dd3ea5be366f1e73f2cf28471ed62bc"
     },
     "observations": {
+      "bytes": 95533,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/observations.csv",
-      "sha256": "54a65a7a8da2a6f64d9881cab146f33e6e56db8aaa840aa1495f29c5f2f7b566"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/observations.csv",
+      "sha256": "a74c78277263a56184e0d4a71d0a7cd363c46138f85db912904601912f3828d2"
     },
     "overlay": {
+      "bytes": 52077,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/overlay.png",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/overlay.png",
       "sha256": "d972fa97bcd7a43f53b2c5ce4293fa691ed4e277b244ec748487da7669a8f34d"
     },
     "project_spec": {
+      "bytes": 4067,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/project.json",
       "sha256": "f2d51afd74e786354b4933cf06ed5bad175d73a3199b40e2f0b349bf17f63753"
     },
     "render_pdf": {
+      "bytes": 19953,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.pdf",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.pdf",
       "sha256": "5d6feae2e883d646dc487d03722ae4de7a51da4311925a85118acd09d5078459"
     },
     "render_png": {
+      "bytes": 199049,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.png",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.png",
       "sha256": "370de4bf10272865d604af1d744395a55d9022bccba70a6650bf1d3868de77ad"
     },
     "render_report": {
+      "bytes": 1732,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/render/render-report.json",
-      "sha256": "3fcca6c8e0dc4031e28f8115f886cb0c8332deb628bc41f7a9a5061223e35852"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/render/render-report.json",
+      "sha256": "521409bff3e479757a3977c2b43f3f0fd814a625176ff9c18195e6287ce9679e"
     },
     "render_svg": {
+      "bytes": 65485,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.svg",
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/render/render.svg",
       "sha256": "c1823bb438232661cd052b7c449fde89b8b6391136d454387df6aded68155534"
     },
     "review_decisions": {
+      "bytes": 51008,
       "exists": true,
-      "path": "/Users/Bing/.codex/skills/more-sci-figure/examples/full-workflow-20260726/figure10b-centerline-v2/review-decisions.json",
-      "sha256": "ff3240fe87a8521f4bb898c5a42d8783eaac8d8fe1c663fa14ee1377b79ecce2"
+      "path": "<PROJECT_DIR>/examples/full-workflow-20260726/figure10b-centerline-v2/review-decisions.json",
+      "sha256": "c53e3720b13ff59738e08cdb60b0f29cdd0792ea38980537fdeae5e55882047e"
     }
   },
   "delivery_assessment": {
